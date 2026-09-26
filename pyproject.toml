@@ -1,0 +1,30 @@
+[project]
+name = "patchloop"
+version = "0.1.0"
+description = "A minimal coding agent that fixes failing tests, with an evaluation harness."
+readme = "README.md"
+authors = [
+    { name = "Zhicheng Liu", email = "zhicheng.liu1@student.unsw.edu.au" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=3.19.2",
+    "python-dotenv>=1.2.3",
+    "rich>=15.0.0",
+    "typer>=0.27.2",
+]
+
+[project.scripts]
+agent = "patchloop.cli:app"
+
+[build-system]
+requires = ["uv_build>=0.11.21,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
