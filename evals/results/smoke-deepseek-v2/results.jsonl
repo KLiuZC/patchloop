@@ -1,0 +1,1 @@
+{"instance_id": "pytest-dev__pytest-7205", "mode": "agent", "turns": 22, "finished": true, "prompt_tokens": 233846, "cached_tokens": 223488, "completion_tokens": 10570, "cost": 0.05710776, "patch_lines": 21, "seconds": 83.7, "error": "", "resolved": null, "patch_applied": null}

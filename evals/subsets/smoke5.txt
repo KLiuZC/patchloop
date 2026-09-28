@@ -1,0 +1,6 @@
+# 5 instances whose images are built locally and whose gold patches pass (see EXPERIMENTS.md)
+pytest-dev__pytest-7205
+pytest-dev__pytest-7236
+pytest-dev__pytest-7324
+pytest-dev__pytest-7432
+pallets__flask-5014

@@ -1,0 +1,34 @@
+{
+  "run_id": "smoke-deepseek-v2",
+  "mode": "agent",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "instances": 1,
+  "judged": 1,
+  "resolved": 1,
+  "resolve_rate": 1.0,
+  "errors": 0,
+  "prompt_tokens": 233846,
+  "cached_tokens": 223488,
+  "completion_tokens": 10570,
+  "cost_cny": 0.057,
+  "seconds": 83.7,
+  "results": [
+    {
+      "instance_id": "pytest-dev__pytest-7205",
+      "mode": "agent",
+      "turns": 22,
+      "finished": true,
+      "prompt_tokens": 233846,
+      "cached_tokens": 223488,
+      "completion_tokens": 10570,
+      "cost": 0.05710776,
+      "patch_lines": 21,
+      "seconds": 83.7,
+      "error": "",
+      "resolved": true,
+      "patch_applied": true
+    }
+  ],
+  "harness_run_id": "smoke-deepseek-v2-0928-163703"
+}

@@ -1,5 +1,6 @@
 import os
 import platform
+import shlex
 import signal
 import subprocess
 import uuid
@@ -66,6 +67,10 @@ class LocalRunner:
         if proc.returncode != 0:
             out += f"\n[exit code {proc.returncode}]"
         return out
+
+    def put(self, path: str, content: str) -> None:
+        target = Path(path) if Path(path).is_absolute() else self.workdir / path
+        target.write_text(content, encoding="utf-8")
 
     def diff(self) -> str:
         def git(args: list[str]) -> subprocess.CompletedProcess:
@@ -157,6 +162,16 @@ class DockerRunner:
         if proc.returncode != 0:
             out += f"\n[exit code {proc.returncode}]"
         return out
+
+    def put(self, path: str, content: str) -> None:
+        proc = subprocess.run(
+            ["docker", "exec", "-i", "-w", self.workdir, self.name, "bash", "-c", f"cat > {shlex.quote(path)}"],
+            input=content,
+            text=True,
+            capture_output=True,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(f"docker exec failed: {proc.stderr.strip()}")
 
     def diff(self) -> str:
         def git(args: list[str]) -> subprocess.CompletedProcess:

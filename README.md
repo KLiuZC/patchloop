@@ -31,6 +31,17 @@ uv run agent run --sandbox docker --image swebench/sweb.eval.x86_64.pytest-dev_1
 
 容器断网、限 2GB 内存、任务结束即销毁。每条命令经容器内的 `timeout` 和登录 shell 执行，所以镜像自带的 conda 环境是激活的。运行结束时 agent 的全部改动会以补丁形式写到 `traj/<run_id>.patch`，这就是交给评测程序的答卷。
 
+## 评测（SWE-bench Verified）
+
+前提：装好官方判卷程序（`uv tool install "git+https://github.com/SWE-bench/SWE-bench"`），在 `SWEBENCH_WORKDIR`（默认 `~/code/swebench-work`）下放好 `swe-bench-tasks` 题库；在 Apple Silicon 上题目镜像需要用它本地构建（`swebench eval verified --gold -i <id> --task-repo ./swe-bench-tasks -j 1`），标准答案跑不过的题不进入子集。
+
+```bash
+uv run agent eval -r smoke-deepseek -f evals/subsets/smoke5.txt -p deepseek        # agent 答题并判分
+uv run agent eval -r smoke-single-shot -f evals/subsets/smoke5.txt -p deepseek --mode single-shot   # 无工具、一次直出的基线
+```
+
+每道题在自己的镜像里起一个容器，agent 只看到 issue 原文（hints、隐藏测试、标准答案都不给），改动收集成补丁写进 `evals/results/<run-id>/predictions.jsonl`，再交给官方判卷程序打分。汇总在 `summary.json`（含每题轮数、token、缓存命中、费用估算、是否解决），轨迹与补丁在同目录的 `traj/`（不进 git）。同一个 run-id 重跑会跳过已答过的题。
+
 ## 结构
 
 ```
@@ -41,9 +52,13 @@ src/patchloop/
   prompts.py     system prompt
   loop.py        agent 循环：调模型 → 执行工具 → 结果回填
   trajectory.py  JSONL 轨迹
+  baseline.py    单次直出基线：模型盲写补丁，沙箱里 git apply
+  eval.py        评测流水线：起题目容器 → 答题 → 交卷 → 官方判卷 → 汇总
   cli.py         命令行入口
 examples/toy_repo/   带一个已知 bug 的玩具仓库，用于冒烟
 examples/toy_image/  玩具仓库对应的 Docker 镜像（python + git + pytest）
+evals/subsets/       题目子集（每行一个 instance id）
+evals/results/       每次评测的答卷与汇总
 tests/               项目自身的单元测试：uv run pytest
 ```
 
@@ -51,5 +66,6 @@ tests/               项目自身的单元测试：uv run pytest
 
 - [x] 最小 loop + bash 工具
 - [x] Docker 沙箱
-- [ ] SWE-bench Verified 子集评测
+- [x] SWE-bench Verified 子集评测流水线
+- [ ] 扩大子集、基线对比、失败归因
 - [ ] context 管理与消融

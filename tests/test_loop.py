@@ -97,3 +97,30 @@ def test_patch_is_collected_and_saved(tmp_path):
     result = run("task", llm, LocalRunner(tmp_path), traj_dir=tmp_path / "traj")
     assert "+two" in result.patch
     assert (tmp_path / "traj" / f"{result.run_id}.patch").read_text() == result.patch
+
+
+def test_run_id_names_the_trajectory_and_cache_hits_are_counted(tmp_path):
+    class Usage:
+        prompt_tokens = 100
+        completion_tokens = 5
+        prompt_cache_hit_tokens = 60
+
+    class CachingLLM(FakeLLM):
+        def chat(self, messages, tools):
+            self.requests.append([dict(m) for m in messages])
+            return next(self.replies), Usage()
+
+    llm = CachingLLM([message(content="done")])
+    result = run("task", llm, LocalRunner(tmp_path), traj_dir=tmp_path / "traj", run_id="my-instance")
+    assert result.run_id == "my-instance"
+    assert (tmp_path / "traj" / "my-instance.jsonl").exists()
+    assert result.prompt_tokens == 100 and result.cached_tokens == 60
+
+
+def test_command_key_is_accepted_as_alias_for_cmd(tmp_path):
+    llm = FakeLLM([
+        message(tool_calls=[tool_call("c1", '{"command": "echo aliased"}')]),
+        message(content="ok"),
+    ])
+    run("task", llm, LocalRunner(tmp_path), traj_dir=tmp_path / "traj")
+    assert "aliased" in llm.requests[1][-1]["content"]

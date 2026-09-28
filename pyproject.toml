@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "datasets>=5.0.1",
     "openai>=3.19.2",
     "python-dotenv>=1.2.3",
     "rich>=15.0.0",

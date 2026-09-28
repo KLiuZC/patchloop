@@ -1,12 +1,15 @@
 import json
+import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import typer
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.markup import escape
+from rich.table import Table
 
+from .eval import DEFAULT_DATASET, evaluate, load_instances, read_id_file
 from .llm import LLM, PROVIDERS
 from .loop import run
 from .sandbox import DockerRunner, LocalRunner
@@ -92,3 +95,90 @@ def _cmd_of(arguments: str) -> str:
         return json.loads(arguments)["cmd"]
     except Exception:
         return arguments
+
+
+@app.command("eval")
+def eval_command(
+    run_id: str = typer.Option(..., "--run-id", "-r", help="Names the results directory evals/results/<run-id>."),
+    instances: Optional[List[str]] = typer.Option(None, "--instance", "-i", help="Instance id (repeatable)."),
+    instances_file: Optional[Path] = typer.Option(None, "--instances-file", "-f", help="File with one instance id per line."),
+    mode: str = typer.Option("agent", "--mode", help="agent or single-shot."),
+    dataset: str = typer.Option(DEFAULT_DATASET, "--dataset", help="HuggingFace dataset id."),
+    provider: str = typer.Option("glm", "--provider", "-p", help="One of: " + ", ".join(PROVIDERS)),
+    model: Optional[str] = typer.Option(None, "--model", "-m", help="Override the provider's default model."),
+    max_turns: int = typer.Option(40, "--max-turns"),
+    timeout: int = typer.Option(180, "--timeout", help="Per-command timeout in seconds."),
+    workers: int = typer.Option(1, "--workers", "-j", help="Instances solved in parallel."),
+    memory: str = typer.Option("2g", "--memory", help="Memory limit per container."),
+    judge: bool = typer.Option(True, "--judge/--no-judge", help="Run the SWE-bench harness afterwards."),
+    judge_workers: int = typer.Option(1, "--judge-workers"),
+    harness_dir: Optional[Path] = typer.Option(
+        None, "--harness-dir", help="Where the harness writes logs and finds swe-bench-tasks ($SWEBENCH_WORKDIR, default ~/code/swebench-work)."
+    ),
+):
+    """Solve SWE-bench instances in their own images, then grade the patches with the official harness."""
+    load_dotenv()
+    ids = list(instances or [])
+    if instances_file:
+        ids += read_id_file(instances_file)
+    if not ids:
+        raise typer.BadParameter("give at least one --instance or an --instances-file", param_hint="--instance")
+    if mode not in ("agent", "single-shot"):
+        raise typer.BadParameter("expected 'agent' or 'single-shot'", param_hint="--mode")
+
+    harness_dir = harness_dir or Path(os.environ.get("SWEBENCH_WORKDIR", "~/code/swebench-work")).expanduser()
+    task_repo = harness_dir / "swe-bench-tasks"
+    if judge and not task_repo.is_dir():
+        console.print(f"[yellow]no task repo at {task_repo}; the harness will pull images instead of building them[/]")
+        task_repo = None
+
+    try:
+        llm = LLM(provider, model)
+    except (ValueError, RuntimeError) as e:
+        console.print(f"[red]{escape(str(e))}[/]")
+        raise typer.Exit(code=2)
+
+    console.print(f"loading {len(ids)} instance(s) from {dataset} ...")
+    loaded = load_instances(ids, dataset)
+    out_dir = Path("evals/results") / run_id
+    summary = evaluate(
+        loaded, llm, run_id, out_dir,
+        mode=mode, max_turns=max_turns, timeout=timeout, workers=workers, memory=memory,
+        judge=judge, harness_dir=harness_dir, task_repo=task_repo, judge_workers=judge_workers,
+        dataset=dataset, log=lambda line: console.print(escape(line), highlight=False),
+    )
+    _print_summary(summary, out_dir)
+
+
+def _print_summary(summary: dict, out_dir: Path) -> None:
+    table = Table(title=f"{summary['run_id']} · {summary['mode']} · {summary['model']}")
+    for col in ("instance", "turns", "prompt/cached/completion", "cost", "patch", "resolved", "note"):
+        table.add_column(col)
+    for r in summary["results"]:
+        if r["resolved"] is None:
+            verdict = "-"
+        else:
+            verdict = "[green]yes[/]" if r["resolved"] else "[red]no[/]"
+        note = r["error"] or ("" if r["finished"] else "max_turns") or ""
+        if not r["error"] and not r["patch_lines"]:
+            note = (note + " " if note else "") + "no patch"
+        if r["patch_applied"] is False:
+            note = (note + " " if note else "") + "patch did not apply"
+        table.add_row(
+            r["instance_id"], str(r["turns"]),
+            f"{r['prompt_tokens'] // 1000}k / {r['cached_tokens'] // 1000}k / {r['completion_tokens']}",
+            f"¥{r['cost']:.2f}" if r["cost"] is not None else "-",
+            f"+{r['patch_lines']}" if r["patch_lines"] else "none",
+            verdict, escape(note),
+        )
+    console.print(table)
+    rate = f"{summary['resolved']}/{summary['judged']} ({summary['resolve_rate'] * 100:.0f}%)" if summary["judged"] else "not judged"
+    console.print(
+        f"resolved {rate} · ¥{summary['cost_cny']:.2f} · {summary['seconds'] / 60:.0f} min · "
+        f"errors {summary['errors']} · {out_dir}/summary.json"
+    )
+    console.print(
+        "[dim]EXPERIMENTS.md: | <date> | " + escape(summary["run_id"]) + f" ({summary['instances']} 题, {summary['mode']}) | "
+        f"{summary['provider']} / {summary['model']} | - | {summary['prompt_tokens'] // 1000}k / {summary['completion_tokens'] // 1000}k | "
+        f"{rate} | ¥{summary['cost_cny']:.2f}, {summary['seconds'] / 60:.0f} min |[/]"
+    )

@@ -8,6 +8,8 @@
 | 2026-09-28 | gold-check：换入 pallets__flask-5014，题单为 4 道 pytest + flask | 官方 harness / 无模型 | - | - | 5/5 | 构建约 1.5 min/题（基础层缓存后），评测约 25 s/题，镜像约 1.5 GB/题独立占用；磁盘 97G→73G |
 | 2026-09-28 | toy_repo 修 v 前缀，Docker 沙箱（patchloop-toy 镜像，挂载 /work） | deepseek / deepseek-flash | 5 | 4810 / 396 | 通过 | 沙箱首次跑通；仍每条命令带 cd 前缀；heredoc 整文件重写；挂载目录不是 git 根，patch 为空 |
 | 2026-09-28 | SWE-bench 镜像环境检查（pytest-7205，无挂载，/testbed） | deepseek / deepseek-flash | 2 | 1181 / 302 | 通过 | 登录 shell 激活 conda testbed：Python 3.9.20、pytest 在 env 内、cwd=/testbed、git 干净 |
+| 2026-09-28 | smoke-deepseek：pytest-7205 单题，agent 模式，v1 提示词 | deepseek / deepseek-flash | 40 | 631k / 13k（缓存命中 96%） | 0/1 | 流水线首次跑通（起容器→答题→交卷→官方判卷→汇总），¥0.09、5 min。失败归因：前 11 轮定位并复现了 bug，第 12 轮起 ~25 轮在找“上游的修法”（翻 git 历史/标签/不可达对象、pip 缓存、changelog，甚至找 SWE-bench 元数据），一次也没改文件；4 轮把参数键写成 command 而非 cmd；一次全盘 grep 超时。上下文 2k→27k，不是溢出问题。修正：任务模板写明“修复不在仓库/历史里，自己写，不必匹配上游改法”，系统提示写明命令预算；loop 接受 command 别名 |
+| 2026-09-28 | smoke-deepseek-v2：同一道题 pytest-7205，只改提示词（预算意识 + “自己写修复”） | deepseek / deepseek-flash | 22 | 234k / 11k（缓存命中 96%） | 1/1 | ¥0.06、84 s。官方判卷 FAIL_TO_PASS 10/10、PASS_TO_PASS 16/16，补丁与上游修法本质相同（saferepr）。第 7-15 轮仍在找上游修法/元数据（9 轮），但第 16 轮开始动手，复现→跑相关测试→清理临时目录→收尾。n=1，只说明提示词是杠杆，不能当结论 |
 
 ## 环境备忘
 

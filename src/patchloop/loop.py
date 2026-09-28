@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from .llm import LLM
+from .llm import LLM, estimate_cost
 from .prompts import SYSTEM_PROMPT
 from .tools import TOOLS, bash
 from .trajectory import Trajectory
@@ -18,8 +18,20 @@ class RunResult:
     finished: bool = False  # the model stopped on its own rather than hitting max_turns
     final_message: str = ""
     prompt_tokens: int = 0
+    cached_tokens: int = 0
     completion_tokens: int = 0
+    cost: float | None = None
+    seconds: float = 0.0
     patch: str = ""
+
+
+def cached_tokens_of(usage) -> int:
+    """Prompt tokens served from the provider's cache; the field name differs per provider."""
+    hit = getattr(usage, "prompt_cache_hit_tokens", None)  # DeepSeek
+    if hit is None:
+        details = getattr(usage, "prompt_tokens_details", None)  # OpenAI-style, e.g. GLM
+        hit = getattr(details, "cached_tokens", None) if details else None
+    return int(hit or 0)
 
 
 def run(
@@ -30,8 +42,10 @@ def run(
     timeout: int = 60,
     traj_dir: Path = Path("traj"),
     on_turn: Callable[[int, dict, list[dict]], None] | None = None,
+    run_id: str | None = None,
 ) -> RunResult:
-    run_id = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
+    run_id = run_id or time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
+    run_started = time.time()
     result = RunResult(run_id=run_id)
     traj_dir = Path(traj_dir)
     traj = Trajectory(
@@ -47,7 +61,7 @@ def run(
     messages = [
         {
             "role": "system",
-            "content": SYSTEM_PROMPT.format(environment=runner.environment, workdir=runner.workdir),
+            "content": SYSTEM_PROMPT.format(environment=runner.environment, workdir=runner.workdir, max_turns=max_turns),
         },
         {"role": "user", "content": task},
     ]
@@ -72,18 +86,22 @@ def run(
             )
 
         result.turns = turn
+        turn_usage = None
         if usage:
+            cached = cached_tokens_of(usage)
             result.prompt_tokens += usage.prompt_tokens
+            result.cached_tokens += cached
             result.completion_tokens += usage.completion_tokens
+            turn_usage = {
+                "prompt_tokens": usage.prompt_tokens,
+                "cached_tokens": cached,
+                "completion_tokens": usage.completion_tokens,
+            }
         traj.turn(
             turn=turn,
             assistant=assistant,
             tools=tool_records,
-            usage=(
-                {"prompt_tokens": usage.prompt_tokens, "completion_tokens": usage.completion_tokens}
-                if usage
-                else None
-            ),
+            usage=turn_usage,
             seconds=round(time.time() - started, 2),
         )
         if on_turn:
@@ -97,6 +115,8 @@ def run(
     result.patch = runner.diff()
     if result.patch:
         (traj_dir / f"{run_id}.patch").write_text(result.patch, encoding="utf-8")
+    result.seconds = round(time.time() - run_started, 1)
+    result.cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
     traj.close(result)
     return result
 
@@ -125,8 +145,11 @@ def _execute(call, runner, timeout: int) -> str:
     if call.function.name != "bash":
         return f"unknown tool {call.function.name!r}; only `bash` is available"
     try:
-        cmd = json.loads(call.function.arguments)["cmd"]
-    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        args = json.loads(call.function.arguments)
+        cmd = args.get("cmd", args.get("command"))  # models drift to "command" now and then
+        if cmd is None:
+            raise KeyError("cmd")
+    except (json.JSONDecodeError, KeyError, TypeError, AttributeError) as e:
         # fed back to the model so it can retry with well-formed arguments
         return f"invalid arguments ({e}); expected a JSON object with a string field 'cmd'"
     if not isinstance(cmd, str):
