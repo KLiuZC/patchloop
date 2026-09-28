@@ -1,6 +1,16 @@
 from patchloop.tools import bash, truncate
 
 
+class FakeRunner:
+    def __init__(self, output):
+        self.output = output
+        self.calls = []
+
+    def run(self, cmd, timeout):
+        self.calls.append((cmd, timeout))
+        return self.output
+
+
 def test_truncate_keeps_head_and_tail():
     text = "a" * 3000 + "MID" + "b" * 3000
     out = truncate(text, limit=1000)
@@ -14,18 +24,16 @@ def test_truncate_leaves_short_text_alone():
     assert truncate("hello", limit=10) == "hello"
 
 
-def test_bash_runs_in_workdir(tmp_path):
-    (tmp_path / "marker.txt").write_text("")
-    assert "marker.txt" in bash("ls", tmp_path)
+def test_bash_passes_command_and_timeout_to_runner():
+    runner = FakeRunner("hi\n")
+    assert bash("echo hi", runner, timeout=7) == "hi\n"
+    assert runner.calls == [("echo hi", 7)]
 
 
-def test_bash_merges_stderr_and_reports_exit_code(tmp_path):
-    out = bash("echo out; echo err >&2; exit 3", tmp_path)
-    assert "out" in out
-    assert "err" in out
-    assert "[exit code 3]" in out
+def test_bash_truncates_long_output():
+    out = bash("cat big", FakeRunner("x" * 10000))
+    assert "chars omitted" in out
 
 
-def test_bash_timeout_kills_command(tmp_path):
-    out = bash("sleep 5", tmp_path, timeout=1)
-    assert "timed out" in out
+def test_bash_marks_empty_output():
+    assert bash("true", FakeRunner("")) == "[no output]"

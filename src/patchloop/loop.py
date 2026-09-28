@@ -19,32 +19,36 @@ class RunResult:
     final_message: str = ""
     prompt_tokens: int = 0
     completion_tokens: int = 0
+    patch: str = ""
 
 
 def run(
     task: str,
-    workdir: Path,
     llm: LLM,
+    runner,
     max_turns: int = 30,
     timeout: int = 60,
     traj_dir: Path = Path("traj"),
     on_turn: Callable[[int, dict, list[dict]], None] | None = None,
 ) -> RunResult:
-    workdir = Path(workdir).resolve()
     run_id = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
     result = RunResult(run_id=run_id)
+    traj_dir = Path(traj_dir)
     traj = Trajectory(
-        Path(traj_dir) / f"{run_id}.jsonl",
+        traj_dir / f"{run_id}.jsonl",
         meta={
             "task": task,
-            "workdir": str(workdir),
+            **runner.describe(),
             "provider": llm.provider,
             "model": llm.model,
             "max_turns": max_turns,
         },
     )
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT.format(workdir=workdir)},
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT.format(environment=runner.environment, workdir=runner.workdir),
+        },
         {"role": "user", "content": task},
     ]
 
@@ -56,7 +60,7 @@ def run(
 
         tool_records = []
         for call in msg.tool_calls or []:
-            output = _execute(call, workdir, timeout)
+            output = _execute(call, runner, timeout)
             messages.append({"role": "tool", "tool_call_id": call.id, "content": output})
             tool_records.append(
                 {
@@ -90,6 +94,9 @@ def run(
             result.final_message = msg.content or ""
             break
 
+    result.patch = runner.diff()
+    if result.patch:
+        (traj_dir / f"{run_id}.patch").write_text(result.patch, encoding="utf-8")
     traj.close(result)
     return result
 
@@ -114,7 +121,7 @@ def _assistant_message(msg) -> dict:
     return out
 
 
-def _execute(call, workdir: Path, timeout: int) -> str:
+def _execute(call, runner, timeout: int) -> str:
     if call.function.name != "bash":
         return f"unknown tool {call.function.name!r}; only `bash` is available"
     try:
@@ -124,4 +131,4 @@ def _execute(call, workdir: Path, timeout: int) -> str:
         return f"invalid arguments ({e}); expected a JSON object with a string field 'cmd'"
     if not isinstance(cmd, str):
         return "invalid arguments: 'cmd' must be a string"
-    return bash(cmd, workdir, timeout=timeout)
+    return bash(cmd, runner, timeout=timeout)
