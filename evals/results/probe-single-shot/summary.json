@@ -1,0 +1,35 @@
+{
+  "run_id": "probe-single-shot",
+  "mode": "single-shot",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "instances": 1,
+  "judged": 1,
+  "resolved": 0,
+  "resolve_rate": 0.0,
+  "errors": 0,
+  "prompt_tokens": 975,
+  "cached_tokens": 768,
+  "completion_tokens": 43508,
+  "cost_cny": 0.174,
+  "seconds": 159.9,
+  "results": [
+    {
+      "instance_id": "pytest-dev__pytest-7236",
+      "mode": "single-shot",
+      "turns": 1,
+      "finished": true,
+      "prompt_tokens": 975,
+      "cached_tokens": 768,
+      "completion_tokens": 43508,
+      "cost": 0.17425436,
+      "patch_lines": 0,
+      "seconds": 159.9,
+      "error": "",
+      "note": "patch did not apply",
+      "resolved": false,
+      "patch_applied": false
+    }
+  ],
+  "harness_run_id": "probe-single-shot-0929-005255"
+}

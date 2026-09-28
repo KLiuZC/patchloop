@@ -10,6 +10,9 @@
 | 2026-09-28 | SWE-bench 镜像环境检查（pytest-7205，无挂载，/testbed） | deepseek / deepseek-flash | 2 | 1181 / 302 | 通过 | 登录 shell 激活 conda testbed：Python 3.9.20、pytest 在 env 内、cwd=/testbed、git 干净 |
 | 2026-09-28 | smoke-deepseek：pytest-7205 单题，agent 模式，v1 提示词 | deepseek / deepseek-flash | 40 | 631k / 13k（缓存命中 96%） | 0/1 | 流水线首次跑通（起容器→答题→交卷→官方判卷→汇总），¥0.09、5 min。失败归因：前 11 轮定位并复现了 bug，第 12 轮起 ~25 轮在找“上游的修法”（翻 git 历史/标签/不可达对象、pip 缓存、changelog，甚至找 SWE-bench 元数据），一次也没改文件；4 轮把参数键写成 command 而非 cmd；一次全盘 grep 超时。上下文 2k→27k，不是溢出问题。修正：任务模板写明“修复不在仓库/历史里，自己写，不必匹配上游改法”，系统提示写明命令预算；loop 接受 command 别名 |
 | 2026-09-28 | smoke-deepseek-v2：同一道题 pytest-7205，只改提示词（预算意识 + “自己写修复”） | deepseek / deepseek-flash | 22 | 234k / 11k（缓存命中 96%） | 1/1 | ¥0.06、84 s。官方判卷 FAIL_TO_PASS 10/10、PASS_TO_PASS 16/16，补丁与上游修法本质相同（saferepr）。第 7-15 轮仍在找上游修法/元数据（9 轮），但第 16 轮开始动手，复现→跑相关测试→清理临时目录→收尾。n=1，只说明提示词是杠杆，不能当结论 |
+| 2026-09-28 | smoke5-deepseek：smoke5 子集 5 题（3 题 <15min、2 题 15min-1h），agent 模式，v2 提示词 | deepseek / deepseek-flash | 40/16/40/7/9 | 1666k / 55k（缓存命中 97%） | **5/5** | ¥0.30、10 min。官方判卷每题 F2P 全过、P2P 无回归。7205 与 7324 跑满 40 轮仍解决：7205 第 40 轮才首次改代码（前 39 轮又在找上游修法、翻 reflog/apt 缓存），改完未验证，属侥幸；7324 第 29 轮改完后 9 次跑测试、最后 6 轮反复自我怀疑不收尾。两种失败模式：答案搜寻（提示词只能缓解、方差大）、不知何时停。n=5 且偏简单，不可外推 |
+| 2026-09-29 | smoke5-single-shot：同 5 题，无工具一次直出基线 | deepseek / deepseek-flash | 1 | 3k / 216k（几乎全是思考） | 1/5 | ¥0.87（比 agent 的 ¥0.30 贵近 3 倍）、13 min（比 agent 慢）。只有 flask-5014（题面 195 字、补丁 14 行）盲写正确；4 题无补丁，其中 2 题输出恰为 65536 token（API 输出上限，回复被截断）。此时代码未保存原始回复，无法区分“没写出 diff”与“被截断”，已补：记录 finish_reason 与回复原文 |
+| 2026-09-29 | probe-single-shot：重跑 pytest-7236 单次直出，带原始回复记录 | deepseek / deepseek-flash | 1 | 1k / 44k | 0/1 | ¥0.17、160 s。finish_reason=stop（这次没截断，思考 16 万字符），写出了 diff，但 git apply 失败：凭记忆猜的上下文行与真实文件不符。单次直出的两种失败模式齐了：思考过长被输出上限截断（上一轮 2/5）、盲写的 diff 对不上文件（本次）。同一题两次思考长度 65k vs 43k token，方差很大 |
 
 ## 环境备忘
 

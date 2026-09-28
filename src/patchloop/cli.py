@@ -159,11 +159,12 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
             verdict = "-"
         else:
             verdict = "[green]yes[/]" if r["resolved"] else "[red]no[/]"
-        note = r["error"] or ("" if r["finished"] else "max_turns") or ""
-        if not r["error"] and not r["patch_lines"]:
-            note = (note + " " if note else "") + "no patch"
-        if r["patch_applied"] is False:
-            note = (note + " " if note else "") + "patch did not apply"
+        notes = [n for n in (r["error"], r.get("note", ""), "" if r["finished"] else "max_turns") if n]
+        if not r["error"] and not r["patch_lines"] and not r.get("note"):
+            notes.append("no patch")
+        if r["patch_applied"] is False and "did not apply" not in " ".join(notes):
+            notes.append("patch did not apply")
+        note = "; ".join(notes)
         table.add_row(
             r["instance_id"], str(r["turns"]),
             f"{r['prompt_tokens'] // 1000}k / {r['cached_tokens'] // 1000}k / {r['completion_tokens']}",

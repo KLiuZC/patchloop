@@ -65,6 +65,7 @@ class InstanceResult:
     patch_lines: int = 0
     seconds: float = 0.0
     error: str = ""
+    note: str = ""
     resolved: bool | None = None
     patch_applied: bool | None = None
 
@@ -97,8 +98,9 @@ def solve(
                     r.prompt_tokens, r.cached_tokens, r.completion_tokens,
                 )
             elif mode == "single-shot":
-                patch, applied, usage = single_shot(instance, llm, runner)
-                result.turns, result.finished, result.patch_applied = 1, True, applied
+                patch, note, usage = single_shot(instance, llm, runner, record_path=traj_dir / f"{iid}.single-shot.json")
+                result.turns, result.finished, result.note = 1, True, note
+                result.patch_applied = bool(patch) if patch or note == "patch did not apply" else None
                 result.prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
                 result.cached_tokens = cached_tokens_of(usage) if usage else 0
                 result.completion_tokens = getattr(usage, "completion_tokens", 0) or 0
@@ -173,7 +175,8 @@ def evaluate(
         for r in ordered:
             if r.instance_id in verdicts:
                 r.resolved = verdicts[r.instance_id]["resolved"]
-                r.patch_applied = verdicts[r.instance_id]["patch_applied"]
+                if verdicts[r.instance_id]["patch_applied"] is not None:
+                    r.patch_applied = verdicts[r.instance_id]["patch_applied"]
 
     summary = summarize(ordered, run_id, mode, llm)
     summary["harness_run_id"] = harness_run_id

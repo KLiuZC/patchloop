@@ -49,10 +49,14 @@ class LLM:
         self.client = OpenAI(base_url=cfg["base_url"], api_key=api_key, max_retries=3, timeout=120.0)
 
     def chat(self, messages: list[dict], tools: list[dict] | None = None):
+        resp = self.chat_raw(messages, tools)
+        return resp.choices[0].message, resp.usage
+
+    def chat_raw(self, messages: list[dict], tools: list[dict] | None = None):
+        """The full API response, for callers that need finish_reason and friends."""
         kwargs = {}
         if tools:
             kwargs["tools"] = tools
         if self.temperature is not None:
             kwargs["temperature"] = self.temperature
-        resp = self.client.chat.completions.create(model=self.model, messages=messages, **kwargs)
-        return resp.choices[0].message, resp.usage
+        return self.client.chat.completions.create(model=self.model, messages=messages, **kwargs)
