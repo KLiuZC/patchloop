@@ -40,6 +40,12 @@ uv run agent eval -r smoke-deepseek -f evals/subsets/smoke5.txt -p deepseek     
 uv run agent eval -r smoke-single-shot -f evals/subsets/smoke5.txt -p deepseek --mode single-shot   # 无工具、一次直出的基线
 ```
 
+题目子集用 `agent subset` 生成，固定随机种子、按难度分层、每个仓库封顶，文件头里带着重新生成的命令。`evals/subsets/smoke5.txt` 是开发集（调提示词、试机制都在它上面看），`evals/subsets/verified30.txt` 是报告集（只用来出数字，不在它上面调东西）：
+
+```bash
+uv run agent subset -o evals/subsets/verified30.txt --size 30 --seed 20260929 --cap 7 -x evals/subsets/smoke5.txt
+```
+
 每道题在自己的镜像里起一个容器，agent 只看到 issue 原文（hints、隐藏测试、标准答案都不给），改动收集成补丁写进 `evals/results/<run-id>/predictions.jsonl`，再交给官方判卷程序打分。汇总在 `summary.json`（含每题轮数、token、缓存命中、费用估算、是否解决），轨迹与补丁在同目录的 `traj/`（不进 git）。同一个 run-id 重跑会跳过已答过的题。
 
 ## 结构
@@ -54,6 +60,7 @@ src/patchloop/
   trajectory.py  JSONL 轨迹
   baseline.py    单次直出基线：模型盲写补丁，沙箱里 git apply
   eval.py        评测流水线：起题目容器 → 答题 → 交卷 → 官方判卷 → 汇总
+  subset.py      可复现的选题：按难度分层、按仓库封顶、固定种子
   cli.py         命令行入口
 examples/toy_repo/   带一个已知 bug 的玩具仓库，用于冒烟
 examples/toy_image/  玩具仓库对应的 Docker 镜像（python + git + pytest）

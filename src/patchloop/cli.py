@@ -13,6 +13,7 @@ from .eval import DEFAULT_DATASET, evaluate, load_instances, read_id_file
 from .llm import LLM, PROVIDERS
 from .loop import run
 from .sandbox import DockerRunner, LocalRunner
+from .subset import DEFAULT_REPOS, DIFFICULTY_MIX, breakdown, select_subset, write_subset
 
 # no locals in tracebacks: they would include the API key
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_show_locals=False)
@@ -183,3 +184,44 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
         f"{summary['provider']} / {summary['model']} | - | {summary['prompt_tokens'] // 1000}k / {summary['completion_tokens'] // 1000}k | "
         f"{rate} | ¥{summary['cost_cny']:.2f}, {summary['seconds'] / 60:.0f} min |[/]"
     )
+
+
+@app.command("subset")
+def subset_command(
+    out: Path = typer.Option(..., "--out", "-o", help="Where to write the id list."),
+    size: int = typer.Option(30, "--size"),
+    seed: int = typer.Option(1, "--seed"),
+    cap: int = typer.Option(7, "--cap", help="Max instances per repository."),
+    repo: Optional[List[str]] = typer.Option(None, "--repo", help="Allowed repository (repeatable). Default: pure-Python repos."),
+    exclude_file: Optional[List[Path]] = typer.Option(None, "--exclude-file", "-x", help="Ids to leave out (repeatable), e.g. the dev set."),
+    dataset: str = typer.Option(DEFAULT_DATASET, "--dataset"),
+):
+    """Pick a reproducible evaluation subset: stratified by difficulty, spread across repositories."""
+    from datasets import load_dataset  # slow import
+
+    repos = repo or DEFAULT_REPOS
+    exclude = [i for f in (exclude_file or []) for i in read_id_file(f)]
+    rows = list(load_dataset(dataset, split="test"))
+    chosen = select_subset(rows, size=size, seed=seed, repos=repos, cap=cap, exclude=exclude)
+    header = [
+        f"{dataset} subset: size={len(chosen)} seed={seed} cap_per_repo={cap}",
+        "repos: " + ", ".join(repos),
+        "difficulty mix: " + ", ".join(f"{k} {v:.0%}" for k, v in DIFFICULTY_MIX.items()),
+        "excluded: " + (", ".join(str(f) for f in exclude_file) if exclude_file else "none"),
+        f"regenerate: agent subset -o {out} --size {size} --seed {seed} --cap {cap}"
+        + "".join(f" -x {f}" for f in (exclude_file or [])),
+    ]
+    write_subset(chosen, out, header)
+
+    table = Table(title=f"{len(chosen)} instances → {out}")
+    table.add_column("repo")
+    for d in DIFFICULTY_MIX:
+        table.add_column(d, justify="right")
+    table.add_column("total", justify="right")
+    for r, counts in sorted(breakdown(chosen).items()):
+        table.add_row(r, *[str(counts.get(d, 0)) for d in DIFFICULTY_MIX], str(sum(counts.values())))
+    totals = [sum(1 for c in chosen if c["difficulty"] == d) for d in DIFFICULTY_MIX]
+    table.add_row("total", *[str(t) for t in totals], str(len(chosen)), style="bold")
+    console.print(table)
+    if len(chosen) < size:
+        console.print(f"[yellow]only {len(chosen)} instances satisfy the constraints[/]")

@@ -1,0 +1,36 @@
+# SWE-bench/SWE-bench_Verified subset: size=30 seed=20260929 cap_per_repo=7
+# repos: django/django, pytest-dev/pytest, pylint-dev/pylint, sphinx-doc/sphinx, sympy/sympy, pallets/flask, pydata/xarray
+# difficulty mix: <15 min fix 40%, 15 min - 1 hour 50%, 1-4 hours 10%
+# excluded: evals/subsets/smoke5.txt
+# regenerate: agent subset -o evals/subsets/verified30.txt --size 30 --seed 20260929 --cap 7 -x evals/subsets/smoke5.txt
+
+django__django-11179                 # django/django v3.0 · <15 min fix
+django__django-12406                 # django/django v3.1 · 15 min - 1 hour
+django__django-15380                 # django/django v4.1 · <15 min fix
+django__django-15731                 # django/django v4.2 · 15 min - 1 hour
+django__django-16136                 # django/django v4.2 · 15 min - 1 hour
+pydata__xarray-2905                  # pydata/xarray v0.12 · 15 min - 1 hour
+pydata__xarray-3095                  # pydata/xarray v0.12 · 15 min - 1 hour
+pydata__xarray-3993                  # pydata/xarray v0.12 · 1-4 hours
+pydata__xarray-4629                  # pydata/xarray v0.12 · <15 min fix
+pydata__xarray-4687                  # pydata/xarray v0.12 · 15 min - 1 hour
+pylint-dev__pylint-4604              # pylint-dev/pylint v2.9 · 15 min - 1 hour
+pylint-dev__pylint-4661              # pylint-dev/pylint v2.10 · 15 min - 1 hour
+pylint-dev__pylint-4970              # pylint-dev/pylint v2.10 · <15 min fix
+pylint-dev__pylint-6528              # pylint-dev/pylint v2.14 · 15 min - 1 hour
+pylint-dev__pylint-7277              # pylint-dev/pylint v2.15 · <15 min fix
+pytest-dev__pytest-6197              # pytest-dev/pytest v5.2 · 1-4 hours
+pytest-dev__pytest-6202              # pytest-dev/pytest v5.2 · <15 min fix
+pytest-dev__pytest-7521              # pytest-dev/pytest v6.0 · <15 min fix
+pytest-dev__pytest-7982              # pytest-dev/pytest v6.2 · <15 min fix
+pytest-dev__pytest-8399              # pytest-dev/pytest v6.3 · 15 min - 1 hour
+sphinx-doc__sphinx-7985              # sphinx-doc/sphinx v3.2 · 15 min - 1 hour
+sphinx-doc__sphinx-8035              # sphinx-doc/sphinx v3.2 · 15 min - 1 hour
+sphinx-doc__sphinx-8638              # sphinx-doc/sphinx v4.0 · 15 min - 1 hour
+sphinx-doc__sphinx-9281              # sphinx-doc/sphinx v4.1 · <15 min fix
+sphinx-doc__sphinx-9698              # sphinx-doc/sphinx v4.3 · <15 min fix
+sympy__sympy-18199                   # sympy/sympy v1.6 · 1-4 hours
+sympy__sympy-18211                   # sympy/sympy v1.6 · 15 min - 1 hour
+sympy__sympy-18763                   # sympy/sympy v1.5 · <15 min fix
+sympy__sympy-24066                   # sympy/sympy v1.12 · 15 min - 1 hour
+sympy__sympy-24562                   # sympy/sympy v1.12 · <15 min fix
