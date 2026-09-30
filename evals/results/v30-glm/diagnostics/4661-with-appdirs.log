@@ -1,0 +1,30 @@
+......................................F............                      [100%]
+=================================== FAILURES ===================================
+_______________________________ test_pylint_home _______________________________
+
+    @pytest.mark.usefixtures("pop_pylintrc")
+    def test_pylint_home():
+        uhome = os.path.expanduser("~")
+        if uhome == "~":
+            expected = ".pylint.d"
+        else:
+            expected = appdirs.user_cache_dir("pylint")
+>       assert config.PYLINT_HOME == expected
+E       AssertionError: assert '/root/.local/share/pylint' == '/root/.cache/pylint'
+E         - /root/.cache/pylint
+E         ?          ^
+E         + /root/.local/share/pylint
+E         ?        ++  ^^^ ++
+
+tests/lint/unittest_lint.py:636: AssertionError
+=============================== warnings summary ===============================
+../opt/miniconda3/envs/testbed/lib/python3.9/site-packages/astroid/interpreter/_import/util.py:6
+  /opt/miniconda3/envs/testbed/lib/python3.9/site-packages/astroid/interpreter/_import/util.py:6: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    import pkg_resources
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+=========================== short test summary info ============================
+FAILED tests/lint/unittest_lint.py::test_pylint_home - AssertionError: assert...
+1 failed, 50 passed, 1 warning in 0.73s
+
+[exit code 1]

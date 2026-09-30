@@ -47,6 +47,10 @@ def image_name(instance: dict) -> str:
     return name if ":" in name.rsplit("/", 1)[-1] else name + ":latest"
 
 
+def image_present(image: str) -> bool:
+    return subprocess.run(["docker", "image", "inspect", image], capture_output=True).returncode == 0
+
+
 def task_text(instance: dict) -> str:
     # only the issue text: hints, the test patch and the test names stay hidden from the agent
     return TASK_TEMPLATE.format(repo=instance["repo"], problem_statement=instance["problem_statement"].strip())
@@ -169,6 +173,13 @@ def evaluate(
 
     harness_run_id = None
     if judge and ordered:
+        by_id = {i["instance_id"]: i for i in instances}
+        missing = [r.instance_id for r in ordered if not image_present(image_name(by_id[r.instance_id]))]
+        if missing:
+            log(f"{len(missing)} image(s) missing locally; the harness will build them from the task repo")
+        else:
+            # with a task repo the harness rebuilds every image, whether or not it already exists
+            task_repo = None
         verdicts, harness_run_id = judge_predictions(
             predictions_path, [r.instance_id for r in ordered], run_id, dataset, harness_dir, task_repo, judge_workers, log,
         )

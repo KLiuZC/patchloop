@@ -4,6 +4,24 @@
 
 当前状态：一个 `bash` 工具；命令可以在本机跑，也可以在一次性的 Docker 容器里跑；无 context 压缩。
 
+## 已完成的评测
+
+SWE-bench Verified 固定 30 题子集（6 个仓库各 5 题，gold 校验 30/30 通过）：
+
+| 配置 | 解决数 | 解决率 | 每遍估算费用 |
+| --- | --- | --- | --- |
+| DeepSeek flash + agent，3 遍 | 20、19、20 / 30 | 均值 **65.6%**，样本标准差 1.9 个百分点 | 平均 ¥1.69 |
+| GLM flash + agent，1 遍 | 20/30 | **66.7%** | ¥4.05 |
+| DeepSeek flash 单次直出，1 遍 | 4/30 | **13.3%** | ¥3.70 |
+
+这是特定子集的成绩，不代表 Verified 全集。单次直出只看题面，分差包含源码访问、工具执行与多轮反馈的共同收益。API 超时与空补丁保留在分母中，人工诊断不补分。费用按内置价格表估算，不是账单；标准差不是置信区间。
+
+详细结果、逐题表、判卷限制、源码快照及下一项实验约定见 [4B 基线归档](evals/reports/4b-baseline/README.md)。无需模型或 Docker 即可重新生成统计表：
+
+```bash
+python3 evals/summarize_baseline.py
+```
+
 ## 运行
 
 ```bash
@@ -40,13 +58,13 @@ uv run agent eval -r smoke-deepseek -f evals/subsets/smoke5.txt -p deepseek     
 uv run agent eval -r smoke-single-shot -f evals/subsets/smoke5.txt -p deepseek --mode single-shot   # 无工具、一次直出的基线
 ```
 
-题目子集用 `agent subset` 生成，固定随机种子、按难度分层、每个仓库封顶，文件头里带着重新生成的命令。`evals/subsets/smoke5.txt` 是开发集（调提示词、试机制都在它上面看），`evals/subsets/verified30.txt` 是报告集（只用来出数字，不在它上面调东西）：
+题目子集用 `agent subset` 生成，固定随机种子、按难度分层、每个仓库封顶，文件头里带着重新生成的命令。`evals/subsets/smoke5.txt` 用于冒烟与开发。`evals/subsets/verified30.txt` 已完成基线评测；因为失败轨迹已经用于指导后续设计，此后作为开发/对比集，最终泛化验证需另留未用于调参的题单：
 
 ```bash
 uv run agent subset -o evals/subsets/verified30.txt --size 30 --seed 20260929 --cap 7 -x evals/subsets/smoke5.txt
 ```
 
-每道题在自己的镜像里起一个容器，agent 只看到 issue 原文（hints、隐藏测试、标准答案都不给），改动收集成补丁写进 `evals/results/<run-id>/predictions.jsonl`，再交给官方判卷程序打分。汇总在 `summary.json`（含每题轮数、token、缓存命中、费用估算、是否解决），轨迹与补丁在同目录的 `traj/`（不进 git）。同一个 run-id 重跑会跳过已答过的题。
+每道题在自己的镜像里起一个容器，agent 只看到 issue 原文（hints、隐藏测试、标准答案都不给），改动收集成补丁写进 `evals/results/<run-id>/predictions.jsonl`，再交给官方判卷程序打分。汇总在 `summary.json`（含每题轮数、token、缓存命中、费用估算、是否解决），轨迹与补丁在同目录的 `traj/`（不进 git）。同一个 run-id 重跑会跳过已写入答卷的题，**包括空补丁或请求失败的题**；需要重试失败题时应使用新 run-id，保留原记录。`seconds` 是各题耗时总和，并行运行时不等于全程耗时。
 
 ## 结构
 
@@ -66,6 +84,8 @@ examples/toy_repo/   带一个已知 bug 的玩具仓库，用于冒烟
 examples/toy_image/  玩具仓库对应的 Docker 镜像（python + git + pytest）
 evals/subsets/       题目子集（每行一个 instance id）
 evals/results/       每次评测的答卷与汇总
+evals/reports/       已冻结的基线报告、证据及源码快照
+evals/summarize_baseline.py  离线核对并重新生成 4B 统计
 tests/               项目自身的单元测试：uv run pytest
 ```
 
@@ -74,5 +94,7 @@ tests/               项目自身的单元测试：uv run pytest
 - [x] 最小 loop + bash 工具
 - [x] Docker 沙箱
 - [x] SWE-bench Verified 子集评测流水线
-- [ ] 扩大子集、基线对比、失败归因
+- [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
+- [ ] 剩余轮数提醒的单变量实验
 - [ ] context 管理与消融
+- [ ] 轨迹查看器、源码可见的单次直出对照、未用于调参的新题验证

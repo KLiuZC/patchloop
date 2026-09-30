@@ -1,0 +1,30 @@
+{"instance_id": "django__django-11179", "model_name_or_path": "v30-single-shot", "model_patch": "diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py\nindex 92fe4affb9..3a462f1c4c 100755\n--- a/django/db/models/deletion.py\n+++ b/django/db/models/deletion.py\n@@ -277,6 +277,7 @@ class Collector:\n             if self.can_fast_delete(instance):\n                 with transaction.mark_for_rollback_on_error():\n                     count = sql.DeleteQuery(model).delete_batch([instance.pk], self.using)\n+                setattr(instance, model._meta.pk.attname, None)\n                 return count, {model._meta.label: count}\n \n         with transaction.atomic(using=self.using, savepoint=False):\n"}
+{"instance_id": "django__django-12406", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "django__django-15380", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "django__django-15731", "model_name_or_path": "v30-single-shot", "model_patch": "diff --git a/django/db/models/manager.py b/django/db/models/manager.py\nindex e37e56cd17..467e79f9b9 100755\n--- a/django/db/models/manager.py\n+++ b/django/db/models/manager.py\n@@ -1,5 +1,6 @@\n import copy\n import inspect\n+from functools import wraps\n from importlib import import_module\n \n from django.db import router\n@@ -81,11 +82,10 @@ class BaseManager:\n     @classmethod\n     def _get_queryset_methods(cls, queryset_class):\n         def create_method(name, method):\n+            @wraps(method)\n             def manager_method(self, *args, **kwargs):\n                 return getattr(self.get_queryset(), name)(*args, **kwargs)\n \n-            manager_method.__name__ = method.__name__\n-            manager_method.__doc__ = method.__doc__\n             return manager_method\n \n         new_methods = {}\n"}
+{"instance_id": "django__django-16136", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pydata__xarray-2905", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pydata__xarray-3095", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pydata__xarray-3993", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pydata__xarray-4629", "model_name_or_path": "v30-single-shot", "model_patch": "diff --git a/xarray/core/merge.py b/xarray/core/merge.py\nindex ca4e29b6..dff00804 100755\n--- a/xarray/core/merge.py\n+++ b/xarray/core/merge.py\n@@ -501,7 +501,7 @@ def merge_attrs(variable_attrs, combine_attrs):\n     if combine_attrs == \"drop\":\n         return {}\n     elif combine_attrs == \"override\":\n-        return variable_attrs[0]\n+        return dict(variable_attrs[0])\n     elif combine_attrs == \"no_conflicts\":\n         result = dict(variable_attrs[0])\n         for attrs in variable_attrs[1:]:\n"}
+{"instance_id": "pydata__xarray-4687", "model_name_or_path": "v30-single-shot", "model_patch": "diff --git a/xarray/core/computation.py b/xarray/core/computation.py\nindex 9fe93c88..0066f196 100755\n--- a/xarray/core/computation.py\n+++ b/xarray/core/computation.py\n@@ -1817,6 +1817,7 @@ def where(cond, x, y):\n         join=\"exact\",\n         dataset_join=\"exact\",\n         dask=\"allowed\",\n+        keep_attrs=True,\n     )\n \n \n"}
+{"instance_id": "pylint-dev__pylint-4604", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pylint-dev__pylint-4661", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pylint-dev__pylint-4970", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pylint-dev__pylint-6528", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pylint-dev__pylint-7277", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pytest-dev__pytest-6197", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pytest-dev__pytest-6202", "model_name_or_path": "v30-single-shot", "model_patch": "diff --git a/src/_pytest/python.py b/src/_pytest/python.py\nindex b8b365ad3..5f2af31e2 100755\n--- a/src/_pytest/python.py\n+++ b/src/_pytest/python.py\n@@ -286,7 +286,7 @@ class PyobjMixin(PyobjContext):\n             parts.append(name)\n         parts.reverse()\n         s = \".\".join(parts)\n-        return s.replace(\".[\", \"[\")\n+        return s\n \n     def reportinfo(self):\n         # XXX caching?\n"}
+{"instance_id": "pytest-dev__pytest-7521", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pytest-dev__pytest-7982", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "pytest-dev__pytest-8399", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sphinx-doc__sphinx-7985", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sphinx-doc__sphinx-8035", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sphinx-doc__sphinx-8638", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sphinx-doc__sphinx-9281", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sphinx-doc__sphinx-9698", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sympy__sympy-18199", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sympy__sympy-18211", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sympy__sympy-18763", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sympy__sympy-24066", "model_name_or_path": "v30-single-shot", "model_patch": ""}
+{"instance_id": "sympy__sympy-24562", "model_name_or_path": "v30-single-shot", "model_patch": ""}

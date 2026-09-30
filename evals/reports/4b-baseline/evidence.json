@@ -1,0 +1,4029 @@
+{
+  "v30-deepseek-r1": {
+    "harness_run_id": "v30-deepseek-r1-0929-223426",
+    "overall": {
+      "total_instances": 30,
+      "submitted_instances": 30,
+      "completed_instances": 27,
+      "resolved_instances": 20,
+      "unresolved_instances": 7,
+      "infra_failure_instances": 0,
+      "ambiguous_failure_instances": 2,
+      "empty_patch_instances": 3,
+      "error_instances": 0,
+      "completed_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "incomplete_ids": [],
+      "empty_patch_ids": [
+        "pylint-dev__pylint-4970",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8638"
+      ],
+      "submitted_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "resolved_ids": [
+        "django__django-11179",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "unresolved_ids": [
+        "django__django-12406",
+        "pydata__xarray-3993",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763"
+      ],
+      "infra_failure_ids": [],
+      "ambiguous_failure_ids": [
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661"
+      ],
+      "failure_reasons": {
+        "pylint-dev__pylint-4604": "no_tests_collected",
+        "pylint-dev__pylint-4661": "missing_module"
+      },
+      "error_ids": [],
+      "schema_version": 2,
+      "unstopped_instances": 0,
+      "unstopped_containers": []
+    },
+    "overall_sha256": "570cc98e7198a7c6ba9ba8de99361966cdef77ba56f3d3dedb60fd619dd740c5",
+    "instances": {
+      "django__django-11179": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "260090955e844ae6fc34e005d62246dfa0d46d03439eb8b13645b7ef110e9f9c",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 40,
+        "p2p_fail": 0,
+        "test_output_sha256": "9eef5fccf24706aa555a7df3a4886d25f3e9147a95316ea8b559f465326b52cc",
+        "diagnostic_lines": []
+      },
+      "django__django-12406": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "206a3b5ee2b75756589b586c866dffede5d3d1d4e59171cae4827253eb9acf5a",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 2,
+        "p2p_pass": 165,
+        "p2p_fail": 0,
+        "test_output_sha256": "c2e1d2c0a93a2db9daf27a264937d39fcf3e75629cc0ee05f988afda88e44bfb",
+        "diagnostic_lines": [
+          {
+            "line": 37694,
+            "text": "FAILED (errors=4)"
+          }
+        ]
+      },
+      "django__django-15380": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "fa0cf4ed4049cc5a479f5f9264bbe2ba4b0ef1185703770e284216369bbd8717",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 133,
+        "p2p_fail": 0,
+        "test_output_sha256": "f3008ae7f81d31bbde385bd8b35d70e2ad0bd69d3ebb4c17ca681a78ed06a2d0",
+        "diagnostic_lines": []
+      },
+      "django__django-15731": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "24909abd414fba914cabce5dfd48b2025b22fe05b494644de0a8c9060ac43a31",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 58,
+        "p2p_fail": 0,
+        "test_output_sha256": "f2ce734a6b71453f106bcb037e5d038d980d5120c6de55b9b3efbec6555fb8ea",
+        "diagnostic_lines": []
+      },
+      "django__django-16136": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "d8b57ff8d566a2c41e33c06cc4038901cf69056dd0fb27e23660c73fd456981f",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 7,
+        "p2p_fail": 0,
+        "test_output_sha256": "88d4b8ec2dea3404c1f9ba020c2b2ef7627c3ab0fee298efbe1f4fddea96e686",
+        "diagnostic_lines": []
+      },
+      "pydata__xarray-2905": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "27b1d107a34b33256368dc7f8cf9daa6c4c36af249d527699ba174201b690850",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 364,
+        "p2p_fail": 0,
+        "test_output_sha256": "39d7dad289774c214fe9d42dc92ff2d67209ef908430995d302dc95c0bd2c23e",
+        "diagnostic_lines": [
+          {
+            "line": 2725,
+            "text": "========== 365 passed, 71 xfailed, 22 xpassed, 112 warnings in 13.12s =========="
+          }
+        ]
+      },
+      "pydata__xarray-3095": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "02f1f7007bc6108e30f6b9446ac271fc6c6d2994e3b62449b5617737bbf7eddc",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 253,
+        "p2p_fail": 0,
+        "test_output_sha256": "52441733ada6f93e69ecfcd185d77f6db44cfbd847fce6d685a28d8ea3bc4a3f",
+        "diagnostic_lines": [
+          {
+            "line": 2315,
+            "text": "================ 254 passed, 11 xfailed, 248 warnings in 4.23s ================="
+          }
+        ]
+      },
+      "pydata__xarray-3993": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a68e74d29718e8386fb9a5792aa4a2047a4b3830067f069bbeac6eaf4d0d8f8f",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 2,
+        "p2p_pass": 2398,
+        "p2p_fail": 0,
+        "test_output_sha256": "b8741570960d0d0ed54c5a19cccda2d7b1705d637f106ef03e8040f4ed14817c",
+        "diagnostic_lines": [
+          {
+            "line": 2376,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 2478,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 2585,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 2692,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 5671,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_sel_categorical - Impo..."
+          },
+          {
+            "line": 5672,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_sel_categorical_error"
+          },
+          {
+            "line": 5673,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_categorical_multiindex"
+          },
+          {
+            "line": 5674,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_from_dataframe_categorical"
+          },
+          {
+            "line": 5675,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_polyfit_warnings - ass..."
+          },
+          {
+            "line": 5676,
+            "text": "FAILED xarray/tests/test_dataset.py::test_integrate[True] - Failed: DID NOT W..."
+          },
+          {
+            "line": 5677,
+            "text": "FAILED xarray/tests/test_dataset.py::test_integrate[False] - Failed: DID NOT ..."
+          },
+          {
+            "line": 5678,
+            "text": "= 7 failed, 2444 passed, 710 skipped, 115 xfailed, 13 xpassed, 707 warnings in 42.40s ="
+          }
+        ]
+      },
+      "pydata__xarray-4629": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "04d29d5089c7f5a4278ff35cd849c3920c818232c7a9ba34f66099d217cc2933",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 32,
+        "p2p_fail": 0,
+        "test_output_sha256": "a29421a93bafb2e58aa8277034078bc14369d156b79ee130e2cfc186df39f7b8",
+        "diagnostic_lines": [
+          {
+            "line": 2224,
+            "text": "======================== 33 passed, 9 warnings in 3.47s ========================"
+          }
+        ]
+      },
+      "pydata__xarray-4687": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "08ee65862e19ccf2f96ea0d3b57a8369d6ff1bd6c7994da1ece84432f9072471",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 1717,
+        "p2p_fail": 0,
+        "test_output_sha256": "df87b176cdb2ebc16804d335f0ddcaebe84d87f1ef20b61fa1d17591ab177ad9",
+        "diagnostic_lines": [
+          {
+            "line": 4516,
+            "text": "FAILED xarray/tests/test_units.py::TestPintWrappingDask::test_duck_array_ops"
+          },
+          {
+            "line": 4517,
+            "text": "= 1 failed, 1760 passed, 693 skipped, 112 xfailed, 12 xpassed, 365 warnings in 30.73s ="
+          }
+        ]
+      },
+      "pylint-dev__pylint-4604": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "63a8c07aa86b2b70aaec8c059c2c9a8a1df0a794f32ed62ec5e215f43a7500ed",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 21,
+        "p2p_pass": 0,
+        "p2p_fail": 0,
+        "test_output_sha256": "a1b57aeedee6b5823e9fc8e3a489e7ba17eb6fc726f7c08c25d2f4c5eedc808e",
+        "diagnostic_lines": [
+          {
+            "line": 9447,
+            "text": "E   ImportError: cannot import name 'IS_PYPY' from 'pylint.constants' (/testbed/pylint/constants.py)"
+          }
+        ]
+      },
+      "pylint-dev__pylint-4661": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "6c79419c212d0763acb5e6de78eba48cfb9ec8dfbfc9e17593a669f0c609b27b",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 0,
+        "p2p_fail": 0,
+        "test_output_sha256": "9bf26229c38bd204a244a69ef778cb2612b396f5341f82588b86cbf3990f30c2",
+        "diagnostic_lines": [
+          {
+            "line": 9710,
+            "text": "E   ModuleNotFoundError: No module named 'appdirs'"
+          }
+        ]
+      },
+      "pylint-dev__pylint-4970": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pylint-dev__pylint-6528": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "d06bb411ff2ae8a97806d2cce4e2566020a7f280af139842c287131e9714eff3",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 4,
+        "f2p_fail": 0,
+        "p2p_pass": 171,
+        "p2p_fail": 0,
+        "test_output_sha256": "d8f20c7290c85d4b12af2b8818d0084756dc5aba43d124e59f6d17ce2849db24",
+        "diagnostic_lines": [
+          {
+            "line": 17408,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config - a..."
+          },
+          {
+            "line": 17409,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config_disable_symbolic_names"
+          },
+          {
+            "line": 17410,
+            "text": "============= 2 failed, 175 passed, 1 xfailed, 1 warning in 15.05s ============="
+          }
+        ]
+      },
+      "pylint-dev__pylint-7277": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "332e705bb7573c9f4fdd2da9141bfe3014c0e2659282f8f6a5b28e26ea7ff736",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 122,
+        "p2p_fail": 0,
+        "test_output_sha256": "efbdb64a1d1ecab896c04561217e9b0a017277d867838413fd532985cf3c1ddb",
+        "diagnostic_lines": [
+          {
+            "line": 22110,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config - a..."
+          },
+          {
+            "line": 22111,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config_disable_symbolic_names"
+          },
+          {
+            "line": 22112,
+            "text": "================== 2 failed, 123 passed, 1 xfailed in 15.10s ==================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-6197": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "b0f58adcb2c5d9908f7441a7f95570634e72a2514bbafeab5d1b075b271fa0f8",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 145,
+        "p2p_fail": 0,
+        "test_output_sha256": "0a178b0d9f34cdbb9a536e058ec4b4b534b48435bcffef66493e73a0fd3cc76d",
+        "diagnostic_lines": [
+          {
+            "line": 6238,
+            "text": "============== 1 failed, 1 skipped, 1 xfailed, 1 xpassed in 0.01s =============="
+          },
+          {
+            "line": 6258,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 6290,
+            "text": "FAILED test_reportchars_all.py::test_1 - assert 0"
+          },
+          {
+            "line": 6291,
+            "text": "========= 1 failed, 1 skipped, 1 xfailed, 1 xpassed, 1 error in 0.01s =========="
+          },
+          {
+            "line": 6311,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 6332,
+            "text": "========================== 1 passed, 2 error in 0.01s =========================="
+          },
+          {
+            "line": 6346,
+            "text": "======================== 1 skipped, 1 xfailed in 0.01s ========================="
+          },
+          {
+            "line": 6390,
+            "text": "============================== 1 xfailed in 0.01s =============================="
+          },
+          {
+            "line": 6413,
+            "text": "========================= 1 passed, 1 skipped in 0.01s ========================="
+          },
+          {
+            "line": 6442,
+            "text": "============================== 1 xfailed in 0.01s =============================="
+          },
+          {
+            "line": 6452,
+            "text": "============================== 1 xfailed in 0.03s =============================="
+          },
+          {
+            "line": 6498,
+            "text": "============================== 1 xfailed in 0.02s =============================="
+          },
+          {
+            "line": 6517,
+            "text": "FAILED test_summary_list_after_errors.py::test_fail - assert 0"
+          },
+          {
+            "line": 6518,
+            "text": "============================== 1 failed in 0.01s ==============================="
+          },
+          {
+            "line": 6670,
+            "text": "======================== 148 passed, 1 xfailed in 4.58s ========================"
+          }
+        ]
+      },
+      "pytest-dev__pytest-6202": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "85e3c90a12767e8f6befa75818e9e248208024f4f7d0e4253393ce3a14ee93c7",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 72,
+        "p2p_fail": 0,
+        "test_output_sha256": "023291a7f7e546ef4be90978928bb4526a80fdfaba45a1e62096c12fb61e47d7",
+        "diagnostic_lines": [
+          {
+            "line": 5272,
+            "text": "========================== 1 failed, 2 error in 0.02s =========================="
+          },
+          {
+            "line": 5292,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 5378,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5388,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5408,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5419,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5430,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5450,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5460,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5477,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5489,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5501,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5526,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5536,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5613,
+            "text": "======================== 73 passed, 1 xfailed in 2.54s ========================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-7521": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "72bab5471a7b606c373c491a25227becbf1b0b964db0523ea00acbc81fff1f72",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 125,
+        "p2p_fail": 0,
+        "test_output_sha256": "f275a658982a131f0f26c4c50bb4f1206825dda5b1b33525a6a2a2f3209e8741",
+        "diagnostic_lines": [
+          {
+            "line": 4319,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4331,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4343,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4395,
+            "text": "FAILED test_simple_only_fd.py::test_x - assert 0"
+          },
+          {
+            "line": 4396,
+            "text": "============================== 1 failed in 0.02s ==============================="
+          },
+          {
+            "line": 4408,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4432,
+            "text": "FAILED test_close_and_capture_again.py::test_capture_again - assert 0"
+          },
+          {
+            "line": 4433,
+            "text": "========================= 1 failed, 1 passed in 0.02s =========================="
+          },
+          {
+            "line": 4445,
+            "text": "============================== 1 passed in 0.28s ==============================="
+          },
+          {
+            "line": 4465,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4481,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4497,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4521,
+            "text": "FAILED test_logging_while_collecting.py::test_logging - assert False"
+          },
+          {
+            "line": 4522,
+            "text": "============================== 1 failed in 0.01s ==============================="
+          },
+          {
+            "line": 4653,
+            "text": "================== 125 passed, 3 skipped, 1 xfailed in 7.44s ==================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-7982": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "ad00839894c7f25bd398b6b4fa423f3ed6bcc6f9a36986779c1201b2f227ceae",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 78,
+        "p2p_fail": 0,
+        "test_output_sha256": "a50a1c04aa7f6b1610028ff86e5de131feb0979af594973fc4a21399f4194c1b",
+        "diagnostic_lines": [
+          {
+            "line": 5326,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5336,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5353,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5365,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5377,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5404,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5414,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5426,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5437,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5448,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5464,
+            "text": "E       ModuleNotFoundError: No module named 'foo'"
+          },
+          {
+            "line": 5468,
+            "text": "FAILED tests/test_foo.py::test_check - ModuleNotFoundError: No module named '..."
+          },
+          {
+            "line": 5469,
+            "text": "============================== 1 failed in 0.00s ==============================="
+          },
+          {
+            "line": 5497,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5580,
+            "text": "======================== 79 passed, 1 xfailed in 1.94s ========================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-8399": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "3b7a34026831337f274388d6a84d2518b26618d11b0ee9267938f4abb3dfdc38",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 59,
+        "p2p_fail": 0,
+        "test_output_sha256": "c163b89eb0ed8474fdf2f8a3cf2d08b09822b95625b1e3c6ee3688f3b9ee1875",
+        "diagnostic_lines": [
+          {
+            "line": 4663,
+            "text": "============================== 2 passed in 0.04s ==============================="
+          },
+          {
+            "line": 4707,
+            "text": "FAILED test_unittest_asyncio.py::AsyncArguments::test_something_async_fails"
+          },
+          {
+            "line": 4708,
+            "text": "========================= 1 failed, 2 passed in 0.02s =========================="
+          },
+          {
+            "line": 4718,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4744,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 4767,
+            "text": "========================== 3 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 4777,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4813,
+            "text": "FAILED test_do_cleanups_on_setup_failure.py::MyTestCase::test_one - Assertion..."
+          },
+          {
+            "line": 4814,
+            "text": "FAILED test_do_cleanups_on_setup_failure.py::MyTestCase::test_two - Assertion..."
+          },
+          {
+            "line": 4815,
+            "text": "========================= 2 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4845,
+            "text": "FAILED test_do_cleanups_on_teardown_failure.py::MyTestCase::test_one - Assert..."
+          },
+          {
+            "line": 4846,
+            "text": "FAILED test_do_cleanups_on_teardown_failure.py::MyTestCase::test_two - Assert..."
+          },
+          {
+            "line": 4847,
+            "text": "========================= 2 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4865,
+            "text": "========================= 1 passed, 1 warning in 0.01s ========================="
+          },
+          {
+            "line": 4930,
+            "text": "======================== 60 passed, 30 skipped in 1.97s ========================"
+          }
+        ]
+      },
+      "sphinx-doc__sphinx-7985": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-8035": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a61d43cc898fa023d28d170b93cda7a3696440855a16d988b463d6265d227641",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 2,
+        "p2p_fail": 0,
+        "test_output_sha256": "44fb53a4331ec0fd64cdd96cb7ea1ce072afec6acc99287b5e28d18ddac1567e",
+        "diagnostic_lines": [
+          {
+            "line": 9221,
+            "text": "======================== 3 passed, 7 warnings in 0.33s ========================="
+          }
+        ]
+      },
+      "sphinx-doc__sphinx-8638": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-9281": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "aa6d62a7c5541c7c24fcff59ed0736efd410008d6ef8367ddacacb41c24dc357",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 38,
+        "p2p_fail": 0,
+        "test_output_sha256": "76f68bfc2abd670ea4dbb808ddbac75c50646bdd58820d743d27abaa4199bf7e",
+        "diagnostic_lines": []
+      },
+      "sphinx-doc__sphinx-9698": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a3ccb4485bbb0edb30787fcc8ae474c4f1ee3feab77f1f004aef2b9d6f0e9693",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 45,
+        "p2p_fail": 0,
+        "test_output_sha256": "1287e3a559000a5c2a62f86d4fbe3458b71a9d3e2bb3294328bad9c5b19f3efd",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-18199": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "c69d469bf6885c2f20bb5654f7456a482698bbb4fe3f8bb6fb01045d8a387218",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 113,
+        "p2p_fail": 0,
+        "test_output_sha256": "0f5508cea1bfa09f640bc40d7d1d6209cf0c20ab432b465868707f1efc357195",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-18211": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "7c2ddc4ed0370806fd34cebcaa3d267d2fa6d6d0b8188083859ef50de06699b4",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 54,
+        "p2p_fail": 0,
+        "test_output_sha256": "d029893a704d775a92d30ca6dbec639ae033291181c8edd36061874c8c9df13a",
+        "diagnostic_lines": [
+          {
+            "line": 10384,
+            "text": "=== tests finished: 55 passed, 1 failed, 2 expected to fail, in 4.87 seconds ==="
+          }
+        ]
+      },
+      "sympy__sympy-18763": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "bc1ae6e5fcde4951406b72b001049d34a1ca92c8e43e63a75a195c707d06bafb",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 141,
+        "p2p_fail": 0,
+        "test_output_sha256": "27664250dc8cce8c503d29a6740cab5b5186464c585ed4d6d3b87d9dd0ff663f",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-24066": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "9b8432cbc78424cf1166d5296e9154205de84323f2e3abd5d191552b1d9e53f1",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 30,
+        "p2p_fail": 0,
+        "test_output_sha256": "4298945b2308a14fe34bd9479c5fb9ff08780f11a3df1d57f53c7a3c8a8fa374",
+        "diagnostic_lines": [
+          {
+            "line": 11874,
+            "text": "======== tests finished: 32 passed, 1 expected to fail, in 1.20 seconds ========"
+          }
+        ]
+      },
+      "sympy__sympy-24562": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "5faba6a015869f9a191819c96913955280b9b2b967ddc21fb5100c40b13ada33",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 105,
+        "p2p_fail": 0,
+        "test_output_sha256": "6a7d7e13a27082f5002237d7653e754da459102c0f8714a4c90e62012f7d9efd",
+        "diagnostic_lines": [
+          {
+            "line": 11694,
+            "text": "== tests finished: 107 passed, 1 skipped, 1 expected to fail, in 3.40 seconds =="
+          }
+        ]
+      }
+    }
+  },
+  "v30-deepseek-r2": {
+    "harness_run_id": "v30-deepseek-r2-0929-235138",
+    "overall": {
+      "total_instances": 30,
+      "submitted_instances": 30,
+      "completed_instances": 24,
+      "resolved_instances": 19,
+      "unresolved_instances": 5,
+      "infra_failure_instances": 0,
+      "ambiguous_failure_instances": 1,
+      "empty_patch_instances": 6,
+      "error_instances": 0,
+      "completed_ids": [
+        "django__django-11179",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "incomplete_ids": [],
+      "empty_patch_ids": [
+        "django__django-12406",
+        "pylint-dev__pylint-4661",
+        "pytest-dev__pytest-6197",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638"
+      ],
+      "submitted_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "resolved_ids": [
+        "django__django-11179",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "unresolved_ids": [
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4970",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763"
+      ],
+      "infra_failure_ids": [],
+      "ambiguous_failure_ids": [
+        "pylint-dev__pylint-4604"
+      ],
+      "failure_reasons": {
+        "pylint-dev__pylint-4604": "no_tests_collected"
+      },
+      "error_ids": [],
+      "schema_version": 2,
+      "unstopped_instances": 0,
+      "unstopped_containers": []
+    },
+    "overall_sha256": "71caccfd6ea3d7505fb015ae74b1dff38bd4d9827acef00efa24352e78e4a220",
+    "instances": {
+      "django__django-11179": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "260090955e844ae6fc34e005d62246dfa0d46d03439eb8b13645b7ef110e9f9c",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 40,
+        "p2p_fail": 0,
+        "test_output_sha256": "d68636847e83dc3813e3fd9c6a6a5509089e092e5b64a46d61aa0c188006357b",
+        "diagnostic_lines": []
+      },
+      "django__django-12406": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "django__django-15380": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "fa0cf4ed4049cc5a479f5f9264bbe2ba4b0ef1185703770e284216369bbd8717",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 133,
+        "p2p_fail": 0,
+        "test_output_sha256": "575002eadf219230cf0474a6710d40cb5abea372a6e1d193202663ba91196a3c",
+        "diagnostic_lines": []
+      },
+      "django__django-15731": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "24909abd414fba914cabce5dfd48b2025b22fe05b494644de0a8c9060ac43a31",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 58,
+        "p2p_fail": 0,
+        "test_output_sha256": "224331f392a44db33cfde34492e0683a4e31a9ef8d0ac6f8e39ce5bfc0b1f381",
+        "diagnostic_lines": []
+      },
+      "django__django-16136": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "d8b57ff8d566a2c41e33c06cc4038901cf69056dd0fb27e23660c73fd456981f",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 7,
+        "p2p_fail": 0,
+        "test_output_sha256": "6a275dae109099edcfe8024b3223119cbc9bead7c804a1d110a87aedd443aa26",
+        "diagnostic_lines": []
+      },
+      "pydata__xarray-2905": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "27b1d107a34b33256368dc7f8cf9daa6c4c36af249d527699ba174201b690850",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 364,
+        "p2p_fail": 0,
+        "test_output_sha256": "53c218698ae2ae2a51f3e08d99038fded1dbcf681f3a657b89340089b94fe128",
+        "diagnostic_lines": [
+          {
+            "line": 2725,
+            "text": "========== 365 passed, 71 xfailed, 22 xpassed, 112 warnings in 13.36s =========="
+          }
+        ]
+      },
+      "pydata__xarray-3095": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "02f1f7007bc6108e30f6b9446ac271fc6c6d2994e3b62449b5617737bbf7eddc",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 253,
+        "p2p_fail": 0,
+        "test_output_sha256": "cc066ff39166eea499c1e6871a9112a47f43012d09d2ef7559d07d7429360b3d",
+        "diagnostic_lines": [
+          {
+            "line": 2315,
+            "text": "================ 254 passed, 11 xfailed, 248 warnings in 4.86s ================="
+          }
+        ]
+      },
+      "pydata__xarray-3993": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "cdbfbe61848e8765f61cbad6e74e4e7855e8c6dba960c5ff434ffb8feecb5975",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 2398,
+        "p2p_fail": 0,
+        "test_output_sha256": "ec66fdfc8f44eaa2f704df4dcf6355ece26da9e8727a0ccaab8bfea7096e4794",
+        "diagnostic_lines": [
+          {
+            "line": 2359,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 2461,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 2568,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 2675,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 5534,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_sel_categorical - Impo..."
+          },
+          {
+            "line": 5535,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_sel_categorical_error"
+          },
+          {
+            "line": 5536,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_categorical_multiindex"
+          },
+          {
+            "line": 5537,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_from_dataframe_categorical"
+          },
+          {
+            "line": 5538,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_polyfit_warnings - ass..."
+          },
+          {
+            "line": 5539,
+            "text": "= 5 failed, 2446 passed, 710 skipped, 115 xfailed, 13 xpassed, 707 warnings in 40.99s ="
+          }
+        ]
+      },
+      "pydata__xarray-4629": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "04d29d5089c7f5a4278ff35cd849c3920c818232c7a9ba34f66099d217cc2933",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 32,
+        "p2p_fail": 0,
+        "test_output_sha256": "fbafeb24e5f64167c6a16bdaa52ec94ca5ea9a0d8eeb361995ff9d9a24ca8446",
+        "diagnostic_lines": [
+          {
+            "line": 2224,
+            "text": "======================== 33 passed, 9 warnings in 2.90s ========================"
+          }
+        ]
+      },
+      "pydata__xarray-4687": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "08ee65862e19ccf2f96ea0d3b57a8369d6ff1bd6c7994da1ece84432f9072471",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 1717,
+        "p2p_fail": 0,
+        "test_output_sha256": "34f01844b709b03941ea7ce46b449acee0c54c31c5e713208a537f6b86e47200",
+        "diagnostic_lines": [
+          {
+            "line": 4514,
+            "text": "FAILED xarray/tests/test_units.py::TestPintWrappingDask::test_duck_array_ops"
+          },
+          {
+            "line": 4515,
+            "text": "= 1 failed, 1760 passed, 693 skipped, 112 xfailed, 12 xpassed, 365 warnings in 28.57s ="
+          }
+        ]
+      },
+      "pylint-dev__pylint-4604": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "63a8c07aa86b2b70aaec8c059c2c9a8a1df0a794f32ed62ec5e215f43a7500ed",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 21,
+        "p2p_pass": 0,
+        "p2p_fail": 0,
+        "test_output_sha256": "82ddfc4703d991b53b9227c44cc8bdb48bd6b9a126b35fba75dbeea2e17a9209",
+        "diagnostic_lines": [
+          {
+            "line": 9430,
+            "text": "E   ImportError: cannot import name 'IS_PYPY' from 'pylint.constants' (/testbed/pylint/constants.py)"
+          }
+        ]
+      },
+      "pylint-dev__pylint-4661": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pylint-dev__pylint-4970": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "7314f56ed9edb793f4fec706b4935d00fe111139a949a57c4b823f7d957e3edc",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 17,
+        "p2p_fail": 0,
+        "test_output_sha256": "0bacf84937842a5513613365b71962d5af4f9d18527ec895d8d46df7671136e6",
+        "diagnostic_lines": [
+          {
+            "line": 9774,
+            "text": "FAILED tests/checkers/unittest_similar.py::test_set_duplicate_lines_to_zero"
+          },
+          {
+            "line": 9775,
+            "text": "=================== 1 failed, 17 passed, 3 warnings in 0.06s ==================="
+          }
+        ]
+      },
+      "pylint-dev__pylint-6528": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "d06bb411ff2ae8a97806d2cce4e2566020a7f280af139842c287131e9714eff3",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 4,
+        "f2p_fail": 0,
+        "p2p_pass": 171,
+        "p2p_fail": 0,
+        "test_output_sha256": "545ac9dfe21c7d81c5639bb4a3659d82affd229d165635502b3ed7c2a367a917",
+        "diagnostic_lines": [
+          {
+            "line": 17413,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config - a..."
+          },
+          {
+            "line": 17414,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config_disable_symbolic_names"
+          },
+          {
+            "line": 17415,
+            "text": "============= 2 failed, 175 passed, 1 xfailed, 1 warning in 12.57s ============="
+          }
+        ]
+      },
+      "pylint-dev__pylint-7277": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "332e705bb7573c9f4fdd2da9141bfe3014c0e2659282f8f6a5b28e26ea7ff736",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 122,
+        "p2p_fail": 0,
+        "test_output_sha256": "5f06b96544829293243d9ab45f59ef55f22d7e1dc386b445068c5f324a1d60eb",
+        "diagnostic_lines": [
+          {
+            "line": 22121,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config - a..."
+          },
+          {
+            "line": 22122,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config_disable_symbolic_names"
+          },
+          {
+            "line": 22123,
+            "text": "================== 2 failed, 123 passed, 1 xfailed in 12.14s ==================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-6197": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pytest-dev__pytest-6202": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "85e3c90a12767e8f6befa75818e9e248208024f4f7d0e4253393ce3a14ee93c7",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 72,
+        "p2p_fail": 0,
+        "test_output_sha256": "9079b39ff7b5a6e73cacd465a8178446ff1426112d6fd56f977c7a73caa1e9e3",
+        "diagnostic_lines": [
+          {
+            "line": 5271,
+            "text": "========================== 1 failed, 2 error in 0.01s =========================="
+          },
+          {
+            "line": 5291,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 5377,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5387,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5407,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5418,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5429,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5449,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5459,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5476,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5488,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5500,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5525,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5535,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5612,
+            "text": "======================== 73 passed, 1 xfailed in 2.09s ========================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-7521": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "72bab5471a7b606c373c491a25227becbf1b0b964db0523ea00acbc81fff1f72",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 125,
+        "p2p_fail": 0,
+        "test_output_sha256": "4f4daf0566db06b97009ddb6dcc44a64ccb19e98c3788078b466bff9e9dc6970",
+        "diagnostic_lines": [
+          {
+            "line": 4319,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4331,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4343,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4395,
+            "text": "FAILED test_simple_only_fd.py::test_x - assert 0"
+          },
+          {
+            "line": 4396,
+            "text": "============================== 1 failed in 0.01s ==============================="
+          },
+          {
+            "line": 4408,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4432,
+            "text": "FAILED test_close_and_capture_again.py::test_capture_again - assert 0"
+          },
+          {
+            "line": 4433,
+            "text": "========================= 1 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4445,
+            "text": "============================== 1 passed in 0.17s ==============================="
+          },
+          {
+            "line": 4465,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4481,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4497,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4521,
+            "text": "FAILED test_logging_while_collecting.py::test_logging - assert False"
+          },
+          {
+            "line": 4522,
+            "text": "============================== 1 failed in 0.01s ==============================="
+          },
+          {
+            "line": 4653,
+            "text": "================== 125 passed, 3 skipped, 1 xfailed in 6.38s ==================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-7982": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "ad00839894c7f25bd398b6b4fa423f3ed6bcc6f9a36986779c1201b2f227ceae",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 78,
+        "p2p_fail": 0,
+        "test_output_sha256": "6cf0df9eba0a36cf0a89dcaaac180ed74e9b569f78511718097d559b17a28e20",
+        "diagnostic_lines": [
+          {
+            "line": 5326,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5336,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5353,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5365,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5377,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5404,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5414,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5426,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5437,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5448,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5464,
+            "text": "E       ModuleNotFoundError: No module named 'foo'"
+          },
+          {
+            "line": 5468,
+            "text": "FAILED tests/test_foo.py::test_check - ModuleNotFoundError: No module named '..."
+          },
+          {
+            "line": 5469,
+            "text": "============================== 1 failed in 0.00s ==============================="
+          },
+          {
+            "line": 5497,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5580,
+            "text": "======================== 79 passed, 1 xfailed in 1.86s ========================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-8399": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "3b7a34026831337f274388d6a84d2518b26618d11b0ee9267938f4abb3dfdc38",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 59,
+        "p2p_fail": 0,
+        "test_output_sha256": "69204c0dce4a762fb2282a126adfc61a41f074ea468b356168e290402dcfd728",
+        "diagnostic_lines": [
+          {
+            "line": 4663,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4707,
+            "text": "FAILED test_unittest_asyncio.py::AsyncArguments::test_something_async_fails"
+          },
+          {
+            "line": 4708,
+            "text": "========================= 1 failed, 2 passed in 0.02s =========================="
+          },
+          {
+            "line": 4718,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4744,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 4767,
+            "text": "========================== 3 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 4777,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4813,
+            "text": "FAILED test_do_cleanups_on_setup_failure.py::MyTestCase::test_one - Assertion..."
+          },
+          {
+            "line": 4814,
+            "text": "FAILED test_do_cleanups_on_setup_failure.py::MyTestCase::test_two - Assertion..."
+          },
+          {
+            "line": 4815,
+            "text": "========================= 2 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4845,
+            "text": "FAILED test_do_cleanups_on_teardown_failure.py::MyTestCase::test_one - Assert..."
+          },
+          {
+            "line": 4846,
+            "text": "FAILED test_do_cleanups_on_teardown_failure.py::MyTestCase::test_two - Assert..."
+          },
+          {
+            "line": 4847,
+            "text": "========================= 2 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4865,
+            "text": "========================= 1 passed, 1 warning in 0.01s ========================="
+          },
+          {
+            "line": 4930,
+            "text": "======================== 60 passed, 30 skipped in 1.70s ========================"
+          }
+        ]
+      },
+      "sphinx-doc__sphinx-7985": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-8035": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-8638": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-9281": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "aa6d62a7c5541c7c24fcff59ed0736efd410008d6ef8367ddacacb41c24dc357",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 38,
+        "p2p_fail": 0,
+        "test_output_sha256": "03ba824b041753ae354a5bf72f6d3c0221016b2c6e15078ab177750b0d3ceb47",
+        "diagnostic_lines": []
+      },
+      "sphinx-doc__sphinx-9698": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a3ccb4485bbb0edb30787fcc8ae474c4f1ee3feab77f1f004aef2b9d6f0e9693",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 45,
+        "p2p_fail": 0,
+        "test_output_sha256": "dd3096f208407f303c17bda9b2c85c7043521e6cfe3dea61f6dcf27200d6cd4e",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-18199": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "c69d469bf6885c2f20bb5654f7456a482698bbb4fe3f8bb6fb01045d8a387218",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 113,
+        "p2p_fail": 0,
+        "test_output_sha256": "5bce4685989e64570c2d564bedbaf377bce1adadf832edd16ed6d53c392bcd9a",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-18211": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "7c2ddc4ed0370806fd34cebcaa3d267d2fa6d6d0b8188083859ef50de06699b4",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 54,
+        "p2p_fail": 0,
+        "test_output_sha256": "0123129158ab383955785d50c12ca2ee32a99493dae1a77e172e66741c0ee0f3",
+        "diagnostic_lines": [
+          {
+            "line": 10385,
+            "text": "=== tests finished: 55 passed, 1 failed, 2 expected to fail, in 4.90 seconds ==="
+          }
+        ]
+      },
+      "sympy__sympy-18763": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "bc1ae6e5fcde4951406b72b001049d34a1ca92c8e43e63a75a195c707d06bafb",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 141,
+        "p2p_fail": 0,
+        "test_output_sha256": "420110aa392d8ab9626edd8091db24b523dd6c3cf981c2e4f89300227cd55641",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-24066": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "9b8432cbc78424cf1166d5296e9154205de84323f2e3abd5d191552b1d9e53f1",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 30,
+        "p2p_fail": 0,
+        "test_output_sha256": "557ddd8acb42f000c13457403da8446092b7fd3fd787a126a1b5e3875fcb8332",
+        "diagnostic_lines": [
+          {
+            "line": 11884,
+            "text": "======== tests finished: 32 passed, 1 expected to fail, in 1.07 seconds ========"
+          }
+        ]
+      },
+      "sympy__sympy-24562": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "5faba6a015869f9a191819c96913955280b9b2b967ddc21fb5100c40b13ada33",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 105,
+        "p2p_fail": 0,
+        "test_output_sha256": "6f7a3a504b1be218448f33bda5a15c23ece5d0ada42ec23e111d74df24c78d58",
+        "diagnostic_lines": [
+          {
+            "line": 11686,
+            "text": "== tests finished: 107 passed, 1 skipped, 1 expected to fail, in 3.21 seconds =="
+          }
+        ]
+      }
+    }
+  },
+  "v30-deepseek-r3": {
+    "harness_run_id": "v30-deepseek-r3-0930-002704",
+    "overall": {
+      "total_instances": 30,
+      "submitted_instances": 30,
+      "completed_instances": 27,
+      "resolved_instances": 20,
+      "unresolved_instances": 7,
+      "infra_failure_instances": 0,
+      "ambiguous_failure_instances": 2,
+      "empty_patch_instances": 3,
+      "error_instances": 0,
+      "completed_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "incomplete_ids": [],
+      "empty_patch_ids": [
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "sphinx-doc__sphinx-8638"
+      ],
+      "submitted_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "resolved_ids": [
+        "django__django-11179",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18211",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "unresolved_ids": [
+        "django__django-12406",
+        "pydata__xarray-3993",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "sphinx-doc__sphinx-7985",
+        "sympy__sympy-18199",
+        "sympy__sympy-18763"
+      ],
+      "infra_failure_ids": [],
+      "ambiguous_failure_ids": [
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661"
+      ],
+      "failure_reasons": {
+        "pylint-dev__pylint-4604": "no_tests_collected",
+        "pylint-dev__pylint-4661": "missing_module"
+      },
+      "error_ids": [],
+      "schema_version": 2,
+      "unstopped_instances": 0,
+      "unstopped_containers": []
+    },
+    "overall_sha256": "7ee82541d9a4f35bd52de335ee58d137eb36ed0412c963ce3ff4e0962657c768",
+    "instances": {
+      "django__django-11179": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "260090955e844ae6fc34e005d62246dfa0d46d03439eb8b13645b7ef110e9f9c",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 40,
+        "p2p_fail": 0,
+        "test_output_sha256": "d66c56c87d86009aca25922d900a2211f93fe271a5f10a0077b928b2f764837b",
+        "diagnostic_lines": []
+      },
+      "django__django-12406": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "fbf1267167aff1b4fc11701501a45670df48f406652e34047011300828943369",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 3,
+        "p2p_pass": 165,
+        "p2p_fail": 0,
+        "test_output_sha256": "004ccfa18fe380e0a0240882fd22e82891773bcf5968dddc99db9418a0a346e8",
+        "diagnostic_lines": [
+          {
+            "line": 37698,
+            "text": "FAILED (failures=1, errors=4)"
+          }
+        ]
+      },
+      "django__django-15380": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "fa0cf4ed4049cc5a479f5f9264bbe2ba4b0ef1185703770e284216369bbd8717",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 133,
+        "p2p_fail": 0,
+        "test_output_sha256": "02ccd1a5472e6e508004bb599b4b5b141bb7a128c57190cf3e6735a6d5d92b80",
+        "diagnostic_lines": []
+      },
+      "django__django-15731": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "24909abd414fba914cabce5dfd48b2025b22fe05b494644de0a8c9060ac43a31",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 58,
+        "p2p_fail": 0,
+        "test_output_sha256": "b96b302f39c55a1b2484702847f6ac2a870fa722d120c375d38977431fe170f5",
+        "diagnostic_lines": []
+      },
+      "django__django-16136": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "d8b57ff8d566a2c41e33c06cc4038901cf69056dd0fb27e23660c73fd456981f",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 7,
+        "p2p_fail": 0,
+        "test_output_sha256": "6cf4f7719025146471a805436eab72164a0e5d7fd3ccb3f54e1c5b4602c2a2d6",
+        "diagnostic_lines": []
+      },
+      "pydata__xarray-2905": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "27b1d107a34b33256368dc7f8cf9daa6c4c36af249d527699ba174201b690850",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 364,
+        "p2p_fail": 0,
+        "test_output_sha256": "0dc8596128539d48e81b2dd76cb36f398f31aae206168f3532bd4d78f9b2ccaf",
+        "diagnostic_lines": [
+          {
+            "line": 2725,
+            "text": "========== 365 passed, 71 xfailed, 22 xpassed, 112 warnings in 13.10s =========="
+          }
+        ]
+      },
+      "pydata__xarray-3095": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "02f1f7007bc6108e30f6b9446ac271fc6c6d2994e3b62449b5617737bbf7eddc",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 253,
+        "p2p_fail": 0,
+        "test_output_sha256": "4400989ae325a7f044de32f6617a012033f56db1249503b9d8ec4758a54ca78c",
+        "diagnostic_lines": [
+          {
+            "line": 2315,
+            "text": "================ 254 passed, 11 xfailed, 248 warnings in 4.97s ================="
+          }
+        ]
+      },
+      "pydata__xarray-3993": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a68e74d29718e8386fb9a5792aa4a2047a4b3830067f069bbeac6eaf4d0d8f8f",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 2,
+        "p2p_pass": 2398,
+        "p2p_fail": 0,
+        "test_output_sha256": "b5f6ed1ce3a221d1e4df82be24c531800c12e87fe27fc4bd8f20616b51723a06",
+        "diagnostic_lines": [
+          {
+            "line": 2355,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 2457,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 2564,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 2671,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260929' currently installed)."
+          },
+          {
+            "line": 5650,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_sel_categorical - Impo..."
+          },
+          {
+            "line": 5651,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_sel_categorical_error"
+          },
+          {
+            "line": 5652,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_categorical_multiindex"
+          },
+          {
+            "line": 5653,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_from_dataframe_categorical"
+          },
+          {
+            "line": 5654,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_polyfit_warnings - ass..."
+          },
+          {
+            "line": 5655,
+            "text": "FAILED xarray/tests/test_dataset.py::test_integrate[True] - Failed: DID NOT W..."
+          },
+          {
+            "line": 5656,
+            "text": "FAILED xarray/tests/test_dataset.py::test_integrate[False] - Failed: DID NOT ..."
+          },
+          {
+            "line": 5657,
+            "text": "= 7 failed, 2444 passed, 710 skipped, 115 xfailed, 13 xpassed, 707 warnings in 41.43s ="
+          }
+        ]
+      },
+      "pydata__xarray-4629": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "04d29d5089c7f5a4278ff35cd849c3920c818232c7a9ba34f66099d217cc2933",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 32,
+        "p2p_fail": 0,
+        "test_output_sha256": "5e24e24a7d936514c31202a341d688ac15926b0c3750b735159e2720feb2e423",
+        "diagnostic_lines": [
+          {
+            "line": 2224,
+            "text": "======================== 33 passed, 9 warnings in 3.51s ========================"
+          }
+        ]
+      },
+      "pydata__xarray-4687": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "08ee65862e19ccf2f96ea0d3b57a8369d6ff1bd6c7994da1ece84432f9072471",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 1717,
+        "p2p_fail": 0,
+        "test_output_sha256": "770474cfe59ed83a3f7def600ae40298d8f7c586a0b8a6c7e185d5feaf6d5694",
+        "diagnostic_lines": [
+          {
+            "line": 4512,
+            "text": "FAILED xarray/tests/test_units.py::TestPintWrappingDask::test_duck_array_ops"
+          },
+          {
+            "line": 4513,
+            "text": "= 1 failed, 1760 passed, 693 skipped, 112 xfailed, 12 xpassed, 365 warnings in 28.98s ="
+          }
+        ]
+      },
+      "pylint-dev__pylint-4604": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "63a8c07aa86b2b70aaec8c059c2c9a8a1df0a794f32ed62ec5e215f43a7500ed",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 21,
+        "p2p_pass": 0,
+        "p2p_fail": 0,
+        "test_output_sha256": "1b1e88b6aecc4c32eff808bb885a36640aa1e0ebfb2ec12028bface49c1531a7",
+        "diagnostic_lines": [
+          {
+            "line": 9430,
+            "text": "E   ImportError: cannot import name 'IS_PYPY' from 'pylint.constants' (/testbed/pylint/constants.py)"
+          }
+        ]
+      },
+      "pylint-dev__pylint-4661": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "6c79419c212d0763acb5e6de78eba48cfb9ec8dfbfc9e17593a669f0c609b27b",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 0,
+        "p2p_fail": 0,
+        "test_output_sha256": "674a20e1b703276aa7012edd04a1f1bcb9f479caf3ab7d5ace3783881d5ac100",
+        "diagnostic_lines": [
+          {
+            "line": 9710,
+            "text": "E   ModuleNotFoundError: No module named 'appdirs'"
+          }
+        ]
+      },
+      "pylint-dev__pylint-4970": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pylint-dev__pylint-6528": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pylint-dev__pylint-7277": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "332e705bb7573c9f4fdd2da9141bfe3014c0e2659282f8f6a5b28e26ea7ff736",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 122,
+        "p2p_fail": 0,
+        "test_output_sha256": "db0f14f2bec542871543ae91f5d06249c659f3fa3915f3eccfb14d4c992ac4f5",
+        "diagnostic_lines": [
+          {
+            "line": 22112,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config - a..."
+          },
+          {
+            "line": 22113,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config_disable_symbolic_names"
+          },
+          {
+            "line": 22114,
+            "text": "================== 2 failed, 123 passed, 1 xfailed in 12.43s ==================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-6197": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "b0f58adcb2c5d9908f7441a7f95570634e72a2514bbafeab5d1b075b271fa0f8",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 145,
+        "p2p_fail": 0,
+        "test_output_sha256": "918748694094a50afb07212a292f16d56a1fe3f12d29975fedf32f1279df5542",
+        "diagnostic_lines": [
+          {
+            "line": 6222,
+            "text": "============== 1 failed, 1 skipped, 1 xfailed, 1 xpassed in 0.01s =============="
+          },
+          {
+            "line": 6242,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 6274,
+            "text": "FAILED test_reportchars_all.py::test_1 - assert 0"
+          },
+          {
+            "line": 6275,
+            "text": "========= 1 failed, 1 skipped, 1 xfailed, 1 xpassed, 1 error in 0.01s =========="
+          },
+          {
+            "line": 6295,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 6316,
+            "text": "========================== 1 passed, 2 error in 0.01s =========================="
+          },
+          {
+            "line": 6330,
+            "text": "======================== 1 skipped, 1 xfailed in 0.01s ========================="
+          },
+          {
+            "line": 6374,
+            "text": "============================== 1 xfailed in 0.00s =============================="
+          },
+          {
+            "line": 6397,
+            "text": "========================= 1 passed, 1 skipped in 0.00s ========================="
+          },
+          {
+            "line": 6426,
+            "text": "============================== 1 xfailed in 0.01s =============================="
+          },
+          {
+            "line": 6436,
+            "text": "============================== 1 xfailed in 0.02s =============================="
+          },
+          {
+            "line": 6482,
+            "text": "============================== 1 xfailed in 0.02s =============================="
+          },
+          {
+            "line": 6501,
+            "text": "FAILED test_summary_list_after_errors.py::test_fail - assert 0"
+          },
+          {
+            "line": 6502,
+            "text": "============================== 1 failed in 0.01s ==============================="
+          },
+          {
+            "line": 6654,
+            "text": "======================== 148 passed, 1 xfailed in 3.82s ========================"
+          }
+        ]
+      },
+      "pytest-dev__pytest-6202": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "85e3c90a12767e8f6befa75818e9e248208024f4f7d0e4253393ce3a14ee93c7",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 72,
+        "p2p_fail": 0,
+        "test_output_sha256": "a537630dc4f4168d5b4c7bb7cc19a3342d2ad33dba6e7abf6639393431510847",
+        "diagnostic_lines": [
+          {
+            "line": 5271,
+            "text": "========================== 1 failed, 2 error in 0.01s =========================="
+          },
+          {
+            "line": 5291,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 5377,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5387,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5407,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5418,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5429,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5449,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5459,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5476,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5488,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5500,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5525,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5535,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5612,
+            "text": "======================== 73 passed, 1 xfailed in 2.05s ========================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-7521": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "72bab5471a7b606c373c491a25227becbf1b0b964db0523ea00acbc81fff1f72",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 125,
+        "p2p_fail": 0,
+        "test_output_sha256": "59b58784c147bd7356b76428b5b7a34e4e5b24aed94671c60d28bdc3d0055838",
+        "diagnostic_lines": [
+          {
+            "line": 4319,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4331,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4343,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4395,
+            "text": "FAILED test_simple_only_fd.py::test_x - assert 0"
+          },
+          {
+            "line": 4396,
+            "text": "============================== 1 failed in 0.01s ==============================="
+          },
+          {
+            "line": 4408,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4432,
+            "text": "FAILED test_close_and_capture_again.py::test_capture_again - assert 0"
+          },
+          {
+            "line": 4433,
+            "text": "========================= 1 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4445,
+            "text": "============================== 1 passed in 0.16s ==============================="
+          },
+          {
+            "line": 4465,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4481,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4497,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4521,
+            "text": "FAILED test_logging_while_collecting.py::test_logging - assert False"
+          },
+          {
+            "line": 4522,
+            "text": "============================== 1 failed in 0.01s ==============================="
+          },
+          {
+            "line": 4653,
+            "text": "================== 125 passed, 3 skipped, 1 xfailed in 6.58s ==================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-7982": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "ad00839894c7f25bd398b6b4fa423f3ed6bcc6f9a36986779c1201b2f227ceae",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 78,
+        "p2p_fail": 0,
+        "test_output_sha256": "b8a71d2d15b0c9981cc72e4b0f1fbd859626feea0eaec4fdfd36ccf4cbff95be",
+        "diagnostic_lines": [
+          {
+            "line": 5326,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5336,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5353,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5365,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5377,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5404,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5414,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5426,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5437,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5448,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5464,
+            "text": "E       ModuleNotFoundError: No module named 'foo'"
+          },
+          {
+            "line": 5468,
+            "text": "FAILED tests/test_foo.py::test_check - ModuleNotFoundError: No module named '..."
+          },
+          {
+            "line": 5469,
+            "text": "============================== 1 failed in 0.00s ==============================="
+          },
+          {
+            "line": 5497,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5580,
+            "text": "======================== 79 passed, 1 xfailed in 2.00s ========================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-8399": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "3b7a34026831337f274388d6a84d2518b26618d11b0ee9267938f4abb3dfdc38",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 59,
+        "p2p_fail": 0,
+        "test_output_sha256": "818fe44e0fce9f2797f8bcc8732cb492bcba8cf866338ed32138a948e42358c2",
+        "diagnostic_lines": [
+          {
+            "line": 4703,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4747,
+            "text": "FAILED test_unittest_asyncio.py::AsyncArguments::test_something_async_fails"
+          },
+          {
+            "line": 4748,
+            "text": "========================= 1 failed, 2 passed in 0.02s =========================="
+          },
+          {
+            "line": 4758,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4784,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 4807,
+            "text": "========================== 3 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 4817,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4853,
+            "text": "FAILED test_do_cleanups_on_setup_failure.py::MyTestCase::test_one - Assertion..."
+          },
+          {
+            "line": 4854,
+            "text": "FAILED test_do_cleanups_on_setup_failure.py::MyTestCase::test_two - Assertion..."
+          },
+          {
+            "line": 4855,
+            "text": "========================= 2 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4885,
+            "text": "FAILED test_do_cleanups_on_teardown_failure.py::MyTestCase::test_one - Assert..."
+          },
+          {
+            "line": 4886,
+            "text": "FAILED test_do_cleanups_on_teardown_failure.py::MyTestCase::test_two - Assert..."
+          },
+          {
+            "line": 4887,
+            "text": "========================= 2 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4905,
+            "text": "========================= 1 passed, 1 warning in 0.01s ========================="
+          },
+          {
+            "line": 4970,
+            "text": "======================== 60 passed, 30 skipped in 1.72s ========================"
+          }
+        ]
+      },
+      "sphinx-doc__sphinx-7985": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "364d5ebb2457cda5306b6337530f08503843ac01805241b76f37f0e447184abf",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 2,
+        "p2p_pass": 3,
+        "p2p_fail": 0,
+        "test_output_sha256": "1b489692f46bc9014a698688c3cd9db1f0da91c717f8aca5030b56f2b8bc8ced",
+        "diagnostic_lines": [
+          {
+            "line": 9638,
+            "text": "FAILED tests/test_build_linkcheck.py::test_defaults - assert 7 == 6"
+          },
+          {
+            "line": 9639,
+            "text": "FAILED tests/test_build_linkcheck.py::test_anchors_ignored - AssertionError: ..."
+          },
+          {
+            "line": 9640,
+            "text": "================== 2 failed, 3 passed, 192 warnings in 4.34s ==================="
+          }
+        ]
+      },
+      "sphinx-doc__sphinx-8035": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a61d43cc898fa023d28d170b93cda7a3696440855a16d988b463d6265d227641",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 2,
+        "p2p_fail": 0,
+        "test_output_sha256": "ac52a010749e159a1eeb8ed3e23ee4693bb6887e333ebc978e9052aada6607cc",
+        "diagnostic_lines": [
+          {
+            "line": 9190,
+            "text": "======================== 3 passed, 7 warnings in 0.34s ========================="
+          }
+        ]
+      },
+      "sphinx-doc__sphinx-8638": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-9281": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "aa6d62a7c5541c7c24fcff59ed0736efd410008d6ef8367ddacacb41c24dc357",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 38,
+        "p2p_fail": 0,
+        "test_output_sha256": "469832f244153917094f7c743d68558c434768981fbed77d94a7bf203e250e10",
+        "diagnostic_lines": []
+      },
+      "sphinx-doc__sphinx-9698": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a3ccb4485bbb0edb30787fcc8ae474c4f1ee3feab77f1f004aef2b9d6f0e9693",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 45,
+        "p2p_fail": 0,
+        "test_output_sha256": "16de4c28330d3d321cf112849cb3464e5d759eb2f0fd9d3d4f2985e76e679d35",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-18199": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "c69d469bf6885c2f20bb5654f7456a482698bbb4fe3f8bb6fb01045d8a387218",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 113,
+        "p2p_fail": 0,
+        "test_output_sha256": "3db5e9edfb5b099cab15187e068ef1d36ba62ab4c5f6ac16c359c0f29ff2ee65",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-18211": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "465f05e6d36c282bb8a2b64b69c86fdaae5124e5c4776b39f363ad22244b6f6b",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 54,
+        "p2p_fail": 0,
+        "test_output_sha256": "bac831bfd3d578b5afe225ea6b8dbb1dba9cfc5fe977f42af4feb09c5b7bc17f",
+        "diagnostic_lines": [
+          {
+            "line": 10383,
+            "text": "======== tests finished: 56 passed, 2 expected to fail, in 5.22 seconds ========"
+          }
+        ]
+      },
+      "sympy__sympy-18763": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "bc1ae6e5fcde4951406b72b001049d34a1ca92c8e43e63a75a195c707d06bafb",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 141,
+        "p2p_fail": 0,
+        "test_output_sha256": "9251935a7379f78e85b693b4c2b500ec960b7b1a2136f8fbdf70aabe6952f94f",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-24066": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "9b8432cbc78424cf1166d5296e9154205de84323f2e3abd5d191552b1d9e53f1",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 30,
+        "p2p_fail": 0,
+        "test_output_sha256": "cfb852102976338c11cc59a5e60977f47bafb06c2b3c673f1d76547104aa8b1a",
+        "diagnostic_lines": [
+          {
+            "line": 11864,
+            "text": "======== tests finished: 32 passed, 1 expected to fail, in 1.04 seconds ========"
+          }
+        ]
+      },
+      "sympy__sympy-24562": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "5faba6a015869f9a191819c96913955280b9b2b967ddc21fb5100c40b13ada33",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 105,
+        "p2p_fail": 0,
+        "test_output_sha256": "153ad996eb18842bf94ed8f546393bbe704a5c484e6632e11889a1362a80c5bb",
+        "diagnostic_lines": [
+          {
+            "line": 11685,
+            "text": "== tests finished: 107 passed, 1 skipped, 1 expected to fail, in 3.13 seconds =="
+          }
+        ]
+      }
+    }
+  },
+  "v30-glm": {
+    "harness_run_id": "v30-glm-0930-135232",
+    "overall": {
+      "total_instances": 30,
+      "submitted_instances": 30,
+      "completed_instances": 28,
+      "resolved_instances": 20,
+      "unresolved_instances": 8,
+      "infra_failure_instances": 0,
+      "ambiguous_failure_instances": 2,
+      "empty_patch_instances": 2,
+      "error_instances": 0,
+      "completed_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "incomplete_ids": [],
+      "empty_patch_ids": [
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197"
+      ],
+      "submitted_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "resolved_ids": [
+        "django__django-11179",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-6528",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18211",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "unresolved_ids": [
+        "django__django-12406",
+        "pydata__xarray-3993",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "sphinx-doc__sphinx-8638",
+        "sympy__sympy-18199",
+        "sympy__sympy-18763"
+      ],
+      "infra_failure_ids": [],
+      "ambiguous_failure_ids": [
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661"
+      ],
+      "failure_reasons": {
+        "pylint-dev__pylint-4604": "no_tests_collected",
+        "pylint-dev__pylint-4661": "missing_module"
+      },
+      "error_ids": [],
+      "schema_version": 2,
+      "unstopped_instances": 0,
+      "unstopped_containers": []
+    },
+    "overall_sha256": "82bb1f5e74ae472331f08db77f207c7f12e5021d2c15252c62c4b94ec9c38694",
+    "instances": {
+      "django__django-11179": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "260090955e844ae6fc34e005d62246dfa0d46d03439eb8b13645b7ef110e9f9c",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 40,
+        "p2p_fail": 0,
+        "test_output_sha256": "1360136bd76e06b5655339fdffae828248121a8eab8dcb2cf89cfcc19b9fd7d4",
+        "diagnostic_lines": []
+      },
+      "django__django-12406": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "206a3b5ee2b75756589b586c866dffede5d3d1d4e59171cae4827253eb9acf5a",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 2,
+        "p2p_pass": 165,
+        "p2p_fail": 0,
+        "test_output_sha256": "c4b59c71f35f695966e75e786184de0d5455845d25dddbd8ac3fe2cf3567b5a7",
+        "diagnostic_lines": [
+          {
+            "line": 37692,
+            "text": "FAILED (errors=4)"
+          }
+        ]
+      },
+      "django__django-15380": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "fa0cf4ed4049cc5a479f5f9264bbe2ba4b0ef1185703770e284216369bbd8717",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 133,
+        "p2p_fail": 0,
+        "test_output_sha256": "4fc66c5514dea1c221a54b614bff738d657131ad7eba2eec67a1c3c57cbac25e",
+        "diagnostic_lines": []
+      },
+      "django__django-15731": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "24909abd414fba914cabce5dfd48b2025b22fe05b494644de0a8c9060ac43a31",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 58,
+        "p2p_fail": 0,
+        "test_output_sha256": "79a0078247b60a3eb5245be8718ad0bd5d45fef66f6c92d40f4bb53ed2513a4b",
+        "diagnostic_lines": []
+      },
+      "django__django-16136": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "d8b57ff8d566a2c41e33c06cc4038901cf69056dd0fb27e23660c73fd456981f",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 7,
+        "p2p_fail": 0,
+        "test_output_sha256": "2913cec6031c9627c73378d1288860a8153c9879bea160189f4a812c808db003",
+        "diagnostic_lines": []
+      },
+      "pydata__xarray-2905": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "27b1d107a34b33256368dc7f8cf9daa6c4c36af249d527699ba174201b690850",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 364,
+        "p2p_fail": 0,
+        "test_output_sha256": "0376eee3c7c617d978afd8cf8a0ade87563ab07359bd8423c3130e55a05ce81b",
+        "diagnostic_lines": [
+          {
+            "line": 2725,
+            "text": "========== 365 passed, 71 xfailed, 22 xpassed, 112 warnings in 12.45s =========="
+          }
+        ]
+      },
+      "pydata__xarray-3095": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "02f1f7007bc6108e30f6b9446ac271fc6c6d2994e3b62449b5617737bbf7eddc",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 253,
+        "p2p_fail": 0,
+        "test_output_sha256": "5e8eb9459dc59a65de092a34df1ad7036fd3930dbc21e61b660dc165f7fc0494",
+        "diagnostic_lines": [
+          {
+            "line": 2333,
+            "text": "================ 254 passed, 11 xfailed, 248 warnings in 3.95s ================="
+          }
+        ]
+      },
+      "pydata__xarray-3993": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a68e74d29718e8386fb9a5792aa4a2047a4b3830067f069bbeac6eaf4d0d8f8f",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 2,
+        "p2p_pass": 2398,
+        "p2p_fail": 0,
+        "test_output_sha256": "4213cfddf07444025d36d1f3f6666d0dce32a0f83165454cdb4323f749036aa7",
+        "diagnostic_lines": [
+          {
+            "line": 2351,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260930' currently installed)."
+          },
+          {
+            "line": 2453,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260930' currently installed)."
+          },
+          {
+            "line": 2560,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260930' currently installed)."
+          },
+          {
+            "line": 2667,
+            "text": "E                   ImportError: Pandas requires version '0.19.0' or newer of 'xarray' (version '0.16.3.dev95+g1e9dc42a6.d20260930' currently installed)."
+          },
+          {
+            "line": 5646,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_sel_categorical - Impo..."
+          },
+          {
+            "line": 5647,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_sel_categorical_error"
+          },
+          {
+            "line": 5648,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_categorical_multiindex"
+          },
+          {
+            "line": 5649,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_from_dataframe_categorical"
+          },
+          {
+            "line": 5650,
+            "text": "FAILED xarray/tests/test_dataset.py::TestDataset::test_polyfit_warnings - ass..."
+          },
+          {
+            "line": 5651,
+            "text": "FAILED xarray/tests/test_dataset.py::test_integrate[True] - TypeError: DataAr..."
+          },
+          {
+            "line": 5652,
+            "text": "FAILED xarray/tests/test_dataset.py::test_integrate[False] - TypeError: DataA..."
+          },
+          {
+            "line": 5653,
+            "text": "= 7 failed, 2444 passed, 710 skipped, 115 xfailed, 13 xpassed, 707 warnings in 38.30s ="
+          }
+        ]
+      },
+      "pydata__xarray-4629": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "04d29d5089c7f5a4278ff35cd849c3920c818232c7a9ba34f66099d217cc2933",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 32,
+        "p2p_fail": 0,
+        "test_output_sha256": "64644d38f223d4364707a894680c7a82f2991232c8a20f597d5a6550d1665121",
+        "diagnostic_lines": [
+          {
+            "line": 2224,
+            "text": "======================== 33 passed, 9 warnings in 2.88s ========================"
+          }
+        ]
+      },
+      "pydata__xarray-4687": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "08ee65862e19ccf2f96ea0d3b57a8369d6ff1bd6c7994da1ece84432f9072471",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 1717,
+        "p2p_fail": 0,
+        "test_output_sha256": "770414197c989b14e9a65eaa43815e596a329c4601fdb89390ef6f7389fccef2",
+        "diagnostic_lines": [
+          {
+            "line": 4514,
+            "text": "FAILED xarray/tests/test_units.py::TestPintWrappingDask::test_duck_array_ops"
+          },
+          {
+            "line": 4515,
+            "text": "= 1 failed, 1760 passed, 693 skipped, 112 xfailed, 12 xpassed, 365 warnings in 27.65s ="
+          }
+        ]
+      },
+      "pylint-dev__pylint-4604": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "63a8c07aa86b2b70aaec8c059c2c9a8a1df0a794f32ed62ec5e215f43a7500ed",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 21,
+        "p2p_pass": 0,
+        "p2p_fail": 0,
+        "test_output_sha256": "e175ff630afff70ca4bd2ab44408a57739e91e1d08ca5bacf22ef5fdb900a25d",
+        "diagnostic_lines": [
+          {
+            "line": 9430,
+            "text": "E   ImportError: cannot import name 'IS_PYPY' from 'pylint.constants' (/testbed/pylint/constants.py)"
+          }
+        ]
+      },
+      "pylint-dev__pylint-4661": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "6c79419c212d0763acb5e6de78eba48cfb9ec8dfbfc9e17593a669f0c609b27b",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 0,
+        "p2p_fail": 0,
+        "test_output_sha256": "498c5c7d70c084c9ef81aec3d284011faa9af44197a8bb08b6f45e12b9f6a736",
+        "diagnostic_lines": [
+          {
+            "line": 9721,
+            "text": "E   ModuleNotFoundError: No module named 'appdirs'"
+          }
+        ]
+      },
+      "pylint-dev__pylint-4970": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "7314f56ed9edb793f4fec706b4935d00fe111139a949a57c4b823f7d957e3edc",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 17,
+        "p2p_fail": 0,
+        "test_output_sha256": "912046b381533582d4749a2a6864cb13e480705f27c54c58b5878ad6bc1a2a6a",
+        "diagnostic_lines": [
+          {
+            "line": 9773,
+            "text": "FAILED tests/checkers/unittest_similar.py::test_set_duplicate_lines_to_zero"
+          },
+          {
+            "line": 9774,
+            "text": "=================== 1 failed, 17 passed, 3 warnings in 0.06s ==================="
+          }
+        ]
+      },
+      "pylint-dev__pylint-6528": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "d06bb411ff2ae8a97806d2cce4e2566020a7f280af139842c287131e9714eff3",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 4,
+        "f2p_fail": 0,
+        "p2p_pass": 171,
+        "p2p_fail": 0,
+        "test_output_sha256": "a9e875fc89a2100437a49cc4be4b8dbea0d06683f3e881467f866b824d3cd1b6",
+        "diagnostic_lines": [
+          {
+            "line": 17399,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config - a..."
+          },
+          {
+            "line": 17400,
+            "text": "FAILED tests/test_self.py::TestCallbackOptions::test_generate_toml_config_disable_symbolic_names"
+          },
+          {
+            "line": 17401,
+            "text": "============= 2 failed, 175 passed, 1 xfailed, 1 warning in 12.24s ============="
+          }
+        ]
+      },
+      "pylint-dev__pylint-7277": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pytest-dev__pytest-6197": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pytest-dev__pytest-6202": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "85e3c90a12767e8f6befa75818e9e248208024f4f7d0e4253393ce3a14ee93c7",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 72,
+        "p2p_fail": 0,
+        "test_output_sha256": "5ac77f8ff52607aa30ab9239ae62fd64ae06c25a6dbc0884efd3e62ed85ddf73",
+        "diagnostic_lines": [
+          {
+            "line": 5271,
+            "text": "========================== 1 failed, 2 error in 0.01s =========================="
+          },
+          {
+            "line": 5291,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 5377,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5387,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5407,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5418,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5429,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5449,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5459,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5476,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5488,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5500,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5525,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5535,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5612,
+            "text": "======================== 73 passed, 1 xfailed in 1.98s ========================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-7521": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "72bab5471a7b606c373c491a25227becbf1b0b964db0523ea00acbc81fff1f72",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 125,
+        "p2p_fail": 0,
+        "test_output_sha256": "63a60da636e9e23bd0743c4f009e845ac455a283918d4e0de078a364a141d002",
+        "diagnostic_lines": [
+          {
+            "line": 4323,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4335,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4347,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4399,
+            "text": "FAILED test_simple_only_fd.py::test_x - assert 0"
+          },
+          {
+            "line": 4400,
+            "text": "============================== 1 failed in 0.02s ==============================="
+          },
+          {
+            "line": 4412,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4436,
+            "text": "FAILED test_close_and_capture_again.py::test_capture_again - assert 0"
+          },
+          {
+            "line": 4437,
+            "text": "========================= 1 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4449,
+            "text": "============================== 1 passed in 0.18s ==============================="
+          },
+          {
+            "line": 4469,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4485,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4501,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4525,
+            "text": "FAILED test_logging_while_collecting.py::test_logging - assert False"
+          },
+          {
+            "line": 4526,
+            "text": "============================== 1 failed in 0.01s ==============================="
+          },
+          {
+            "line": 4657,
+            "text": "================== 125 passed, 3 skipped, 1 xfailed in 6.19s ==================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-7982": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "ad00839894c7f25bd398b6b4fa423f3ed6bcc6f9a36986779c1201b2f227ceae",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 78,
+        "p2p_fail": 0,
+        "test_output_sha256": "62046c815b2ca1ed9cb850835cd6823e316d9e926c9c438bc5ed264bf0e82d94",
+        "diagnostic_lines": [
+          {
+            "line": 5326,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5336,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5353,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5365,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5377,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5404,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5414,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5426,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5437,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5448,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5464,
+            "text": "E       ModuleNotFoundError: No module named 'foo'"
+          },
+          {
+            "line": 5468,
+            "text": "FAILED tests/test_foo.py::test_check - ModuleNotFoundError: No module named '..."
+          },
+          {
+            "line": 5469,
+            "text": "============================== 1 failed in 0.00s ==============================="
+          },
+          {
+            "line": 5497,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5580,
+            "text": "======================== 79 passed, 1 xfailed in 1.87s ========================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-8399": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "3b7a34026831337f274388d6a84d2518b26618d11b0ee9267938f4abb3dfdc38",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 59,
+        "p2p_fail": 0,
+        "test_output_sha256": "f32edababe444e02b706385eea1a496989d1eb26e44cdfb6540f9a7b6651f098",
+        "diagnostic_lines": [
+          {
+            "line": 4663,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4707,
+            "text": "FAILED test_unittest_asyncio.py::AsyncArguments::test_something_async_fails"
+          },
+          {
+            "line": 4708,
+            "text": "========================= 1 failed, 2 passed in 0.02s =========================="
+          },
+          {
+            "line": 4718,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4744,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 4767,
+            "text": "========================== 3 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 4777,
+            "text": "============================== 3 passed in 0.01s ==============================="
+          },
+          {
+            "line": 4813,
+            "text": "FAILED test_do_cleanups_on_setup_failure.py::MyTestCase::test_one - Assertion..."
+          },
+          {
+            "line": 4814,
+            "text": "FAILED test_do_cleanups_on_setup_failure.py::MyTestCase::test_two - Assertion..."
+          },
+          {
+            "line": 4815,
+            "text": "========================= 2 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4845,
+            "text": "FAILED test_do_cleanups_on_teardown_failure.py::MyTestCase::test_one - Assert..."
+          },
+          {
+            "line": 4846,
+            "text": "FAILED test_do_cleanups_on_teardown_failure.py::MyTestCase::test_two - Assert..."
+          },
+          {
+            "line": 4847,
+            "text": "========================= 2 failed, 1 passed in 0.01s =========================="
+          },
+          {
+            "line": 4865,
+            "text": "========================= 1 passed, 1 warning in 0.01s ========================="
+          },
+          {
+            "line": 4930,
+            "text": "======================== 60 passed, 30 skipped in 1.68s ========================"
+          }
+        ]
+      },
+      "sphinx-doc__sphinx-7985": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "39fea48d24b3d91d7b566d43e9d153b66aeb6222bc0b8169fdebebb88d4083cd",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 2,
+        "f2p_fail": 0,
+        "p2p_pass": 3,
+        "p2p_fail": 0,
+        "test_output_sha256": "7d91962deac462b61a98d6138830adbff563a733c4d2981f99b3959565aa5db7",
+        "diagnostic_lines": [
+          {
+            "line": 9589,
+            "text": "======================= 5 passed, 192 warnings in 7.78s ========================"
+          }
+        ]
+      },
+      "sphinx-doc__sphinx-8035": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a61d43cc898fa023d28d170b93cda7a3696440855a16d988b463d6265d227641",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 2,
+        "p2p_fail": 0,
+        "test_output_sha256": "c222c41f8e04bbd3d066d1260236c07008222054ff17e7e8721a397a4ccb3a34",
+        "diagnostic_lines": [
+          {
+            "line": 9246,
+            "text": "======================== 3 passed, 7 warnings in 0.31s ========================="
+          }
+        ]
+      },
+      "sphinx-doc__sphinx-8638": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "6465d34de5e8194e8acaabb5c9514b8af42d1c13ea34be63efc93ea029d79e0d",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 34,
+        "p2p_fail": 0,
+        "test_output_sha256": "4640bb7888fb43bc0f7f7bcc0c05f32b6a4067608ca64350849225f3f58d8bc6",
+        "diagnostic_lines": []
+      },
+      "sphinx-doc__sphinx-9281": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "aa6d62a7c5541c7c24fcff59ed0736efd410008d6ef8367ddacacb41c24dc357",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 38,
+        "p2p_fail": 0,
+        "test_output_sha256": "1a8c1fc4e8fc296ac80b0d7452c581fac52a6c8790e985fa2dcb7d0b66946130",
+        "diagnostic_lines": []
+      },
+      "sphinx-doc__sphinx-9698": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "a3ccb4485bbb0edb30787fcc8ae474c4f1ee3feab77f1f004aef2b9d6f0e9693",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 45,
+        "p2p_fail": 0,
+        "test_output_sha256": "0d8ce8a060b92fe89ec6ce8682846ce043d35b03ab8b667f7a11333c2012c5c6",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-18199": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "c69d469bf6885c2f20bb5654f7456a482698bbb4fe3f8bb6fb01045d8a387218",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 113,
+        "p2p_fail": 0,
+        "test_output_sha256": "fb8401de21056b54f468aba2b129650c272f10b9c9bba4e0a2a38541d92b3c6c",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-18211": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "465f05e6d36c282bb8a2b64b69c86fdaae5124e5c4776b39f363ad22244b6f6b",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 54,
+        "p2p_fail": 0,
+        "test_output_sha256": "b38e2b96ad12a53a88dc018c90bcbdbdb1e3860ffd68967f448242ee6934bcf5",
+        "diagnostic_lines": [
+          {
+            "line": 10393,
+            "text": "======== tests finished: 56 passed, 2 expected to fail, in 5.06 seconds ========"
+          }
+        ]
+      },
+      "sympy__sympy-18763": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "bc1ae6e5fcde4951406b72b001049d34a1ca92c8e43e63a75a195c707d06bafb",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 141,
+        "p2p_fail": 0,
+        "test_output_sha256": "02a63c0317536463ad6d0b22f94a471f7a5bdb9e51934842b3e7a5aa5bf858c9",
+        "diagnostic_lines": []
+      },
+      "sympy__sympy-24066": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "9b8432cbc78424cf1166d5296e9154205de84323f2e3abd5d191552b1d9e53f1",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 30,
+        "p2p_fail": 0,
+        "test_output_sha256": "b64ddf237895360539c231e3caf7fb925254eff5c0916a865243db7738e87444",
+        "diagnostic_lines": [
+          {
+            "line": 11891,
+            "text": "======== tests finished: 32 passed, 1 expected to fail, in 1.02 seconds ========"
+          }
+        ]
+      },
+      "sympy__sympy-24562": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "5faba6a015869f9a191819c96913955280b9b2b967ddc21fb5100c40b13ada33",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 105,
+        "p2p_fail": 0,
+        "test_output_sha256": "30fabeb630dc1e443665fc413c3dac1a6bc953c224e41f6a38d71b3046ebb32d",
+        "diagnostic_lines": [
+          {
+            "line": 11690,
+            "text": "== tests finished: 107 passed, 1 skipped, 1 expected to fail, in 3.12 seconds =="
+          }
+        ]
+      }
+    }
+  },
+  "v30-single-shot": {
+    "harness_run_id": "v30-single-shot-0930-190154",
+    "overall": {
+      "total_instances": 30,
+      "submitted_instances": 30,
+      "completed_instances": 5,
+      "resolved_instances": 4,
+      "unresolved_instances": 1,
+      "infra_failure_instances": 0,
+      "ambiguous_failure_instances": 0,
+      "empty_patch_instances": 25,
+      "error_instances": 0,
+      "completed_ids": [
+        "django__django-11179",
+        "django__django-15731",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pytest-dev__pytest-6202"
+      ],
+      "incomplete_ids": [],
+      "empty_patch_ids": [
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "submitted_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "resolved_ids": [
+        "django__django-11179",
+        "django__django-15731",
+        "pydata__xarray-4629",
+        "pytest-dev__pytest-6202"
+      ],
+      "unresolved_ids": [
+        "pydata__xarray-4687"
+      ],
+      "infra_failure_ids": [],
+      "ambiguous_failure_ids": [],
+      "failure_reasons": {},
+      "error_ids": [],
+      "schema_version": 2,
+      "unstopped_instances": 0,
+      "unstopped_containers": []
+    },
+    "overall_sha256": "d05f31ea0e99d1a89356b64c218e40402bfb57e0caecb7e9a05381f4ff74504b",
+    "instances": {
+      "django__django-11179": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "260090955e844ae6fc34e005d62246dfa0d46d03439eb8b13645b7ef110e9f9c",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 40,
+        "p2p_fail": 0,
+        "test_output_sha256": "1f5204843cbc47d199a0cb669e4516b2acf3215194bd04f7d5bfbe95788e9b8f",
+        "diagnostic_lines": []
+      },
+      "django__django-12406": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "django__django-15380": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "django__django-15731": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "24909abd414fba914cabce5dfd48b2025b22fe05b494644de0a8c9060ac43a31",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 58,
+        "p2p_fail": 0,
+        "test_output_sha256": "8aadf31d0ecd8c7384f168ab967e4bf0332ffd595e56a7ca1ebae8e0f1e3c660",
+        "diagnostic_lines": []
+      },
+      "django__django-16136": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pydata__xarray-2905": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pydata__xarray-3095": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pydata__xarray-3993": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pydata__xarray-4629": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "04d29d5089c7f5a4278ff35cd849c3920c818232c7a9ba34f66099d217cc2933",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 32,
+        "p2p_fail": 0,
+        "test_output_sha256": "624624bcb0be66f1180b41284d95a6753581938ca4d7059cb3963f140378b8eb",
+        "diagnostic_lines": [
+          {
+            "line": 2224,
+            "text": "======================== 33 passed, 9 warnings in 3.60s ========================"
+          }
+        ]
+      },
+      "pydata__xarray-4687": {
+        "report_present": true,
+        "collection_error": false,
+        "report_sha256": "6bad65280d21e555c8018bac5c8aeb76a6a35e64b54bd62164ef0b2e1ca9cce6",
+        "resolved": false,
+        "patch_successfully_applied": true,
+        "f2p_pass": 0,
+        "f2p_fail": 1,
+        "p2p_pass": 1717,
+        "p2p_fail": 0,
+        "test_output_sha256": "6d4fc40db83017c7b7b3a4c54935dee37ecf9b06e585d79cb47b7373c1440dc9",
+        "diagnostic_lines": [
+          {
+            "line": 4467,
+            "text": "FAILED xarray/tests/test_computation.py::test_where_attrs - TypeError: where(..."
+          },
+          {
+            "line": 4468,
+            "text": "FAILED xarray/tests/test_units.py::TestPintWrappingDask::test_duck_array_ops"
+          },
+          {
+            "line": 4469,
+            "text": "= 2 failed, 1759 passed, 693 skipped, 112 xfailed, 12 xpassed, 365 warnings in 30.73s ="
+          }
+        ]
+      },
+      "pylint-dev__pylint-4604": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pylint-dev__pylint-4661": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pylint-dev__pylint-4970": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pylint-dev__pylint-6528": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pylint-dev__pylint-7277": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pytest-dev__pytest-6197": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pytest-dev__pytest-6202": {
+        "report_present": true,
+        "collection_error": true,
+        "report_sha256": "85e3c90a12767e8f6befa75818e9e248208024f4f7d0e4253393ce3a14ee93c7",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "f2p_pass": 1,
+        "f2p_fail": 0,
+        "p2p_pass": 72,
+        "p2p_fail": 0,
+        "test_output_sha256": "17145d1bb6bf76bb4a3c2c3e7fa67508e77bab9eed010703418e6875a02b1d8a",
+        "diagnostic_lines": [
+          {
+            "line": 5271,
+            "text": "========================== 1 failed, 2 error in 0.01s =========================="
+          },
+          {
+            "line": 5291,
+            "text": "========================== 1 passed, 1 error in 0.01s =========================="
+          },
+          {
+            "line": 5377,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5387,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5407,
+            "text": "============================== 1 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5418,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5429,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5449,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5459,
+            "text": "============================== 2 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5476,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5488,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5500,
+            "text": "============================== 2 passed in 0.01s ==============================="
+          },
+          {
+            "line": 5525,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5535,
+            "text": "============================== 1 passed in 0.00s ==============================="
+          },
+          {
+            "line": 5612,
+            "text": "======================== 73 passed, 1 xfailed in 2.09s ========================="
+          }
+        ]
+      },
+      "pytest-dev__pytest-7521": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pytest-dev__pytest-7982": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "pytest-dev__pytest-8399": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-7985": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-8035": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-8638": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-9281": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sphinx-doc__sphinx-9698": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sympy__sympy-18199": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sympy__sympy-18211": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sympy__sympy-18763": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sympy__sympy-24066": {
+        "report_present": false,
+        "collection_error": false
+      },
+      "sympy__sympy-24562": {
+        "report_present": false,
+        "collection_error": false
+      }
+    }
+  },
+  "gold-verified30": {
+    "overall": {
+      "total_instances": 30,
+      "submitted_instances": 30,
+      "completed_instances": 30,
+      "resolved_instances": 30,
+      "unresolved_instances": 0,
+      "infra_failure_instances": 0,
+      "ambiguous_failure_instances": 0,
+      "empty_patch_instances": 0,
+      "error_instances": 0,
+      "completed_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "incomplete_ids": [],
+      "empty_patch_ids": [],
+      "submitted_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "resolved_ids": [
+        "django__django-11179",
+        "django__django-12406",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-3993",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6197",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8035",
+        "sphinx-doc__sphinx-8638",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-18199",
+        "sympy__sympy-18211",
+        "sympy__sympy-18763",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ],
+      "unresolved_ids": [],
+      "infra_failure_ids": [],
+      "ambiguous_failure_ids": [],
+      "failure_reasons": {},
+      "error_ids": [],
+      "schema_version": 2,
+      "unstopped_instances": 0,
+      "unstopped_containers": []
+    },
+    "overall_sha256": "7346fe2468f7a160f20bfcdec2fd709bdb2b1e6174e648d29b1e465ee0595505"
+  }
+}

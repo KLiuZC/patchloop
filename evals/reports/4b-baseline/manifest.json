@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-30T11:19:17.940950+00:00",
+  "status": "retrospective_baseline_archive",
+  "git_head_at_archive": "f04a6619a6b00a9ff4135fc3ed8f18ffe4dec401",
+  "runtime_diff_from_head": "diff --git a/src/patchloop/eval.py b/src/patchloop/eval.py\nindex 1b024c8..df8c130 100644\n--- a/src/patchloop/eval.py\n+++ b/src/patchloop/eval.py\n@@ -47,6 +47,10 @@ def image_name(instance: dict) -> str:\n     return name if \":\" in name.rsplit(\"/\", 1)[-1] else name + \":latest\"\n \n \n+def image_present(image: str) -> bool:\n+    return subprocess.run([\"docker\", \"image\", \"inspect\", image], capture_output=True).returncode == 0\n+\n+\n def task_text(instance: dict) -> str:\n     # only the issue text: hints, the test patch and the test names stay hidden from the agent\n     return TASK_TEMPLATE.format(repo=instance[\"repo\"], problem_statement=instance[\"problem_statement\"].strip())\n@@ -169,6 +173,13 @@ def evaluate(\n \n     harness_run_id = None\n     if judge and ordered:\n+        by_id = {i[\"instance_id\"]: i for i in instances}\n+        missing = [r.instance_id for r in ordered if not image_present(image_name(by_id[r.instance_id]))]\n+        if missing:\n+            log(f\"{len(missing)} image(s) missing locally; the harness will build them from the task repo\")\n+        else:\n+            # with a task repo the harness rebuilds every image, whether or not it already exists\n+            task_repo = None\n         verdicts, harness_run_id = judge_predictions(\n             predictions_path, [r.instance_id for r in ordered], run_id, dataset, harness_dir, task_repo, judge_workers, log,\n         )\n",
+  "source_sha256": {
+    "src/patchloop/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/patchloop/baseline.py": "014f5ebec8960405a221e40f404d76a7645f768c3b1a17bcc0ef3a067a801298",
+    "src/patchloop/cli.py": "9b653396088660650384ccede6f9e7774e6d909d5cb975e45bce42070f719dcb",
+    "src/patchloop/eval.py": "4050d4c0f4489787e3426a9b6680f3ba4157198042b82ea537cabf20542658dd",
+    "src/patchloop/llm.py": "506ff8fa85ae78d020ef49eaf8f2e43ce56d91f6f17eb721219db3c2f6a87957",
+    "src/patchloop/loop.py": "5f7280e5c9ac11d7f294139fcb2ca0f93bc48378a0da1da6694b692b96d279b4",
+    "src/patchloop/prompts.py": "9c45b08d52c4855887705ba60e5ed8642f62d541217ad97e0c2f4bc28f86b7f1",
+    "src/patchloop/sandbox.py": "9f81da3e3f1558b402cee95abdd45f26dbe44b7c5a5dcb5d0db26b3689e7c15a",
+    "src/patchloop/subset.py": "8dba512ec843521d92254f0f849e5cbda3bfecb27f16bc15eb9f8aadb9c6fc5f",
+    "src/patchloop/tools.py": "225994e202033d144a5a3051e09c0b2738f39231b83631488a9177dd1536d57a",
+    "src/patchloop/trajectory.py": "c6d1d035a83b662eaac112e0be6818c00766e541528bc5913efecf6fe97ffca1",
+    "pyproject.toml": "21c4cfebbe0ec7124ae494882c9dc13310593cd870879c37fbfb5951f00271a8",
+    "uv.lock": "501d2a38709e52856e0cb73562e6f903cd77e73eef90e0da70b64364506e89c9",
+    ".python-version": "7b55f8e67b5623c4bef3fa691288da9437d79d3aba156de48d481db32ac7d16d",
+    "evals/subsets/verified30.txt": "7957c6635ba1dd11cd6703ae2b60e7ae1cd7287d8b980044ea5cf1a011e2aefe",
+    "evals/subsets/smoke5.txt": "f53a21293973235f53e0db3ce9ffb8cd40e7ff92586652c71f135ad63e813bbe"
+  },
+  "frozen_inputs_sha256": {
+    "evals/results/v30-deepseek-r1/summary.json": "f2423dd2de7702b1d1b456bbf46e330ec94e6fd2fc605350b9a463f6e64562a9",
+    "evals/results/v30-deepseek-r1/results.jsonl": "6c72f27f1871040bdc4cb6072fa7f61cce8b89ed9f73e03d6eb3a4dec92146b0",
+    "evals/results/v30-deepseek-r1/predictions.jsonl": "c99aab923a00483da432c25ace1d2eb1cc0326535ac2c0a20343ee86146da143",
+    "evals/results/v30-deepseek-r2/summary.json": "38163700585107605279d06f007143e3012b70ad470bab6bad11b71f71ca406d",
+    "evals/results/v30-deepseek-r2/results.jsonl": "a6d673de571a654a22178578e20a2810df818872da5bf096d04c828464663304",
+    "evals/results/v30-deepseek-r2/predictions.jsonl": "f5cb2ce634f9a5de13e068aa49de64a38d64ec5d6e9fd66f6f860957fe37e3b5",
+    "evals/results/v30-deepseek-r3/summary.json": "223b26cc4ad6c25493bcdf5d67432d7e2acd8a1c196a9e7371198e80eaa4c55e",
+    "evals/results/v30-deepseek-r3/results.jsonl": "3d4252d9d1fd43e6eb54ef3076c2a07d376000aedf808227ace3f5b56d48d849",
+    "evals/results/v30-deepseek-r3/predictions.jsonl": "f3e5da19b006d65ce5daa6b41e0b428e8fe0e0bd1ee4ad02fc3604ff394c04aa",
+    "evals/results/v30-glm/summary.json": "12e3e1a33eba56c53a1d32da051ecfb4e99650b1d0539043d61627b435dbdb19",
+    "evals/results/v30-glm/results.jsonl": "869d1d44c06a4b42272e3e37e5c9ade8e062db0ade85844b5a0826ac0015123c",
+    "evals/results/v30-glm/predictions.jsonl": "c49503d153bd4f2632875fa717d9a63de962aa08e1ca336c7a150e62f3a51173",
+    "evals/results/v30-single-shot/summary.json": "6fa91f7e89394f075c62b40029d1db7a56cff3a2c95efa99a222bc52892869b6",
+    "evals/results/v30-single-shot/results.jsonl": "931339b07e41b9f1d19fc35a1acb63e1bc1c2a32ab51965c2fcee1fcb198078e",
+    "evals/results/v30-single-shot/predictions.jsonl": "0de4e76ff13c0061231515ce2a73f672ad7375e5b698c84eca747634fa2a6fed",
+    "evals/reports/4b-baseline/evidence.json": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+    "evals/reports/4b-baseline/source.zip": "a710938ebe6a70515f4eff22712b8ce4aef7dd8cbb084b6790bdd750aab2f791",
+    "evals/subsets/verified30.txt": "7957c6635ba1dd11cd6703ae2b60e7ae1cd7287d8b980044ea5cf1a011e2aefe",
+    "evals/subsets/smoke5.txt": "f53a21293973235f53e0db3ce9ffb8cd40e7ff92586652c71f135ad63e813bbe",
+    "evals/results/v30-glm/diagnosis.md": "e880a4034a6ff126cf3ed758bc49ad4445ca36cb0fd9669c2a837f469855a965",
+    "evals/results/v30-glm/diagnostics/4604-constant-removed.log": "f936db43ff19c1587f9dde3b534b47e000aeac3c9ecf8a8d9bc37ea41def10b4",
+    "evals/results/v30-glm/diagnostics/4604-gold.log": "162817ce31eaa72e8fedb1b04d988c8c9163fd6979d010994cb9b2ef673bfeba",
+    "evals/results/v30-glm/diagnostics/4604-original.log": "f936db43ff19c1587f9dde3b534b47e000aeac3c9ecf8a8d9bc37ea41def10b4",
+    "evals/results/v30-glm/diagnostics/4604-with-constant.log": "9a97fc2113ec96db21620c584fab6045f9a719b2271a3368be31d77a66e66374",
+    "evals/results/v30-glm/diagnostics/4661-gold.log": "d125cc94616b7412df465b587b66fa2cc00c70ab93af84b3f6b731a1674ad536",
+    "evals/results/v30-glm/diagnostics/4661-install-appdirs.log": "46abeadae97e7dffb38d1fe0858793a80b6a5f8f609ac652f9166ef321dd957a",
+    "evals/results/v30-glm/diagnostics/4661-original.log": "5a02a9c268ba6081c9c2edbebb23acb5887bb216eded68b49d454d6fa8025048",
+    "evals/results/v30-glm/diagnostics/4661-with-appdirs.log": "99861596c8a6ac4d50c75dc35496b1a9c1af4b928e606d625c6243e5bd9303e8"
+  },
+  "known_settings": {
+    "dataset": "SWE-bench/SWE-bench_Verified",
+    "dataset_revision_recorded": false,
+    "subset_seed": 20260929,
+    "subset_size": 30,
+    "agent_max_turns": 40,
+    "command_timeout_seconds": 180,
+    "agent_workers": 2,
+    "single_shot_workers": 1,
+    "container_memory": "3g",
+    "platform": "linux/amd64",
+    "judge_workers": 1,
+    "temperature_sent": false,
+    "output_limit_sent": false,
+    "api_timeout_seconds": 120,
+    "sdk_max_retries": 3
+  },
+  "settings_provenance": "Reconstructed from launch commands, saved trajectory metadata and current source; not a contemporaneous per-run manifest.",
+  "prices_cny_per_million": {
+    "deepseek-flash": {
+      "input": 1,
+      "cached_input": 0.02,
+      "output": 4
+    },
+    "glm-5.3-flash": {
+      "input": 0.8,
+      "cached_input": 0.23,
+      "output": 2.8
+    }
+  },
+  "cost_limits": "Local price-table estimates, not invoices. DeepSeek table assumes off-peak. Failed request usage may be missing.",
+  "packages_at_archive": {
+    "openai": "3.19.2",
+    "datasets": "5.0.1",
+    "typer": "0.27.2",
+    "pytest": "9.1.1"
+  },
+  "known_limitations": [
+    "No per-run source digest or dataset revision was saved at runtime.",
+    "The current source snapshot includes the existing local-image reuse change to eval.py.",
+    "Per-instance times are summed; parallel wall-clock timing was not saved.",
+    "Source archive contains an explicit allowlist; no environment file, API key, git config or model reasoning is included."
+  ]
+}

@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "runs": [
+    {
+      "run_id": "v30-deepseek-r1",
+      "model": "deepseek-flash",
+      "mode": "agent",
+      "instances": 30,
+      "resolved": 20,
+      "resolve_rate_percent": 66.66666666666666,
+      "cost_cny_estimate": 1.756,
+      "instance_seconds_sum": 2647.9,
+      "wall_seconds": null,
+      "mean_turns": 27.3,
+      "self_finished": 20,
+      "at_turn_limit": 10,
+      "official_reports": 27,
+      "with_p2p_cases": 25,
+      "p2p_failure_count": 0,
+      "categories": {
+        "empty_patch": 3,
+        "resolved": 20,
+        "test_collection_blocked": 2,
+        "tests_not_resolved": 5
+      }
+    },
+    {
+      "run_id": "v30-deepseek-r2",
+      "model": "deepseek-flash",
+      "mode": "agent",
+      "instances": 30,
+      "resolved": 19,
+      "resolve_rate_percent": 63.33333333333333,
+      "cost_cny_estimate": 1.581,
+      "instance_seconds_sum": 2732.8,
+      "wall_seconds": null,
+      "mean_turns": 25.533333333333335,
+      "self_finished": 21,
+      "at_turn_limit": 9,
+      "official_reports": 24,
+      "with_p2p_cases": 23,
+      "p2p_failure_count": 0,
+      "categories": {
+        "empty_patch": 6,
+        "resolved": 19,
+        "test_collection_blocked": 1,
+        "tests_not_resolved": 4
+      }
+    },
+    {
+      "run_id": "v30-deepseek-r3",
+      "model": "deepseek-flash",
+      "mode": "agent",
+      "instances": 30,
+      "resolved": 20,
+      "resolve_rate_percent": 66.66666666666666,
+      "cost_cny_estimate": 1.746,
+      "instance_seconds_sum": 2679.9,
+      "wall_seconds": null,
+      "mean_turns": 27.133333333333333,
+      "self_finished": 22,
+      "at_turn_limit": 8,
+      "official_reports": 27,
+      "with_p2p_cases": 25,
+      "p2p_failure_count": 0,
+      "categories": {
+        "empty_patch": 3,
+        "resolved": 20,
+        "test_collection_blocked": 2,
+        "tests_not_resolved": 5
+      }
+    },
+    {
+      "run_id": "v30-glm",
+      "model": "glm-5.3-flash",
+      "mode": "agent",
+      "instances": 30,
+      "resolved": 20,
+      "resolve_rate_percent": 66.66666666666666,
+      "cost_cny_estimate": 4.046,
+      "instance_seconds_sum": 14030.8,
+      "wall_seconds": null,
+      "mean_turns": 22.8,
+      "self_finished": 23,
+      "at_turn_limit": 6,
+      "official_reports": 28,
+      "with_p2p_cases": 26,
+      "p2p_failure_count": 0,
+      "categories": {
+        "empty_patch": 1,
+        "resolved": 20,
+        "run_error": 1,
+        "test_collection_blocked": 2,
+        "tests_not_resolved": 6
+      }
+    },
+    {
+      "run_id": "v30-single-shot",
+      "model": "deepseek-flash",
+      "mode": "single-shot",
+      "instances": 30,
+      "resolved": 4,
+      "resolve_rate_percent": 13.333333333333334,
+      "cost_cny_estimate": 3.703,
+      "instance_seconds_sum": 3360.2,
+      "wall_seconds": null,
+      "mean_turns": 1,
+      "self_finished": null,
+      "at_turn_limit": 0,
+      "official_reports": 5,
+      "with_p2p_cases": 5,
+      "p2p_failure_count": 0,
+      "categories": {
+        "output_truncated": 2,
+        "patch_did_not_apply": 23,
+        "resolved": 4,
+        "tests_not_resolved": 1
+      }
+    }
+  ],
+  "deepseek_repeats": {
+    "mean_percent": 65.55555555555554,
+    "sample_sd_percentage_points": 1.9245008972987498,
+    "mean_cost_cny_estimate": 1.6943333333333332,
+    "stability": {
+      "0": [
+        "django__django-12406",
+        "pylint-dev__pylint-4604",
+        "pylint-dev__pylint-4661",
+        "pylint-dev__pylint-4970",
+        "sphinx-doc__sphinx-7985",
+        "sphinx-doc__sphinx-8638",
+        "sympy__sympy-18199",
+        "sympy__sympy-18763"
+      ],
+      "1": [
+        "pydata__xarray-3993",
+        "sympy__sympy-18211"
+      ],
+      "2": [
+        "pylint-dev__pylint-6528",
+        "pytest-dev__pytest-6197",
+        "sphinx-doc__sphinx-8035"
+      ],
+      "3": [
+        "django__django-11179",
+        "django__django-15380",
+        "django__django-15731",
+        "django__django-16136",
+        "pydata__xarray-2905",
+        "pydata__xarray-3095",
+        "pydata__xarray-4629",
+        "pydata__xarray-4687",
+        "pylint-dev__pylint-7277",
+        "pytest-dev__pytest-6202",
+        "pytest-dev__pytest-7521",
+        "pytest-dev__pytest-7982",
+        "pytest-dev__pytest-8399",
+        "sphinx-doc__sphinx-9281",
+        "sphinx-doc__sphinx-9698",
+        "sympy__sympy-24066",
+        "sympy__sympy-24562"
+      ]
+    }
+  },
+  "by_group": {
+    "repo": [
+      {
+        "run_id": "v30-deepseek-r1",
+        "group": "django/django",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r1",
+        "group": "pydata/xarray",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r1",
+        "group": "pylint-dev/pylint",
+        "resolved": 2,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r1",
+        "group": "pytest-dev/pytest",
+        "resolved": 5,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r1",
+        "group": "sphinx-doc/sphinx",
+        "resolved": 3,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r1",
+        "group": "sympy/sympy",
+        "resolved": 2,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r2",
+        "group": "django/django",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r2",
+        "group": "pydata/xarray",
+        "resolved": 5,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r2",
+        "group": "pylint-dev/pylint",
+        "resolved": 2,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r2",
+        "group": "pytest-dev/pytest",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r2",
+        "group": "sphinx-doc/sphinx",
+        "resolved": 2,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r2",
+        "group": "sympy/sympy",
+        "resolved": 2,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r3",
+        "group": "django/django",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r3",
+        "group": "pydata/xarray",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r3",
+        "group": "pylint-dev/pylint",
+        "resolved": 1,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r3",
+        "group": "pytest-dev/pytest",
+        "resolved": 5,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r3",
+        "group": "sphinx-doc/sphinx",
+        "resolved": 3,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-deepseek-r3",
+        "group": "sympy/sympy",
+        "resolved": 3,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-glm",
+        "group": "django/django",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-glm",
+        "group": "pydata/xarray",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-glm",
+        "group": "pylint-dev/pylint",
+        "resolved": 1,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-glm",
+        "group": "pytest-dev/pytest",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-glm",
+        "group": "sphinx-doc/sphinx",
+        "resolved": 4,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-glm",
+        "group": "sympy/sympy",
+        "resolved": 3,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-single-shot",
+        "group": "django/django",
+        "resolved": 2,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-single-shot",
+        "group": "pydata/xarray",
+        "resolved": 1,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-single-shot",
+        "group": "pylint-dev/pylint",
+        "resolved": 0,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-single-shot",
+        "group": "pytest-dev/pytest",
+        "resolved": 1,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-single-shot",
+        "group": "sphinx-doc/sphinx",
+        "resolved": 0,
+        "instances": 5
+      },
+      {
+        "run_id": "v30-single-shot",
+        "group": "sympy/sympy",
+        "resolved": 0,
+        "instances": 5
+      }
+    ],
+    "difficulty": [
+      {
+        "run_id": "v30-deepseek-r1",
+        "group": "<15 min fix",
+        "resolved": 10,
+        "instances": 12
+      },
+      {
+        "run_id": "v30-deepseek-r1",
+        "group": "15 min - 1 hour",
+        "resolved": 9,
+        "instances": 15
+      },
+      {
+        "run_id": "v30-deepseek-r1",
+        "group": "1-4 hours",
+        "resolved": 1,
+        "instances": 3
+      },
+      {
+        "run_id": "v30-deepseek-r2",
+        "group": "<15 min fix",
+        "resolved": 10,
+        "instances": 12
+      },
+      {
+        "run_id": "v30-deepseek-r2",
+        "group": "15 min - 1 hour",
+        "resolved": 8,
+        "instances": 15
+      },
+      {
+        "run_id": "v30-deepseek-r2",
+        "group": "1-4 hours",
+        "resolved": 1,
+        "instances": 3
+      },
+      {
+        "run_id": "v30-deepseek-r3",
+        "group": "<15 min fix",
+        "resolved": 10,
+        "instances": 12
+      },
+      {
+        "run_id": "v30-deepseek-r3",
+        "group": "15 min - 1 hour",
+        "resolved": 9,
+        "instances": 15
+      },
+      {
+        "run_id": "v30-deepseek-r3",
+        "group": "1-4 hours",
+        "resolved": 1,
+        "instances": 3
+      },
+      {
+        "run_id": "v30-glm",
+        "group": "<15 min fix",
+        "resolved": 9,
+        "instances": 12
+      },
+      {
+        "run_id": "v30-glm",
+        "group": "15 min - 1 hour",
+        "resolved": 11,
+        "instances": 15
+      },
+      {
+        "run_id": "v30-glm",
+        "group": "1-4 hours",
+        "resolved": 0,
+        "instances": 3
+      },
+      {
+        "run_id": "v30-single-shot",
+        "group": "<15 min fix",
+        "resolved": 3,
+        "instances": 12
+      },
+      {
+        "run_id": "v30-single-shot",
+        "group": "15 min - 1 hour",
+        "resolved": 1,
+        "instances": 15
+      },
+      {
+        "run_id": "v30-single-shot",
+        "group": "1-4 hours",
+        "resolved": 0,
+        "instances": 3
+      }
+    ]
+  },
+  "scope": "Fixed 30-instance convenience subset; repeated runs are not independent new tasks."
+}
