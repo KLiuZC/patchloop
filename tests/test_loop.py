@@ -1,6 +1,8 @@
 import json
 from types import SimpleNamespace
 
+import pytest
+
 from patchloop.loop import run
 from patchloop.sandbox import LocalRunner
 
@@ -124,3 +126,77 @@ def test_command_key_is_accepted_as_alias_for_cmd(tmp_path):
     ])
     run("task", llm, LocalRunner(tmp_path), traj_dir=tmp_path / "traj")
     assert "aliased" in llm.requests[1][-1]["content"]
+
+
+class MemoryRunner(LocalRunner):
+    def run(self, cmd, timeout):
+        return "tool completed"
+
+    def diff(self):
+        return ""
+
+
+def repeated_calls(count):
+    # Two tool calls per response verify that budget is counted by model calls.
+    return [message(tool_calls=[
+        tool_call(f"{i}-a", '{"cmd": "true"}'),
+        tool_call(f"{i}-b", '{"cmd": "true"}'),
+    ]) for i in range(count)]
+
+
+def test_reminders_follow_all_tool_results_at_exact_turns(tmp_path):
+    llm = FakeLLM(repeated_calls(40))
+    result = run("task", llm, MemoryRunner(tmp_path), max_turns=40,
+                 traj_dir=tmp_path, run_id="enabled", budget_reminders=True)
+    assert result.turns == 40 and not result.finished
+    assert result.budget_reminders_sent == 2
+    assert [i + 1 for i, req in enumerate(llm.requests) if req[-1]["role"] == "user"] == [1, 21, 36]
+    for turn, remaining in [(21, 20), (36, 5)]:
+        req = llm.requests[turn - 1]
+        assert f"{remaining} model calls remain" in req[-1]["content"]
+        assert [m["role"] for m in req[-4:]] == ["assistant", "tool", "tool", "user"]
+        assert {m["tool_call_id"] for m in req[-3:-1]} == {c["id"] for c in req[-4]["tool_calls"]}
+    rows = [json.loads(l) for l in (tmp_path / "enabled.jsonl").read_text().splitlines()]
+    assert rows[0]["budget_reminders"] is True
+    reminders = [r for r in rows if r["type"] == "budget_reminder"]
+    assert [(r["turn"], r["remaining"]) for r in reminders] == [(21, 20), (36, 5)]
+    for r in reminders:
+        i = rows.index(r)
+        assert rows[i - 1]["turn"] == r["turn"] - 1
+        assert rows[i + 1]["type"] == "turn" and rows[i + 1]["turn"] == r["turn"]
+        assert r["message"] == llm.requests[r["turn"] - 1][-1]
+
+
+def test_default_off_preserves_original_conversation(tmp_path):
+    implicit = FakeLLM(repeated_calls(40))
+    explicit = FakeLLM(repeated_calls(40))
+    for name, llm, options in [("implicit", implicit, {}), ("explicit", explicit, {"budget_reminders": False})]:
+        result = run("task", llm, MemoryRunner(tmp_path), max_turns=40, traj_dir=tmp_path, run_id=name, **options)
+        assert result.budget_reminders_sent == 0
+        assert all(m["role"] != "user" for req in llm.requests for m in req[2:])
+        rows = [json.loads(l) for l in (tmp_path / f"{name}.jsonl").read_text().splitlines()]
+        assert all(r["type"] != "budget_reminder" for r in rows)
+    assert implicit.requests == explicit.requests
+
+
+def test_early_finish_does_not_trigger_later_reminder(tmp_path):
+    llm = FakeLLM([*repeated_calls(19), message(content="done")])
+    result = run("task", llm, MemoryRunner(tmp_path), max_turns=40,
+                 traj_dir=tmp_path, budget_reminders=True)
+    assert result.finished and result.turns == 20 and result.budget_reminders_sent == 0
+
+
+@pytest.mark.parametrize("limit,turns", [(30, [11, 26]), (20, [16]), (6, [2]), (5, []), (4, [])])
+def test_reminders_with_other_budgets(tmp_path, limit, turns):
+    llm = FakeLLM(repeated_calls(limit))
+    run("task", llm, MemoryRunner(tmp_path), max_turns=limit, traj_dir=tmp_path, budget_reminders=True)
+    assert [i + 1 for i, req in enumerate(llm.requests) if i > 0 and req[-1]["role"] == "user"] == turns
+
+
+def test_reminder_is_logged_before_a_failed_request(tmp_path):
+    llm = FakeLLM(repeated_calls(20))
+    with pytest.raises(StopIteration):
+        run("task", llm, MemoryRunner(tmp_path), max_turns=40,
+            traj_dir=tmp_path, run_id="interrupted", budget_reminders=True)
+    rows = [json.loads(l) for l in (tmp_path / "interrupted.jsonl").read_text().splitlines()]
+    assert rows[-1]["type"] == "budget_reminder" and rows[-1]["turn"] == 21

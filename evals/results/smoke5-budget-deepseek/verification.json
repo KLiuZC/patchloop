@@ -1,0 +1,168 @@
+{
+  "run_id": "smoke5-budget-deepseek",
+  "checks": {
+    "source_matches": true,
+    "all_instances_finished": true,
+    "all_tool_calls_paired": true
+  },
+  "instances": [
+    {
+      "instance_id": "pytest-dev__pytest-7205",
+      "turns": 14,
+      "reminder_turns": [],
+      "resolved": false,
+      "official_tests": {
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 9
+        },
+        "PASS_TO_PASS": {
+          "success": 16,
+          "failure": 0
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      },
+      "trajectory_sha256": "fcb56af768f59e486f49fe6ae8195d948a09d95ad27978fd18f081066b0f9383"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7236",
+      "turns": 23,
+      "reminder_turns": [
+        21
+      ],
+      "resolved": true,
+      "official_tests": {
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 51,
+          "failure": 0
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      },
+      "trajectory_sha256": "4304b68b69ae3a5a752f43a2f665ac63111d841ea47a8c0c7b07be5063232ddf"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7324",
+      "turns": 36,
+      "reminder_turns": [
+        21,
+        36
+      ],
+      "resolved": true,
+      "official_tests": {
+        "FAIL_TO_PASS": {
+          "success": 3,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 58,
+          "failure": 0
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      },
+      "trajectory_sha256": "6e4a666e786961db6a1a1ca6ac4214cac0ca8fdded1cdd314bf39c2d0b1ef734"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7432",
+      "turns": 9,
+      "reminder_turns": [],
+      "resolved": true,
+      "official_tests": {
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 77,
+          "failure": 0
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      },
+      "trajectory_sha256": "5329d9db88e4ab8ea5b60948735924367a2a10302d0acbb48098df04682bd5da"
+    },
+    {
+      "instance_id": "pallets__flask-5014",
+      "turns": 10,
+      "reminder_turns": [],
+      "resolved": true,
+      "official_tests": {
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 59,
+          "failure": 0
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      },
+      "trajectory_sha256": "3c5408edaa110c5a926af60412cf5a9f3590cb57b110a3940ca0e322f0325e76"
+    }
+  ],
+  "official_summary": {
+    "resolved_instances": 4,
+    "unresolved_instances": 1,
+    "ambiguous_failure_ids": [
+      "pytest-dev__pytest-7205"
+    ],
+    "failure_reasons": {
+      "pytest-dev__pytest-7205": "no_tests_collected"
+    },
+    "error_ids": [],
+    "resolved_ids": [
+      "pallets__flask-5014",
+      "pytest-dev__pytest-7236",
+      "pytest-dev__pytest-7324",
+      "pytest-dev__pytest-7432"
+    ],
+    "unresolved_ids": [
+      "pytest-dev__pytest-7205"
+    ]
+  },
+  "diagnosis": {
+    "instance_id": "pytest-dev__pytest-7205",
+    "reminders_received": 0,
+    "observed_test_summary": "9 failed, 17 passed",
+    "expected_example": "SETUP    S arg_same['foo']",
+    "actual_example": "SETUP    S arg_same[foo]",
+    "cause": "String parameters bypass saferepr in the submitted patch; official assertions expect quoted representations. The outer test module did collect and run tests."
+  }
+}

@@ -37,3 +37,17 @@ so rely on your knowledge of the project. Reply with only the diff inside a ```d
 {problem_statement}
 </issue>
 """
+
+BUDGET_REMINDER = """\
+Budget reminder: {remaining} model calls remain, including the next response.
+Prioritize implementing a targeted fix and running relevant tests with the remaining calls.
+If the task is complete, stop calling tools and summarize the change. Do not claim tests passed unless you ran them.
+"""
+
+
+def budget_reminder(turn: int, max_turns: int) -> dict | None:
+    """Warn once at 20 and 5 remaining calls, only after some budget has been used."""
+    remaining = max_turns - turn + 1
+    if turn <= 1 or remaining not in (20, 5):
+        return None
+    return {"role": "user", "content": BUDGET_REMINDER.format(remaining=remaining)}

@@ -1,10 +1,14 @@
+import hashlib
 import json
+import platform
 import shutil
 import subprocess
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from importlib.metadata import version
 from pathlib import Path
 from typing import Callable
 
@@ -72,6 +76,7 @@ class InstanceResult:
     note: str = ""
     resolved: bool | None = None
     patch_applied: bool | None = None
+    budget_reminders_sent: int = 0
 
 
 def solve(
@@ -84,6 +89,7 @@ def solve(
     memory: str = "2g",
     platform: str = "linux/amd64",
     on_turn: Callable | None = None,
+    budget_reminders: bool = False,
 ) -> tuple[InstanceResult, str]:
     iid = instance["instance_id"]
     result = InstanceResult(instance_id=iid, mode=mode)
@@ -95,9 +101,11 @@ def solve(
                 r = run(
                     task_text(instance), llm, runner,
                     max_turns=max_turns, timeout=timeout, traj_dir=traj_dir, on_turn=on_turn, run_id=iid,
+                    budget_reminders=budget_reminders,
                 )
                 patch = r.patch
                 result.turns, result.finished = r.turns, r.finished
+                result.budget_reminders_sent = r.budget_reminders_sent
                 result.prompt_tokens, result.cached_tokens, result.completion_tokens = (
                     r.prompt_tokens, r.cached_tokens, r.completion_tokens,
                 )
@@ -136,8 +144,18 @@ def evaluate(
     judge_workers: int = 1,
     dataset: str = DEFAULT_DATASET,
     log: Callable[[str], None] = print,
+    budget_reminders: bool = False,
 ) -> dict:
+    if budget_reminders and mode != "agent":
+        raise ValueError("--budget-reminders requires --mode agent")
     out_dir.mkdir(parents=True, exist_ok=True)
+    config = _evaluation_config(
+        instances, llm, dataset=dataset, mode=mode, max_turns=max_turns, timeout=timeout,
+        workers=workers, memory=memory, judge_workers=judge_workers, budget_reminders=budget_reminders,
+    )
+    _save_run_config(out_dir, config)
+    started_at = datetime.now(timezone.utc).isoformat()
+    started = time.monotonic()
     traj_dir = out_dir / "traj"
     traj_dir.mkdir(exist_ok=True)
     predictions_path = out_dir / "predictions.jsonl"
@@ -153,7 +171,10 @@ def evaluate(
         iid = instance["instance_id"]
         log(f"> {iid}")
         on_turn = _turn_logger(iid, log) if workers == 1 else None
-        result, patch = solve(instance, llm, mode, max_turns, timeout, traj_dir, memory=memory, on_turn=on_turn)
+        result, patch = solve(
+            instance, llm, mode, max_turns, timeout, traj_dir,
+            memory=memory, on_turn=on_turn, budget_reminders=budget_reminders,
+        )
         with lock:
             _append_jsonl(predictions_path, {"instance_id": iid, "model_name_or_path": run_id, "model_patch": patch})
             _append_jsonl(results_path, asdict(result))
@@ -191,8 +212,53 @@ def evaluate(
 
     summary = summarize(ordered, run_id, mode, llm)
     summary["harness_run_id"] = harness_run_id
+    summary["budget_reminders"] = budget_reminders
+    summary["invocation"] = {
+        "started_at": started_at,
+        "finished_at": datetime.now(timezone.utc).isoformat(),
+        "wall_seconds": round(time.monotonic() - started, 1),
+        "resumed_instances": len(done),
+        "judge": judge,
+    }
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     return summary
+
+
+def _evaluation_config(instances: list[dict], llm: LLM, **settings) -> dict:
+    """Record reproducibility inputs without credentials, environment variables or gold text."""
+    source = Path(__file__).parent
+    lock = source.parents[1] / "uv.lock"
+    selected = json.dumps(instances, sort_keys=True, ensure_ascii=False).encode()
+    return {
+        "schema_version": 1,
+        "provider": llm.provider, "model": llm.model,
+        "temperature": llm.temperature,
+        "max_tokens": None,
+        "api_timeout_seconds": getattr(llm.client.timeout, "read", llm.client.timeout),
+        "api_max_retries": llm.client.max_retries,
+        "platform": "linux/amd64", "container_cpus": 2.0, "container_network": "none",
+        **settings,
+        "instance_ids": [i["instance_id"] for i in instances],
+        "selected_instances_sha256": hashlib.sha256(selected).hexdigest(),
+        "source_sha256": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(source.glob("*.py"))},
+        "uv_lock_sha256": hashlib.sha256(lock.read_bytes()).hexdigest() if lock.exists() else None,
+        "python_version": platform.python_version(),
+        "packages": {name: version(name) for name in ("openai", "datasets", "typer")},
+    }
+
+
+def _save_run_config(out_dir: Path, config: dict) -> None:
+    path = out_dir / "run_config.json"
+    if path.exists():
+        previous = json.loads(path.read_text(encoding="utf-8"))
+        if previous["config"] != config:
+            raise ValueError("run configuration or source changed; use a new --run-id to keep experiments separate")
+    elif any((out_dir / name).exists() for name in ("predictions.jsonl", "results.jsonl", "summary.json")):
+        raise ValueError("existing run has no run_config.json; use a new --run-id instead of mixing legacy results")
+    else:
+        path.write_text(json.dumps({
+            "created_at": datetime.now(timezone.utc).isoformat(), "config": config,
+        }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def judge_predictions(

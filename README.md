@@ -66,6 +66,30 @@ uv run agent subset -o evals/subsets/verified30.txt --size 30 --seed 20260929 --
 
 每道题在自己的镜像里起一个容器，agent 只看到 issue 原文（hints、隐藏测试、标准答案都不给），改动收集成补丁写进 `evals/results/<run-id>/predictions.jsonl`，再交给官方判卷程序打分。汇总在 `summary.json`（含每题轮数、token、缓存命中、费用估算、是否解决），轨迹与补丁在同目录的 `traj/`（不进 git）。同一个 run-id 重跑会跳过已写入答卷的题，**包括空补丁或请求失败的题**；需要重试失败题时应使用新 run-id，保留原记录。`seconds` 是各题耗时总和，并行运行时不等于全程耗时。
 
+### 剩余轮数提醒实验
+
+`agent run` 和 `agent eval` 支持 `--budget-reminders`，**默认关闭**。开启后，在剩余 20、5 次模型请求时各提醒一次；40 轮预算对应第 21、36 轮请求前，剩余数包含即将开始的一轮。一次回复中的多个工具调用仍只算一轮。预算较小时，只触发已经消耗至少一轮后能到达的阈值，例如 20 轮预算只在第 16 轮提醒，5 轮及以下不提醒。
+
+提醒使用普通 user 消息，插在上一轮全部工具结果之后；不强制交卷、不增加工具、不改变原始系统提示词。模型提前收尾时不再提醒。提醒的原文、目标轮次和剩余数作为 `type=budget_reminder` 事件写入轨迹，每题结果记录 `budget_reminders_sent`。事件在请求发出前写入，即使该请求失败也能查到这次尝试。
+
+```bash
+# 开发集：检验提醒和完整判卷流程
+caffeinate -i uv run agent eval -r smoke5-budget-deepseek \
+  -f evals/subsets/smoke5.txt -p deepseek --workers 2 --memory 3g --budget-reminders
+
+# 后续正式对比：换新 run-id，保持其他参数一致
+caffeinate -i uv run agent eval -r v30-budget-r1 \
+  -f evals/subsets/verified30.txt -p deepseek --workers 2 --memory 3g --budget-reminders
+```
+
+`--mode single-shot` 不接受该开关。新评测会在答题前保存 `run_config.json`，包含模型、提醒配置、轮数/超时/并发、源码及依赖锁哈希、所选数据行哈希和实际 SDK 版本；不保存密钥或标准答案原文。配置一致才允许同一 run-id 续跑；源码、模型、题单或提醒开关改变时请换新 run-id。没有配置记录的历史运行也要求使用新 run-id，避免混入旧答卷。
+
+`summary.json.invocation` 记录本次 `evaluate` 调用的开始/结束时间、实际墙钟耗时和跳过的已答题数，包含本次答题与判卷，不包含数据集加载时间，也不把多次中断的间隔累计为运行时间。旧的 `seconds` 字段保留为任务耗时之和。超时请求的用量、可变模型别名及镜像环境变化仍可能影响复现和费用估算。
+
+开发集通过只能证明实现能工作。是否减少空补丁、节省费用或提高解决率，需要在固定配置下运行 `v30-budget-r1/r2/r3` 三遍对照，不挑最好的一遍；`verified30` 已用于分析失败，最终泛化验证仍需新题单。
+
+首次 [smoke5 验证](evals/results/smoke5-budget-deepseek/README.md) 已完成：4/5、5 道均自行收尾、3 次提醒按时发送，零 API 错误。未通过的一题在提醒前就已结束，失败来自字符串显示与官方断言不符；本次仅验证功能闭环，不作为提醒收益结论。
+
 ## 结构
 
 ```
@@ -95,6 +119,7 @@ tests/               项目自身的单元测试：uv run pytest
 - [x] Docker 沙箱
 - [x] SWE-bench Verified 子集评测流水线
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
-- [ ] 剩余轮数提醒的单变量实验
+- [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录
+- [ ] 剩余轮数提醒的 30 题单变量对比
 - [ ] context 管理与消融
 - [ ] 轨迹查看器、源码可见的单次直出对照、未用于调参的新题验证

@@ -41,6 +41,7 @@ def run_command(
     model: Optional[str] = typer.Option(None, "--model", "-m", help="Override the provider's default model."),
     max_turns: int = typer.Option(30, "--max-turns", help="Stop after this many model calls."),
     timeout: int = typer.Option(60, "--timeout", help="Per-command timeout in seconds."),
+    budget_reminders: bool = typer.Option(False, "--budget-reminders", help="Remind the model at 20 and 5 calls remaining."),
 ):
     """Run the agent on a task inside a repository."""
     load_dotenv()
@@ -76,7 +77,10 @@ def run_command(
 
     try:
         with runner:
-            result = run(task, llm, runner, max_turns=max_turns, timeout=timeout, on_turn=show)
+            result = run(
+                task, llm, runner, max_turns=max_turns, timeout=timeout, on_turn=show,
+                budget_reminders=budget_reminders,
+            )
     except RuntimeError as e:
         console.print(f"[red]{escape(str(e))}[/]")
         raise typer.Exit(code=2)
@@ -113,6 +117,7 @@ def eval_command(
     memory: str = typer.Option("2g", "--memory", help="Memory limit per container."),
     judge: bool = typer.Option(True, "--judge/--no-judge", help="Run the SWE-bench harness afterwards."),
     judge_workers: int = typer.Option(1, "--judge-workers"),
+    budget_reminders: bool = typer.Option(False, "--budget-reminders", help="Agent mode only: remind at 20 and 5 calls remaining."),
     harness_dir: Optional[Path] = typer.Option(
         None, "--harness-dir", help="Where the harness writes logs and finds swe-bench-tasks ($SWEBENCH_WORKDIR, default ~/code/swebench-work)."
     ),
@@ -126,6 +131,8 @@ def eval_command(
         raise typer.BadParameter("give at least one --instance or an --instances-file", param_hint="--instance")
     if mode not in ("agent", "single-shot"):
         raise typer.BadParameter("expected 'agent' or 'single-shot'", param_hint="--mode")
+    if budget_reminders and mode != "agent":
+        raise typer.BadParameter("requires --mode agent", param_hint="--budget-reminders")
 
     harness_dir = harness_dir or Path(os.environ.get("SWEBENCH_WORKDIR", "~/code/swebench-work")).expanduser()
     task_repo = harness_dir / "swe-bench-tasks"
@@ -142,32 +149,38 @@ def eval_command(
     console.print(f"loading {len(ids)} instance(s) from {dataset} ...")
     loaded = load_instances(ids, dataset)
     out_dir = Path("evals/results") / run_id
-    summary = evaluate(
-        loaded, llm, run_id, out_dir,
-        mode=mode, max_turns=max_turns, timeout=timeout, workers=workers, memory=memory,
-        judge=judge, harness_dir=harness_dir, task_repo=task_repo, judge_workers=judge_workers,
-        dataset=dataset, log=lambda line: console.print(escape(line), highlight=False),
-    )
+    try:
+        summary = evaluate(
+            loaded, llm, run_id, out_dir,
+            mode=mode, max_turns=max_turns, timeout=timeout, workers=workers, memory=memory,
+            judge=judge, harness_dir=harness_dir, task_repo=task_repo, judge_workers=judge_workers,
+            dataset=dataset, log=lambda line: console.print(escape(line), highlight=False),
+            budget_reminders=budget_reminders,
+        )
+    except ValueError as e:
+        console.print(f"[red]{escape(str(e))}[/]")
+        raise typer.Exit(code=2)
     _print_summary(summary, out_dir)
 
 
 def _print_summary(summary: dict, out_dir: Path) -> None:
     table = Table(title=f"{summary['run_id']} · {summary['mode']} · {summary['model']}")
-    for col in ("instance", "turns", "prompt/cached/completion", "cost", "patch", "resolved", "note"):
+    for col in ("instance", "turns", "reminders", "prompt/cached/completion", "cost", "patch", "resolved", "note"):
         table.add_column(col)
     for r in summary["results"]:
         if r["resolved"] is None:
             verdict = "-"
         else:
             verdict = "[green]yes[/]" if r["resolved"] else "[red]no[/]"
-        notes = [n for n in (r["error"], r.get("note", ""), "" if r["finished"] else "max_turns") if n]
+        limit_note = "max_turns" if not r["finished"] and not r["error"] else ""
+        notes = [n for n in (r["error"], r.get("note", ""), limit_note) if n]
         if not r["error"] and not r["patch_lines"] and not r.get("note"):
             notes.append("no patch")
         if r["patch_applied"] is False and "did not apply" not in " ".join(notes):
             notes.append("patch did not apply")
         note = "; ".join(notes)
         table.add_row(
-            r["instance_id"], str(r["turns"]),
+            r["instance_id"], str(r["turns"]), str(r.get("budget_reminders_sent", 0)),
             f"{r['prompt_tokens'] // 1000}k / {r['cached_tokens'] // 1000}k / {r['completion_tokens']}",
             f"¥{r['cost']:.2f}" if r["cost"] is not None else "-",
             f"+{r['patch_lines']}" if r["patch_lines"] else "none",
@@ -175,14 +188,19 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
         )
     console.print(table)
     rate = f"{summary['resolved']}/{summary['judged']} ({summary['resolve_rate'] * 100:.0f}%)" if summary["judged"] else "not judged"
+    invocation = summary.get("invocation")
+    time_note = (
+        f"this invocation {invocation['wall_seconds'] / 60:.1f} min"
+        if invocation else f"summed task time {summary['seconds'] / 60:.1f} min"
+    )
     console.print(
-        f"resolved {rate} · ¥{summary['cost_cny']:.2f} · {summary['seconds'] / 60:.0f} min · "
+        f"resolved {rate} · estimated ¥{summary['cost_cny']:.2f} · {time_note} · "
         f"errors {summary['errors']} · {out_dir}/summary.json"
     )
     console.print(
         "[dim]EXPERIMENTS.md: | <date> | " + escape(summary["run_id"]) + f" ({summary['instances']} 题, {summary['mode']}) | "
         f"{summary['provider']} / {summary['model']} | - | {summary['prompt_tokens'] // 1000}k / {summary['completion_tokens'] // 1000}k | "
-        f"{rate} | ¥{summary['cost_cny']:.2f}, {summary['seconds'] / 60:.0f} min |[/]"
+        f"{rate} | estimated ¥{summary['cost_cny']:.2f}, {time_note} |[/]"
     )
 
 

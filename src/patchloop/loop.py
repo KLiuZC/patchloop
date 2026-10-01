@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Callable
 
 from .llm import LLM, estimate_cost
-from .prompts import SYSTEM_PROMPT
+from .prompts import SYSTEM_PROMPT, budget_reminder
 from .tools import TOOLS, bash
 from .trajectory import Trajectory
 
@@ -23,6 +23,7 @@ class RunResult:
     cost: float | None = None
     seconds: float = 0.0
     patch: str = ""
+    budget_reminders_sent: int = 0
 
 
 def cached_tokens_of(usage) -> int:
@@ -43,11 +44,13 @@ def run(
     traj_dir: Path = Path("traj"),
     on_turn: Callable[[int, dict, list[dict]], None] | None = None,
     run_id: str | None = None,
+    budget_reminders: bool = False,
 ) -> RunResult:
     run_id = run_id or time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
     run_started = time.time()
     result = RunResult(run_id=run_id)
     traj_dir = Path(traj_dir)
+    system_prompt = SYSTEM_PROMPT.format(environment=runner.environment, workdir=runner.workdir, max_turns=max_turns)
     traj = Trajectory(
         traj_dir / f"{run_id}.jsonl",
         meta={
@@ -56,18 +59,27 @@ def run(
             "provider": llm.provider,
             "model": llm.model,
             "max_turns": max_turns,
+            "timeout": timeout,
+            "budget_reminders": budget_reminders,
+            "system_prompt": system_prompt,
         },
     )
     messages = [
         {
             "role": "system",
-            "content": SYSTEM_PROMPT.format(environment=runner.environment, workdir=runner.workdir, max_turns=max_turns),
+            "content": system_prompt,
         },
         {"role": "user", "content": task},
     ]
 
     for turn in range(1, max_turns + 1):
         started = time.time()
+        reminder = budget_reminder(turn, max_turns) if budget_reminders else None
+        if reminder:
+            # All previous tool results are already in messages; never split a tool-call group.
+            messages.append(reminder)
+            traj.budget_reminder(turn, max_turns - turn + 1, reminder)
+            result.budget_reminders_sent += 1
         msg, usage = llm.chat(messages, TOOLS)
         assistant = _assistant_message(msg)
         messages.append(assistant)
