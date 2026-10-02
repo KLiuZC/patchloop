@@ -77,6 +77,8 @@ class InstanceResult:
     resolved: bool | None = None
     patch_applied: bool | None = None
     budget_reminders_sent: int = 0
+    stop_reason: str = ""
+    final_message: str = ""
 
 
 def solve(
@@ -90,6 +92,7 @@ def solve(
     platform: str = "linux/amd64",
     on_turn: Callable | None = None,
     budget_reminders: bool = False,
+    explicit_finish: bool = False,
 ) -> tuple[InstanceResult, str]:
     iid = instance["instance_id"]
     result = InstanceResult(instance_id=iid, mode=mode)
@@ -102,16 +105,19 @@ def solve(
                     task_text(instance), llm, runner,
                     max_turns=max_turns, timeout=timeout, traj_dir=traj_dir, on_turn=on_turn, run_id=iid,
                     budget_reminders=budget_reminders,
+                    explicit_finish=explicit_finish,
                 )
                 patch = r.patch
                 result.turns, result.finished = r.turns, r.finished
                 result.budget_reminders_sent = r.budget_reminders_sent
+                result.stop_reason, result.final_message = r.stop_reason, r.final_message
                 result.prompt_tokens, result.cached_tokens, result.completion_tokens = (
                     r.prompt_tokens, r.cached_tokens, r.completion_tokens,
                 )
             elif mode == "single-shot":
                 patch, note, usage = single_shot(instance, llm, runner, record_path=traj_dir / f"{iid}.single-shot.json")
                 result.turns, result.finished, result.note = 1, True, note
+                result.stop_reason = "single_shot"
                 result.patch_applied = bool(patch) if patch or note == "patch did not apply" else None
                 result.prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
                 result.cached_tokens = cached_tokens_of(usage) if usage else 0
@@ -122,6 +128,7 @@ def solve(
                 raise ValueError(f"unknown mode {mode!r}")
     except Exception as e:  # one broken instance must not take the whole run down
         result.error = f"{type(e).__name__}: {e}"
+        result.stop_reason = "error"
     result.seconds = round(time.time() - started, 1)
     result.patch_lines = patch.count("\n")
     result.cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
@@ -145,13 +152,17 @@ def evaluate(
     dataset: str = DEFAULT_DATASET,
     log: Callable[[str], None] = print,
     budget_reminders: bool = False,
+    explicit_finish: bool = False,
 ) -> dict:
     if budget_reminders and mode != "agent":
         raise ValueError("--budget-reminders requires --mode agent")
+    if explicit_finish and mode != "agent":
+        raise ValueError("--explicit-finish requires --mode agent")
     out_dir.mkdir(parents=True, exist_ok=True)
     config = _evaluation_config(
         instances, llm, dataset=dataset, mode=mode, max_turns=max_turns, timeout=timeout,
         workers=workers, memory=memory, judge_workers=judge_workers, budget_reminders=budget_reminders,
+        explicit_finish=explicit_finish,
     )
     _save_run_config(out_dir, config)
     started_at = datetime.now(timezone.utc).isoformat()
@@ -170,10 +181,11 @@ def evaluate(
     def work(instance: dict) -> InstanceResult:
         iid = instance["instance_id"]
         log(f"> {iid}")
-        on_turn = _turn_logger(iid, log) if workers == 1 else None
+        on_turn = _turn_logger(iid, log, explicit_finish) if workers == 1 else None
         result, patch = solve(
             instance, llm, mode, max_turns, timeout, traj_dir,
             memory=memory, on_turn=on_turn, budget_reminders=budget_reminders,
+            explicit_finish=explicit_finish,
         )
         with lock:
             _append_jsonl(predictions_path, {"instance_id": iid, "model_name_or_path": run_id, "model_patch": patch})
@@ -213,6 +225,7 @@ def evaluate(
     summary = summarize(ordered, run_id, mode, llm)
     summary["harness_run_id"] = harness_run_id
     summary["budget_reminders"] = budget_reminders
+    summary["explicit_finish"] = explicit_finish
     summary["invocation"] = {
         "started_at": started_at,
         "finished_at": datetime.now(timezone.utc).isoformat(),
@@ -329,16 +342,20 @@ def summarize(results: list[InstanceResult], run_id: str, mode: str, llm: LLM) -
     }
 
 
-def _turn_logger(iid: str, log: Callable[[str], None]):
+def _turn_logger(iid: str, log: Callable[[str], None], explicit_finish: bool = False):
     def on_turn(turn: int, assistant: dict, tools: list[dict]) -> None:
         for tool in tools:
+            if tool["name"] == "finish":
+                log(f"  [{iid} #{turn}] finish: {tool['output'].strip()[:160]}")
+                continue
             try:
                 cmd = json.loads(tool["arguments"])["cmd"]
             except Exception:
                 cmd = tool["arguments"]
             log(f"  [{iid} #{turn}] $ {cmd.strip()[:100]}")
         if not tools:
-            log(f"  [{iid} #{turn}] (finished) {assistant['content'].strip()[:100]}")
+            status = "text reply; finish required" if explicit_finish else "finished"
+            log(f"  [{iid} #{turn}] ({status}) {assistant['content'].strip()[:100]}")
 
     return on_turn
 

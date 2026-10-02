@@ -61,32 +61,36 @@ def test_eval_records_config_forwards_flag_and_resumes_consistently(tmp_path, mo
     seen = []
 
     def solve(instance, *args, **kwargs):
-        seen.append(kwargs["budget_reminders"])
+        seen.append((kwargs["budget_reminders"], kwargs["explicit_finish"]))
         return InstanceResult(instance["instance_id"], "agent", turns=40, budget_reminders_sent=2), ""
 
     monkeypatch.setattr(evaluation, "solve", solve)
     instances = [{"instance_id": "x__y-1", "problem_statement": "problem", "patch": "hidden-gold"}]
     kwargs = dict(instances=instances, llm=evaluation_llm(), run_id="r", out_dir=tmp_path,
-                  budget_reminders=True, judge=False)
+                  budget_reminders=True, explicit_finish=True, judge=False)
     summary = evaluation.evaluate(**kwargs)
-    assert seen == [True]
+    assert seen == [(True, True)]
     assert summary["budget_reminders"] is True
+    assert summary["explicit_finish"] is True
     assert summary["results"][0]["budget_reminders_sent"] == 2
     assert summary["invocation"]["wall_seconds"] >= 0
     assert summary["invocation"]["resumed_instances"] == 0
     saved = (tmp_path / "run_config.json").read_bytes()
     config = json.loads(saved)["config"]
     assert config["instance_ids"] == ["x__y-1"]
+    assert config["explicit_finish"] is True
     assert len(config["source_sha256"]["loop.py"]) == 64
     assert "hidden-gold" not in saved.decode()
     again = evaluation.evaluate(**kwargs)
-    assert seen == [True] and again["invocation"]["resumed_instances"] == 1
+    assert seen == [(True, True)] and again["invocation"]["resumed_instances"] == 1
     assert (tmp_path / "run_config.json").read_bytes() == saved
     with pytest.raises(ValueError, match="new --run-id"):
         evaluation.evaluate(**{**kwargs, "budget_reminders": False})
     with pytest.raises(ValueError, match="new --run-id"):
+        evaluation.evaluate(**{**kwargs, "explicit_finish": False})
+    with pytest.raises(ValueError, match="new --run-id"):
         evaluation.evaluate(**{**kwargs, "instances": [{**instances[0], "problem_statement": "different"}]})
-    assert seen == [True]
+    assert seen == [(True, True)]
 
 
 def test_run_config_rejects_changed_source_and_legacy_results(tmp_path):
@@ -107,6 +111,12 @@ def test_single_shot_rejects_reminders_before_starting(tmp_path):
     assert not list(tmp_path.iterdir())
 
 
+def test_single_shot_rejects_explicit_finish_before_starting(tmp_path):
+    with pytest.raises(ValueError, match="--explicit-finish requires --mode agent"):
+        evaluation.evaluate([], evaluation_llm(), "r", tmp_path, mode="single-shot", explicit_finish=True)
+    assert not list(tmp_path.iterdir())
+
+
 def test_solve_passes_reminders_to_loop_and_records_count(tmp_path, monkeypatch):
     class Runner:
         def __init__(self, *args, **kwargs):
@@ -120,11 +130,14 @@ def test_solve_passes_reminders_to_loop_and_records_count(tmp_path, monkeypatch)
 
     def loop(*args, **kwargs):
         assert kwargs["budget_reminders"] is True
+        assert kwargs["explicit_finish"] is True
         return SimpleNamespace(patch="diff\n", turns=22, finished=True, budget_reminders_sent=1,
-                               prompt_tokens=100, cached_tokens=50, completion_tokens=10)
+                               prompt_tokens=100, cached_tokens=50, completion_tokens=10,
+                               stop_reason="finish", final_message="Fixed issue")
 
     monkeypatch.setattr(evaluation, "DockerRunner", Runner)
     monkeypatch.setattr(evaluation, "run", loop)
     result, patch = evaluation.solve({"instance_id": "x__y-1", "repo": "x/y", "problem_statement": "bug"},
-                                     evaluation_llm(), "agent", 40, 180, tmp_path, budget_reminders=True)
+                                     evaluation_llm(), "agent", 40, 180, tmp_path, budget_reminders=True, explicit_finish=True)
     assert not result.error and result.budget_reminders_sent == 1 and patch == "diff\n"
+    assert result.stop_reason == "finish" and result.final_message == "Fixed issue"

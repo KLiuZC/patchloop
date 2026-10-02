@@ -20,6 +20,26 @@ BASH_TOOL = {
 
 TOOLS = [BASH_TOOL]
 
+FINISH_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "finish",
+        "description": (
+            "Submit the current repository changes and end the task. Call this tool alone, "
+            "after completing the work. Summarize the changes and any tests actually run. "
+            "Submitting does not mean the patch has passed evaluation."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "summary": {"type": "string", "minLength": 1, "description": "A brief, non-empty task summary."},
+            },
+            "required": ["summary"],
+            "additionalProperties": False,
+        },
+    },
+}
+
 
 def truncate(text: str, limit: int = MAX_OUTPUT_CHARS) -> str:
     if len(text) <= limit:

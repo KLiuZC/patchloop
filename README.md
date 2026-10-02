@@ -2,7 +2,7 @@
 
 一个从零写的最小 coding agent：给它一个仓库和一个任务，它通过 bash 自己定位、修改、跑测试，直到完成。目标是在公开 benchmark 上跑出可复现的数字，并把评测和轨迹分析做成配套工具。
 
-当前状态：一个 `bash` 工具；命令可以在本机跑，也可以在一次性的 Docker 容器里跑；无 context 压缩。
+当前状态：一个 `bash` 操作工具，可选 `finish` 交卷工具；命令可以在本机跑，也可以在一次性的 Docker 容器里跑；无 context 压缩。
 
 ## 已完成的评测
 
@@ -96,12 +96,26 @@ caffeinate -i uv run agent eval -r v30-budget-r1 \
 
 首次 [smoke5 验证](evals/results/smoke5-budget-deepseek/README.md) 已完成：4/5、5 道均自行收尾、3 次提醒按时发送，零 API 错误。未通过的一题在提醒前就已结束，失败来自字符串显示与官方断言不符；本次仅验证功能闭环，不作为提醒收益结论。
 
+### 显式交卷工具（已实现，尚未做模型评测）
+
+`agent run` 和 `agent eval` 支持 `--explicit-finish`，默认关闭。开启后，模型必须单独调用 `finish({"summary": "修复总结"})` 才会主动结束；程序保存总结，收集当前补丁，然后沿用原有评测流程。交卷不保证补丁正确，空补丁也允许提交，最终仍由官方判卷决定 `resolved`。
+
+- `summary` 必须是非空字符串。参数错误会作为工具结果回传，让模型在剩余预算内修正。
+- 单独的文字回复不再表示交卷，程序会提示调用 `finish`，仍受原来的轮数上限约束。
+- 同一回复中将 `finish` 与其他工具一起调用时，交卷被拒绝，其余工具按原顺序执行；全部工具结果回传后，模型可以再单独交卷。
+- 原有结束方式仍是默认。开启 `--budget-reminders --explicit-finish` 时，提醒的触发轮次不变，仅把收尾要求改为调用 `finish`。
+- 该选项只适用于 agent 模式，与 `--mode single-shot` 同用会报参数错误；开启或关闭它须使用新的 run-id，以免混入不同配置的答卷。
+
+运行配置和轨迹元数据保存 `explicit_finish`。纯文字回复后的提示记录为 `finish_required` 事件，`turn` 表示下一次模型请求的轮次。结果通过 `stop_reason` 区分 `finish`（显式交卷）、`no_tool_calls`（原模式文字结束）、`max_turns`（预算耗尽）；评测中的运行异常记为 `error`，单次直出记为 `single_shot`。`final_message` 保存模型交卷总结，不是独立验证过的修复结论。
+
+目前只完成本地功能验证，尚未运行 finish 模式的 smoke5 或 verified30。是否改善收尾、费用和解决率，需要后续对比，不改变已完成的轮数提醒实验结果。
+
 ## 结构
 
 ```
 src/patchloop/
   llm.py         OpenAI-compatible 客户端与 provider 表
-  tools.py       bash 工具的定义与输出截断
+  tools.py       bash/finish 工具定义与命令输出截断
   sandbox.py     命令在哪里执行：LocalRunner（本机）/ DockerRunner（容器）
   prompts.py     system prompt
   loop.py        agent 循环：调模型 → 执行工具 → 结果回填
@@ -129,6 +143,8 @@ tests/               项目自身的单元测试：uv run pytest
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
 - [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录
 - [x] 剩余轮数提醒的 30 题单变量对比
+- [x] 可选 finish 交卷工具、CLI 开关与本地功能验证
 - [ ] context 管理与消融
-- [ ] finish 工具或结构化编辑工具的单变量实验
+- [ ] finish 工具的真实模型验证与单变量对比
+- [ ] 结构化编辑工具的单变量实验
 - [ ] 轨迹查看器、源码可见的单次直出对照、未用于调参的新题验证

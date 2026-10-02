@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 class Trajectory:
-    """Append-only JSONL: metadata, optional reminders, turns, then a result."""
+    """Append-only JSONL: metadata, reminders/feedback, turns, then a result."""
 
     def __init__(self, path: Path, meta: dict):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -21,6 +21,9 @@ class Trajectory:
 
     def budget_reminder(self, turn: int, remaining: int, message: dict) -> None:
         self._write({"type": "budget_reminder", "turn": turn, "remaining": remaining, "message": message})
+
+    def finish_required(self, turn: int, message: dict) -> None:
+        self._write({"type": "finish_required", "turn": turn, "message": message})
 
     def close(self, result) -> None:
         self._write({"type": "result", **asdict(result)})

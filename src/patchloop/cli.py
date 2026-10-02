@@ -42,6 +42,7 @@ def run_command(
     max_turns: int = typer.Option(30, "--max-turns", help="Stop after this many model calls."),
     timeout: int = typer.Option(60, "--timeout", help="Per-command timeout in seconds."),
     budget_reminders: bool = typer.Option(False, "--budget-reminders", help="Remind the model at 20 and 5 calls remaining."),
+    explicit_finish: bool = typer.Option(False, "--explicit-finish", help="Require the finish tool to submit the task."),
 ):
     """Run the agent on a task inside a repository."""
     load_dotenv()
@@ -72,7 +73,10 @@ def run_command(
         if assistant["content"]:
             console.print(f"[dim]{escape(assistant['content'])}[/dim]")
         for tool in tools:
-            console.print(f"[bold cyan]\\[{turn}][/] $ {escape(_cmd_of(tool['arguments']))}")
+            if tool["name"] == "finish":
+                console.print(f"[bold cyan]\\[{turn}][/] finish {escape(tool['arguments'])}")
+            else:
+                console.print(f"[bold cyan]\\[{turn}][/] $ {escape(_cmd_of(tool['arguments']))}")
             console.print(escape(tool["output"]), style="dim")
 
     try:
@@ -80,11 +84,14 @@ def run_command(
             result = run(
                 task, llm, runner, max_turns=max_turns, timeout=timeout, on_turn=show,
                 budget_reminders=budget_reminders,
+                explicit_finish=explicit_finish,
             )
     except RuntimeError as e:
         console.print(f"[red]{escape(str(e))}[/]")
         raise typer.Exit(code=2)
 
+    if explicit_finish and result.finished:
+        console.print(escape(result.final_message))
     status = "[green]finished[/]" if result.finished else f"[red]stopped at max_turns={max_turns}[/]"
     patch_note = f" · patch {result.patch.count(chr(10))} lines" if result.patch else " · no changes"
     console.print(
@@ -118,6 +125,7 @@ def eval_command(
     judge: bool = typer.Option(True, "--judge/--no-judge", help="Run the SWE-bench harness afterwards."),
     judge_workers: int = typer.Option(1, "--judge-workers"),
     budget_reminders: bool = typer.Option(False, "--budget-reminders", help="Agent mode only: remind at 20 and 5 calls remaining."),
+    explicit_finish: bool = typer.Option(False, "--explicit-finish", help="Agent mode only: require the finish tool to submit."),
     harness_dir: Optional[Path] = typer.Option(
         None, "--harness-dir", help="Where the harness writes logs and finds swe-bench-tasks ($SWEBENCH_WORKDIR, default ~/code/swebench-work)."
     ),
@@ -133,6 +141,8 @@ def eval_command(
         raise typer.BadParameter("expected 'agent' or 'single-shot'", param_hint="--mode")
     if budget_reminders and mode != "agent":
         raise typer.BadParameter("requires --mode agent", param_hint="--budget-reminders")
+    if explicit_finish and mode != "agent":
+        raise typer.BadParameter("requires --mode agent", param_hint="--explicit-finish")
 
     harness_dir = harness_dir or Path(os.environ.get("SWEBENCH_WORKDIR", "~/code/swebench-work")).expanduser()
     task_repo = harness_dir / "swe-bench-tasks"
@@ -156,6 +166,7 @@ def eval_command(
             judge=judge, harness_dir=harness_dir, task_repo=task_repo, judge_workers=judge_workers,
             dataset=dataset, log=lambda line: console.print(escape(line), highlight=False),
             budget_reminders=budget_reminders,
+            explicit_finish=explicit_finish,
         )
     except ValueError as e:
         console.print(f"[red]{escape(str(e))}[/]")
@@ -173,7 +184,8 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
         else:
             verdict = "[green]yes[/]" if r["resolved"] else "[red]no[/]"
         limit_note = "max_turns" if not r["finished"] and not r["error"] else ""
-        notes = [n for n in (r["error"], r.get("note", ""), limit_note) if n]
+        finish_note = "finish" if r.get("stop_reason") == "finish" else ""
+        notes = [n for n in (r["error"], r.get("note", ""), limit_note, finish_note) if n]
         if not r["error"] and not r["patch_lines"] and not r.get("note"):
             notes.append("no patch")
         if r["patch_applied"] is False and "did not apply" not in " ".join(notes):
