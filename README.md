@@ -8,19 +8,25 @@
 
 SWE-bench Verified 固定 30 题子集（6 个仓库各 5 题，gold 校验 30/30 通过）：
 
-| 配置 | 解决数 | 解决率 | 每遍估算费用 |
-| --- | --- | --- | --- |
+
+| 配置                         | 解决数           | 解决率                         | 每遍估算费用   |
+| -------------------------- | ------------- | --------------------------- | -------- |
 | DeepSeek flash + agent，3 遍 | 20、19、20 / 30 | 均值 **65.6%**，样本标准差 1.9 个百分点 | 平均 ¥1.69 |
-| GLM flash + agent，1 遍 | 20/30 | **66.7%** | ¥4.05 |
-| DeepSeek flash 单次直出，1 遍 | 4/30 | **13.3%** | ¥3.70 |
+| GLM flash + agent，1 遍      | 20/30         | **66.7%**                   | ¥4.05    |
+| DeepSeek flash 单次直出，1 遍    | 4/30          | **13.3%**                   | ¥3.70    |
+
 
 这是特定子集的成绩，不代表 Verified 全集。单次直出只看题面，分差包含源码访问、工具执行与多轮反馈的共同收益。API 超时与空补丁保留在分母中，人工诊断不补分。费用按内置价格表估算，不是账单；标准差不是置信区间。
+
+4C 的剩余轮数提醒实验在同一 30 题上运行三遍，解决数为 **20、21、23/30**，均值 **71.1%**（样本标准差 5.1 个百分点）。无提醒基线为 **20、19、20/30**，均值 65.6%。提醒组空补丁为 3/90、基线为 12/90；这是过程改善的证据，解决率差异仍需新题单验证，不能直接宣称提醒带来确定的提分。
 
 详细结果、逐题表、判卷限制、源码快照及下一项实验约定见 [4B 基线归档](evals/reports/4b-baseline/README.md)。无需模型或 Docker 即可重新生成统计表：
 
 ```bash
 python3 evals/summarize_baseline.py
 ```
+
+
 
 ## 运行
 
@@ -77,7 +83,7 @@ uv run agent subset -o evals/subsets/verified30.txt --size 30 --seed 20260929 --
 caffeinate -i uv run agent eval -r smoke5-budget-deepseek \
   -f evals/subsets/smoke5.txt -p deepseek --workers 2 --memory 3g --budget-reminders
 
-# 后续正式对比：换新 run-id，保持其他参数一致
+# 正式对比：每次使用新 run-id，保持其他参数一致
 caffeinate -i uv run agent eval -r v30-budget-r1 \
   -f evals/subsets/verified30.txt -p deepseek --workers 2 --memory 3g --budget-reminders
 ```
@@ -86,7 +92,7 @@ caffeinate -i uv run agent eval -r v30-budget-r1 \
 
 `summary.json.invocation` 记录本次 `evaluate` 调用的开始/结束时间、实际墙钟耗时和跳过的已答题数，包含本次答题与判卷，不包含数据集加载时间，也不把多次中断的间隔累计为运行时间。旧的 `seconds` 字段保留为任务耗时之和。超时请求的用量、可变模型别名及镜像环境变化仍可能影响复现和费用估算。
 
-开发集通过只能证明实现能工作。是否减少空补丁、节省费用或提高解决率，需要在固定配置下运行 `v30-budget-r1/r2/r3` 三遍对照，不挑最好的一遍；`verified30` 已用于分析失败，最终泛化验证仍需新题单。
+开发集通过只能证明实现能工作。4C 三遍已完成：提醒减少了空补丁和达到轮数上限的任务，但解决率差异仍受模型随机性影响；`verified30` 已用于分析失败，最终泛化验证需另留新题单。详细结果见 [4C 报告](evals/reports/4c-budget-reminders/README.md)。
 
 首次 [smoke5 验证](evals/results/smoke5-budget-deepseek/README.md) 已完成：4/5、5 道均自行收尾、3 次提醒按时发送，零 API 错误。未通过的一题在提醒前就已结束，失败来自字符串显示与官方断言不符；本次仅验证功能闭环，不作为提醒收益结论。
 
@@ -113,6 +119,8 @@ evals/summarize_baseline.py  离线核对并重新生成 4B 统计
 tests/               项目自身的单元测试：uv run pytest
 ```
 
+
+
 ## 路线
 
 - [x] 最小 loop + bash 工具
@@ -120,6 +128,7 @@ tests/               项目自身的单元测试：uv run pytest
 - [x] SWE-bench Verified 子集评测流水线
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
 - [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录
-- [ ] 剩余轮数提醒的 30 题单变量对比
+- [x] 剩余轮数提醒的 30 题单变量对比
 - [ ] context 管理与消融
+- [ ] finish 工具或结构化编辑工具的单变量实验
 - [ ] 轨迹查看器、源码可见的单次直出对照、未用于调参的新题验证
