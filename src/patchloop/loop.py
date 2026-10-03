@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Callable
 
 from .llm import LLM, estimate_cost
-from .prompts import SYSTEM_PROMPT, budget_reminder
-from .tools import TOOLS, bash
+from .prompts import FINISH_REQUIRED, build_system_prompt, budget_reminder
+from .tools import FINISH_TOOL, TOOLS, bash
 from .trajectory import Trajectory
 
 
@@ -24,6 +24,7 @@ class RunResult:
     seconds: float = 0.0
     patch: str = ""
     budget_reminders_sent: int = 0
+    stop_reason: str = "max_turns"
 
 
 def cached_tokens_of(usage) -> int:
@@ -45,12 +46,14 @@ def run(
     on_turn: Callable[[int, dict, list[dict]], None] | None = None,
     run_id: str | None = None,
     budget_reminders: bool = False,
+    explicit_finish: bool = False,
 ) -> RunResult:
     run_id = run_id or time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
     run_started = time.time()
     result = RunResult(run_id=run_id)
     traj_dir = Path(traj_dir)
-    system_prompt = SYSTEM_PROMPT.format(environment=runner.environment, workdir=runner.workdir, max_turns=max_turns)
+    system_prompt = build_system_prompt(runner.environment, runner.workdir, max_turns, explicit_finish)
+    tools = [*TOOLS, FINISH_TOOL] if explicit_finish else TOOLS
     traj = Trajectory(
         traj_dir / f"{run_id}.jsonl",
         meta={
@@ -61,6 +64,7 @@ def run(
             "max_turns": max_turns,
             "timeout": timeout,
             "budget_reminders": budget_reminders,
+            "explicit_finish": explicit_finish,
             "system_prompt": system_prompt,
         },
     )
@@ -74,19 +78,32 @@ def run(
 
     for turn in range(1, max_turns + 1):
         started = time.time()
-        reminder = budget_reminder(turn, max_turns) if budget_reminders else None
+        reminder = budget_reminder(turn, max_turns, explicit_finish) if budget_reminders else None
         if reminder:
             # All previous tool results are already in messages; never split a tool-call group.
             messages.append(reminder)
             traj.budget_reminder(turn, max_turns - turn + 1, reminder)
             result.budget_reminders_sent += 1
-        msg, usage = llm.chat(messages, TOOLS)
+        msg, usage = llm.chat(messages, tools)
         assistant = _assistant_message(msg)
         messages.append(assistant)
 
         tool_records = []
-        for call in msg.tool_calls or []:
-            output = _execute(call, runner, timeout)
+        calls = msg.tool_calls or []
+        submission = None
+        for call in calls:
+            if explicit_finish and call.function.name == "finish":
+                if len(calls) != 1:
+                    output = "finish was not accepted: call it alone after reading all other tool results."
+                else:
+                    try:
+                        submission = _finish_summary(call.function.arguments)
+                    except ValueError as e:
+                        output = f"invalid finish arguments: {e}"
+                    else:
+                        output = "Submission accepted. Evaluation has not been performed by this tool."
+            else:
+                output = _execute(call, runner, timeout)
             messages.append({"role": "tool", "tool_call_id": call.id, "content": output})
             tool_records.append(
                 {
@@ -119,10 +136,21 @@ def run(
         if on_turn:
             on_turn(turn, assistant, tool_records)
 
-        if not msg.tool_calls:
+        if submission is not None:
             result.finished = True
-            result.final_message = msg.content or ""
+            result.final_message = submission
+            result.stop_reason = "finish"
             break
+        if not calls:
+            if not explicit_finish:
+                result.finished = True
+                result.final_message = msg.content or ""
+                result.stop_reason = "no_tool_calls"
+                break
+            if turn < max_turns:
+                feedback = {"role": "user", "content": FINISH_REQUIRED}
+                messages.append(feedback)
+                traj.finish_required(turn + 1, feedback)
 
     result.patch = runner.diff()
     if result.patch:
@@ -131,6 +159,19 @@ def run(
     result.cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
     traj.close(result)
     return result
+
+
+def _finish_summary(arguments: str) -> str:
+    try:
+        args = json.loads(arguments)
+    except (json.JSONDecodeError, TypeError) as e:
+        raise ValueError("expected JSON with a non-empty string field 'summary'") from e
+    if not isinstance(args, dict) or set(args) != {"summary"}:
+        raise ValueError("expected exactly one field: 'summary'")
+    summary = args["summary"]
+    if not isinstance(summary, str) or not summary.strip():
+        raise ValueError("'summary' must be a non-empty string")
+    return summary.strip()
 
 
 def _assistant_message(msg) -> dict:

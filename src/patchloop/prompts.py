@@ -45,9 +45,35 @@ If the task is complete, stop calling tools and summarize the change. Do not cla
 """
 
 
-def budget_reminder(turn: int, max_turns: int) -> dict | None:
+FINISH_REQUIRED = (
+    "A text reply does not submit the task. If your work is complete, call `finish` alone "
+    "with a non-empty `summary`; otherwise continue using `bash`. The original call budget still applies."
+)
+
+
+def build_system_prompt(environment: str, workdir: str, max_turns: int, explicit_finish: bool = False) -> str:
+    template = SYSTEM_PROMPT
+    if explicit_finish:
+        template = template.replace(
+            "You act only through the `bash` tool. Rules:",
+            "Use `bash` to work on the repository and `finish` to submit the task. Rules:",
+        ).replace(
+            "When the task is done, stop calling tools and reply with one sentence describing the change.",
+            "When the task is done, call `finish` alone with a non-empty `summary` describing the change. "
+            "Do not combine `finish` with other tools in the same response. A text reply does not end the task.",
+        )
+    return template.format(environment=environment, workdir=workdir, max_turns=max_turns)
+
+
+def budget_reminder(turn: int, max_turns: int, explicit_finish: bool = False) -> dict | None:
     """Warn once at 20 and 5 remaining calls, only after some budget has been used."""
     remaining = max_turns - turn + 1
     if turn <= 1 or remaining not in (20, 5):
         return None
-    return {"role": "user", "content": BUDGET_REMINDER.format(remaining=remaining)}
+    content = BUDGET_REMINDER.format(remaining=remaining)
+    if explicit_finish:
+        content = content.replace(
+            "If the task is complete, stop calling tools and summarize the change.",
+            "If the task is complete, call `finish` alone with a summary of the change.",
+        )
+    return {"role": "user", "content": content}
