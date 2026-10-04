@@ -1,4 +1,5 @@
 import json
+import shlex
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -79,9 +80,21 @@ class SWEbenchRepairRunner:
         )
 
     def _check_base(self, runner: DockerRunner) -> None:
+        exists = runner.run(
+            f"git cat-file -e {shlex.quote(self.task.base_commit)}^{{commit}}",
+            timeout=30,
+        )
+        if "[exit code" in exists or "[command timed out" in exists:
+            raise RuntimeError(f"base commit is not available in image: {self.task.base_commit}")
+        checkout = runner.run(
+            f"git checkout --detach {shlex.quote(self.task.base_commit)}",
+            timeout=60,
+        )
+        if "[exit code" in checkout or "[command timed out" in checkout:
+            raise RuntimeError(f"could not checkout base commit: {self.task.base_commit}\n{checkout}")
         actual = runner.run("git rev-parse HEAD", timeout=30).strip()
         if actual != self.task.base_commit:
-            raise RuntimeError(f"base commit mismatch: expected {self.task.base_commit}, got {actual}")
+            raise RuntimeError(f"base commit mismatch after checkout: expected {self.task.base_commit}, got {actual}")
 
     def _run_profile(self, runner: DockerRunner) -> tuple[str, int]:
         output = runner.run(self.task.verification_command, timeout=180)
