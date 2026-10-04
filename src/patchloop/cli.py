@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 from pathlib import Path
 from typing import List, Optional
 
@@ -12,6 +13,7 @@ from rich.table import Table
 from .eval import DEFAULT_DATASET, evaluate, load_instances, read_id_file
 from .llm import LLM, PROVIDERS
 from .loop import run
+from .repair import Limits, RepairRunner, RepairTask, VerificationProfile
 from .sandbox import DockerRunner, LocalRunner
 from .subset import DEFAULT_REPOS, DIFFICULTY_MIX, breakdown, select_subset, write_subset
 
@@ -100,6 +102,81 @@ def run_command(
         f"{patch_note} · traj/{result.run_id}.jsonl"
     )
     raise typer.Exit(code=0 if result.finished else 1)
+
+
+@app.command("repair")
+def repair_command(
+    goal: str = typer.Option(..., "--goal", "-t", help="The repair task to solve."),
+    repo: Path = typer.Option(..., "--repo", "-r", help="Git repository to repair."),
+    task_id: str = typer.Option("repair-run", "--task-id", help="Stable name for this repair attempt."),
+    base_sha: Optional[str] = typer.Option(None, "--base-sha", help="Commit to repair; defaults to HEAD."),
+    verify: str = typer.Option("pytest -q", "--verify", help="Fixed verification command for the clean candidate."),
+    artifacts: Path = typer.Option(Path("repair-runs"), "--artifacts", help="Directory for task artifacts."),
+    sandbox: str = typer.Option("local", "--sandbox", help="Where commands run: local or docker."),
+    image: Optional[str] = typer.Option(None, "--image", help="Docker image for local repair and verification."),
+    platform: Optional[str] = typer.Option(None, "--platform", help="Docker platform, e.g. linux/amd64."),
+    memory: str = typer.Option("2g", "--memory", help="Docker memory limit."),
+    provider: str = typer.Option("glm", "--provider", "-p", help="One of: " + ", ".join(PROVIDERS)),
+    model: Optional[str] = typer.Option(None, "--model", "-m", help="Override the provider's default model."),
+    max_model_calls: int = typer.Option(30, "--max-model-calls"),
+    command_timeout: int = typer.Option(60, "--command-timeout"),
+    verification_timeout: int = typer.Option(180, "--verification-timeout"),
+    budget_reminders: bool = typer.Option(False, "--budget-reminders"),
+    explicit_finish: bool = typer.Option(False, "--explicit-finish"),
+):
+    """Run one repair attempt and independently verify its exact patch from a clean base."""
+    load_dotenv()
+    repo = repo.resolve()
+    if not repo.is_dir():
+        raise typer.BadParameter(f"{repo} is not a directory", param_hint="--repo")
+    if sandbox not in {"local", "docker"}:
+        raise typer.BadParameter("expected 'local' or 'docker'", param_hint="--sandbox")
+    if sandbox == "docker" and not image:
+        raise typer.BadParameter("--image is required in docker mode", param_hint="--image")
+    if base_sha is None:
+        resolved = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True
+        )
+        if resolved.returncode != 0:
+            raise typer.BadParameter("repo is not a git repository", param_hint="--repo")
+        base_sha = resolved.stdout.strip()
+    try:
+        llm = LLM(provider, model)
+    except (ValueError, RuntimeError) as e:
+        console.print(f"[red]{escape(str(e))}[/]")
+        raise typer.Exit(code=2)
+
+    def runner_factory(workdir: Path):
+        if sandbox == "local":
+            return LocalRunner(workdir)
+        return DockerRunner(
+            image,
+            workdir="/work",
+            mount=workdir,
+            platform=platform,
+            memory=memory,
+        )
+
+    task = RepairTask(
+        task_id=task_id,
+        repo_path=repo,
+        base_sha=base_sha,
+        goal=goal,
+        verification=VerificationProfile(id="cli", command=verify, timeout_seconds=verification_timeout),
+        limits=Limits(max_model_calls=max_model_calls, command_timeout_seconds=command_timeout),
+        budget_reminders=budget_reminders,
+        explicit_finish=explicit_finish,
+    )
+    try:
+        result = RepairRunner(task, artifacts / task_id, runner_factory).run(llm)
+    except Exception as e:
+        console.print(f"[red]{escape(f'{type(e).__name__}: {e}')}[/]")
+        raise typer.Exit(code=2)
+    console.print(
+        f"execution={result.execution_status} · validation={result.validation_status} · "
+        f"stop={result.stop_reason} · artifacts={result.artifacts_dir}"
+    )
+    raise typer.Exit(code=0 if result.validation_status == "passed" else 1)
 
 
 def _cmd_of(arguments: str) -> str:

@@ -43,6 +43,34 @@ uv run agent run --workdir examples/toy_repo --provider glm \
 
 默认用两家的 flash 模型（`glm-5.3-flash`、`deepseek-flash`），便宜、够开发用；正式评测时用 `-m glm-5.3` / `-m deepseek-v4-pro` 切到旗舰。跑完后用 `git checkout -- examples/toy_repo` 还原玩具仓库。每次运行的完整轨迹写在 `traj/<run_id>.jsonl`。
 
+### 独立修复闭环
+
+`agent repair` 会在固定 `base_sha` 的临时 Git worktree 中运行 Agent，收集候选补丁，然后从同一个干净基线重新应用补丁并运行固定验证命令。验证结果不会使用 Agent 工作区中的测试状态。
+
+```bash
+uv run agent repair \
+  --repo examples/toy_repo \
+  --goal "支持版本号字符串的 v 前缀，不改变现有版本号行为" \
+  --verify "python -m pytest -q" \
+  --provider deepseek \
+  --budget-reminders \
+  --artifacts /tmp/patchloop-repair-runs/toy-version-parser
+```
+
+Docker 模式把 Agent 和验证命令都放进指定镜像：
+
+```bash
+uv run agent repair \
+  --repo examples/toy_repo \
+  --goal "支持版本号字符串的 v 前缀，不改变现有版本号行为" \
+  --verify "python -m pytest -q" \
+  --sandbox docker --image patchloop-toy --platform linux/amd64 \
+  --provider deepseek \
+  --artifacts /tmp/patchloop-repair-runs/toy-version-parser
+```
+
+一次修复会产生 `task.json`、`events.jsonl`、`trajectory/`、`patch.diff`、`validation.json` 和 `summary.json`。`execution_status` 表示 Agent 是否完成执行，`validation_status` 表示候选补丁是否通过独立验证，`review_status` 表示人工审查状态。Agent 调用 `finish` 或回复文字都不能直接把验证状态变成通过。
+
 ### 在 Docker 沙箱里跑
 
 `--sandbox docker` 时命令全部在容器里执行，本机不跑 agent 的任何命令。`--workdir` 指定的目录会挂载到容器的 `/work`；不给 `--workdir` 则直接用镜像自带的仓库（SWE-bench 镜像的代码在 `/testbed`）。
@@ -128,6 +156,7 @@ src/patchloop/
   eval.py        评测流水线：起题目容器 → 答题 → 交卷 → 官方判卷 → 汇总
   subset.py      可复现的选题：按难度分层、按仓库封顶、固定种子
   cli.py         命令行入口
+  repair/        独立修复闭环：任务契约、worktree、产物与验证器
 examples/toy_repo/   带一个已知 bug 的玩具仓库，用于冒烟
 examples/toy_image/  玩具仓库对应的 Docker 镜像（python + git + pytest）
 evals/subsets/       题目子集（每行一个 instance id）
