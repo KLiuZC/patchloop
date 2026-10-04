@@ -7,6 +7,7 @@ from typing import Literal
 
 ExecutionStatus = Literal["completed", "interrupted", "error"]
 ValidationStatus = Literal["not_run", "passed", "failed", "inconclusive"]
+BaselineStatus = Literal["passed", "failed", "error"]
 ReviewStatus = Literal["pending", "accepted", "rejected", "stale"]
 
 
@@ -61,6 +62,21 @@ class RepairTask:
 
 
 @dataclass
+class BaselineResult:
+    status: BaselineStatus
+    profile_id: str
+    command: str
+    base_sha: str
+    exit_code: int | None = None
+    output: str = ""
+    seconds: float = 0.0
+    error: str = ""
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
 class ValidationResult:
     status: ValidationStatus
     profile_id: str
@@ -71,9 +87,14 @@ class ValidationResult:
     output: str = ""
     seconds: float = 0.0
     error: str = ""
+    baseline: BaselineResult | None = None
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        value = asdict(self)
+        baseline = value.pop("baseline", None)
+        value["candidate"] = dict(value)
+        value["baseline"] = baseline
+        return value
 
 
 @dataclass

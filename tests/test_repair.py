@@ -71,6 +71,13 @@ def test_repair_runner_validates_a_patch_from_a_clean_base(tmp_path):
     assert result.review_status == "pending"
     assert result.patch
     assert result.validation is not None and result.validation.exit_code == 0
+    assert result.validation.baseline is not None
+    assert result.validation.baseline.status == "failed"
+    assert result.validation.baseline.exit_code == 1
+    validation = json.loads((tmp_path.parent / "repair-artifacts" / "validation.json").read_text())
+    assert validation["baseline"]["status"] == "failed"
+    assert validation["baseline"]["exit_code"] == 1
+    assert validation["candidate"]["status"] == "passed"
     assert (tmp_path / "calc.py").read_text().startswith("def parse_version(s):\n    return tuple(int(p)")
     assert git(tmp_path, "status", "--porcelain").stdout == ""
     for name in ["task.json", "events.jsonl", "patch.diff", "validation.json", "summary.json"]:

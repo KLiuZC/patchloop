@@ -69,7 +69,7 @@ uv run agent repair \
   --artifacts /tmp/patchloop-repair-runs/toy-version-parser
 ```
 
-一次修复会产生 `task.json`、`events.jsonl`、`trajectory/`、`patch.diff`、`validation.json` 和 `summary.json`。`execution_status` 表示 Agent 是否完成执行，`validation_status` 表示候选补丁是否通过独立验证，`review_status` 表示人工审查状态。Agent 调用 `finish` 或回复文字都不能直接把验证状态变成通过。
+一次修复会产生 `task.json`、`events.jsonl`、`trajectory/`、`patch.diff`、`validation.json` 和 `summary.json`。验证器先在一个干净 worktree 中运行基线命令，再在第二个干净 worktree 中应用补丁并运行候选命令，避免测试缓存或生成文件污染结果。`validation.json` 同时保存 `baseline` 和 `candidate` 两次结果；如果基线本来就通过，最终状态会是 `inconclusive`，不会把没有复现的任务标成修复成功。`execution_status` 表示 Agent 是否完成执行，`validation_status` 表示候选补丁是否通过独立验证，`review_status` 表示人工审查状态。Agent 调用 `finish` 或回复文字都不能直接把验证状态变成通过。
 
 ### 在 Docker 沙箱里跑
 

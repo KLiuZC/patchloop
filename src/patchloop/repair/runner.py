@@ -4,7 +4,7 @@ from typing import Callable
 
 from ..loop import run
 from .artifacts import ArtifactStore
-from .contracts import RepairResult, RepairTask
+from .contracts import RepairResult, RepairTask, ValidationResult
 from .verifier import RunnerFactory, verify_patch
 from .workspace import WorktreeWorkspace
 
@@ -64,7 +64,17 @@ class RepairRunner:
             self.artifacts.write_summary(result.to_dict())
             return result
 
-        validation = verify_patch(self.task, patch, self.runner_factory)
+        try:
+            validation = verify_patch(self.task, patch, self.runner_factory)
+        except Exception as exc:
+            validation = ValidationResult(
+                status="inconclusive",
+                profile_id=self.task.verification.id,
+                command=self.task.verification.command,
+                base_sha=self.task.base_sha,
+                error=f"{type(exc).__name__}: {exc}",
+            )
+            self.artifacts.event("validation_error", error=validation.error)
         self.artifacts.write_validation(validation)
         self.artifacts.event(
             "validation_finished",

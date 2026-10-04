@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 class WorktreeWorkspace:
-    """A disposable detached worktree rooted at one immutable base commit."""
+    """A disposable standalone checkout rooted at one immutable base commit."""
 
     def __init__(self, repo_path: Path, base_sha: str, root: Path | None = None):
         self.repo_path = Path(repo_path).resolve()
@@ -31,9 +31,18 @@ class WorktreeWorkspace:
         else:
             self._root.mkdir(parents=True, exist_ok=True)
         self.path = self._root / f"attempt-{uuid.uuid4().hex[:10]}"
+        # A standalone clone keeps its own .git directory. This matters when the
+        # checkout is bind-mounted into Docker: a git worktree's .git file points
+        # at an absolute host path that is unavailable inside the container.
         subprocess.run(
-            ["git", "worktree", "add", "--detach", str(self.path), self.base_sha],
-            cwd=self.repo_path,
+            ["git", "clone", "--no-hardlinks", "--no-local", str(self.repo_path), str(self.path)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(
+            ["git", "checkout", "--detach", self.base_sha],
+            cwd=self.path,
             check=True,
             capture_output=True,
             text=True,
@@ -42,12 +51,6 @@ class WorktreeWorkspace:
 
     def __exit__(self, *exc) -> None:
         if self.path is not None:
-            subprocess.run(
-                ["git", "worktree", "remove", "--force", str(self.path)],
-                cwd=self.repo_path,
-                capture_output=True,
-                text=True,
-            )
             if self.path.exists():
                 shutil.rmtree(self.path, ignore_errors=True)
         if self._owns_root and self._root is not None:
