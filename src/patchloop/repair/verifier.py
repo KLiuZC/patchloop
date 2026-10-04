@@ -9,7 +9,7 @@ from .contracts import RepairTask, ValidationResult
 from .workspace import WorktreeWorkspace
 
 
-RunnerFactory = Callable[[Path], object]
+RunnerFactory = Callable[[Path, str], object]
 _EXIT_CODE = re.compile(r"\n\[exit code (-?\d+)\]\\?$")
 
 
@@ -66,7 +66,7 @@ def verify_patch(task: RepairTask, patch: str, runner_factory: RunnerFactory) ->
                 error="patch did not apply",
             )
 
-        with runner_factory(workspace.path) as runner:
+        with runner_factory(workspace.path, task.workdir) as runner:
             output = runner.run(task.verification.command, task.verification.timeout_seconds)
         exit_code = _exit_code(output)
         return ValidationResult(

@@ -30,6 +30,7 @@ class RepairTask:
     repo_path: Path
     base_sha: str
     goal: str
+    workdir: str = "."
     issue: str | None = None
     allowed_paths: tuple[str, ...] = ()
     protected_paths: tuple[str, ...] = ()

@@ -63,7 +63,7 @@ def test_repair_runner_validates_a_patch_from_a_clean_base(tmp_path):
     result = RepairRunner(
         task,
         artifacts_root=tmp_path.parent / "repair-artifacts",
-        runner_factory=lambda workdir: LocalRunner(workdir),
+        runner_factory=lambda root, workdir: LocalRunner(root / workdir),
     ).run(llm)
 
     assert result.execution_status == "completed"
@@ -104,7 +104,7 @@ def test_failed_candidate_is_saved_as_failed_validation(tmp_path):
     base_sha = make_repo(tmp_path)
     edit = json.dumps({"cmd": "python -c \"from pathlib import Path; Path('calc.py').write_text('def value():\\n    return 3\\n')\""})
     llm = ScriptedLLM([response(tool_call("edit", "bash", edit)), response(tool_call("end", "finish", '{"summary":"attempted"}'))])
-    result = RepairRunner(repair_task(tmp_path, base_sha), tmp_path.parent / "failed-artifacts", lambda p: LocalRunner(p)).run(llm)
+    result = RepairRunner(repair_task(tmp_path, base_sha), tmp_path.parent / "failed-artifacts", lambda root, workdir: LocalRunner(root / workdir)).run(llm)
     assert result.execution_status == "completed"
     assert result.validation_status == "failed"
     assert result.validation is not None and result.validation.exit_code == 1
@@ -117,7 +117,7 @@ def test_empty_patch_is_inconclusive_and_original_dirty_state_survives(tmp_path)
     (tmp_path / "local.txt").write_text("keep this staged file")
     (tmp_path / "scratch.txt").write_text("untracked")
     llm = ScriptedLLM([response(tool_call("end", "finish", '{"summary":"No change"}'))])
-    result = RepairRunner(repair_task(tmp_path, base_sha), tmp_path.parent / "empty-artifacts", lambda p: LocalRunner(p)).run(llm)
+    result = RepairRunner(repair_task(tmp_path, base_sha), tmp_path.parent / "empty-artifacts", lambda root, workdir: LocalRunner(root / workdir)).run(llm)
     assert result.validation_status == "inconclusive"
     assert result.validation is not None and result.validation.error == "empty patch"
     status = git(tmp_path, "status", "--porcelain").stdout
@@ -132,7 +132,39 @@ def test_protected_path_is_rejected_before_verification(tmp_path):
     result = RepairRunner(
         repair_task(tmp_path, base_sha, protected_paths=("test_*.py",)),
         tmp_path.parent / "protected-artifacts",
-        lambda p: LocalRunner(p),
+        lambda root, workdir: LocalRunner(root / workdir),
     ).run(llm)
     assert result.validation_status == "failed"
     assert result.validation is not None and "path protected" in result.validation.error
+
+
+def test_repair_task_can_target_a_subdirectory_of_the_git_root(tmp_path):
+    git(tmp_path, "init", "-q")
+    git(tmp_path, "config", "user.email", "test@example.com")
+    git(tmp_path, "config", "user.name", "test")
+    target = tmp_path / "examples" / "toy_repo"
+    target.mkdir(parents=True)
+    (target / "calc.py").write_text("def value():\n    return 1\n")
+    (target / "test_calc.py").write_text("from calc import value\n\ndef test_value():\n    assert value() == 2\n")
+    git(tmp_path, "add", ".")
+    git(tmp_path, "commit", "-qm", "base")
+    base_sha = git(tmp_path, "rev-parse", "HEAD").stdout.strip()
+    edit = json.dumps({"cmd": "python -c \"from pathlib import Path; Path('calc.py').write_text('def value():\\n    return 2\\n')\""})
+    task = RepairTask(
+        task_id="nested-repo",
+        repo_path=tmp_path,
+        workdir="examples/toy_repo",
+        base_sha=base_sha,
+        goal="Fix value.",
+        verification=VerificationProfile(id="pytest", command=f"{sys.executable} -m pytest -q"),
+        explicit_finish=True,
+    )
+    llm = ScriptedLLM([response(tool_call("edit", "bash", edit)), response(tool_call("end", "finish", '{"summary":"fixed"}'))])
+    result = RepairRunner(
+        task,
+        tmp_path.parent / "nested-artifacts",
+        lambda root, workdir: LocalRunner(root / workdir),
+    ).run(llm)
+    assert result.validation_status == "passed"
+    assert result.patch and "examples/toy_repo/calc.py" in result.patch
+    assert git(tmp_path, "status", "--porcelain").stdout == ""

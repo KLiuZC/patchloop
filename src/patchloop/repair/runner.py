@@ -27,7 +27,7 @@ class RepairRunner:
         try:
             with WorktreeWorkspace(self.task.repo_path, self.task.base_sha) as workspace:
                 self.artifacts.event("workspace_ready", base_sha=self.task.base_sha)
-                with self.runner_factory(workspace.path) as runner:
+                with self.runner_factory(workspace.path, self.task.workdir) as runner:
                     execution = run(
                         self.task.goal,
                         llm,

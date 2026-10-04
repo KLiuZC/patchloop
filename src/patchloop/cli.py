@@ -133,9 +133,16 @@ def repair_command(
         raise typer.BadParameter("expected 'local' or 'docker'", param_hint="--sandbox")
     if sandbox == "docker" and not image:
         raise typer.BadParameter("--image is required in docker mode", param_hint="--image")
+    git_root_result = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"], cwd=repo, capture_output=True, text=True
+    )
+    if git_root_result.returncode != 0:
+        raise typer.BadParameter("repo is not inside a git repository", param_hint="--repo")
+    git_root = Path(git_root_result.stdout.strip()).resolve()
+    workdir = repo.relative_to(git_root).as_posix() or "."
     if base_sha is None:
         resolved = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True
+            ["git", "rev-parse", "HEAD"], cwd=git_root, capture_output=True, text=True
         )
         if resolved.returncode != 0:
             raise typer.BadParameter("repo is not a git repository", param_hint="--repo")
@@ -146,22 +153,24 @@ def repair_command(
         console.print(f"[red]{escape(str(e))}[/]")
         raise typer.Exit(code=2)
 
-    def runner_factory(workdir: Path):
+    def runner_factory(root: Path, relative_workdir: str):
         if sandbox == "local":
-            return LocalRunner(workdir)
+            return LocalRunner(root / relative_workdir)
+        container_workdir = "/work" if relative_workdir == "." else f"/work/{relative_workdir}"
         return DockerRunner(
             image,
-            workdir="/work",
-            mount=workdir,
+            workdir=container_workdir,
+            mount=root,
             platform=platform,
             memory=memory,
         )
 
     task = RepairTask(
         task_id=task_id,
-        repo_path=repo,
+        repo_path=git_root,
         base_sha=base_sha,
         goal=goal,
+        workdir=workdir,
         verification=VerificationProfile(id="cli", command=verify, timeout_seconds=verification_timeout),
         limits=Limits(max_model_calls=max_model_calls, command_timeout_seconds=command_timeout),
         budget_reminders=budget_reminders,
