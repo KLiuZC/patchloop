@@ -2,6 +2,7 @@
 
 from .contracts import BaselineResult, Limits, RepairResult, RepairTask, ValidationResult, VerificationProfile
 from .runner import RepairRunner
+from .swebench import SWEbenchRepairRunner, SWEbenchTask
 
 __all__ = [
     "Limits",
@@ -9,6 +10,8 @@ __all__ = [
     "RepairResult",
     "RepairRunner",
     "RepairTask",
+    "SWEbenchRepairRunner",
+    "SWEbenchTask",
     "ValidationResult",
     "VerificationProfile",
 ]

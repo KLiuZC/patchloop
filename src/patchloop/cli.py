@@ -13,7 +13,7 @@ from rich.table import Table
 from .eval import DEFAULT_DATASET, evaluate, load_instances, read_id_file
 from .llm import LLM, PROVIDERS
 from .loop import run
-from .repair import Limits, RepairRunner, RepairTask, VerificationProfile
+from .repair import Limits, RepairRunner, RepairTask, SWEbenchRepairRunner, SWEbenchTask, VerificationProfile
 from .sandbox import DockerRunner, LocalRunner
 from .subset import DEFAULT_REPOS, DIFFICULTY_MIX, breakdown, select_subset, write_subset
 
@@ -180,6 +180,46 @@ def repair_command(
         result = RepairRunner(task, artifacts / task_id, runner_factory).run(llm)
     except Exception as e:
         console.print(f"[red]{escape(f'{type(e).__name__}: {e}')}[/]")
+        raise typer.Exit(code=2)
+    console.print(
+        f"execution={result.execution_status} · validation={result.validation_status} · "
+        f"stop={result.stop_reason} · artifacts={result.artifacts_dir}"
+    )
+    raise typer.Exit(code=0 if result.validation_status == "passed" else 1)
+
+
+@app.command("repair-swebench")
+def repair_swebench_command(
+    instance_id: str = typer.Option(..., "--instance", "-i", help="SWE-bench instance id."),
+    verify: str = typer.Option("pytest -q", "--verify", help="Visible verification command inside /testbed."),
+    artifacts: Path = typer.Option(Path("repair-runs"), "--artifacts", help="Directory for task artifacts."),
+    provider: str = typer.Option("deepseek", "--provider", "-p", help="One of: " + ", ".join(PROVIDERS)),
+    model: Optional[str] = typer.Option(None, "--model", "-m", help="Override the provider's default model."),
+    memory: str = typer.Option("3g", "--memory"),
+    max_model_calls: int = typer.Option(40, "--max-model-calls"),
+    command_timeout: int = typer.Option(180, "--command-timeout"),
+    budget_reminders: bool = typer.Option(True, "--budget-reminders/--no-budget-reminders"),
+    explicit_finish: bool = typer.Option(False, "--explicit-finish"),
+):
+    """Run one SWE-bench repair attempt and save an independently verified patch."""
+    load_dotenv()
+    try:
+        llm = LLM(provider, model)
+        loaded = load_instances([instance_id], DEFAULT_DATASET)
+        task = SWEbenchTask.from_instance(loaded[0], verification_command=verify)
+        result = SWEbenchRepairRunner(
+            task,
+            artifacts / instance_id,
+            memory=memory,
+        ).run(
+            llm,
+            max_model_calls=max_model_calls,
+            command_timeout=command_timeout,
+            budget_reminders=budget_reminders,
+            explicit_finish=explicit_finish,
+        )
+    except (ValueError, RuntimeError) as e:
+        console.print(f"[red]{escape(str(e))}[/]")
         raise typer.Exit(code=2)
     console.print(
         f"execution={result.execution_status} · validation={result.validation_status} · "

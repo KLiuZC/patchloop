@@ -71,6 +71,21 @@ uv run agent repair \
 
 一次修复会产生 `task.json`、`events.jsonl`、`trajectory/`、`patch.diff`、`validation.json` 和 `summary.json`。验证器先在一个干净 worktree 中运行基线命令，再在第二个干净 worktree 中应用补丁并运行候选命令，避免测试缓存或生成文件污染结果。`validation.json` 同时保存 `baseline` 和 `candidate` 两次结果；如果基线本来就通过，最终状态会是 `inconclusive`，不会把没有复现的任务标成修复成功。`execution_status` 表示 Agent 是否完成执行，`validation_status` 表示候选补丁是否通过独立验证，`review_status` 表示人工审查状态。Agent 调用 `finish` 或回复文字都不能直接把验证状态变成通过。
 
+### SWE-bench 单题适配器
+
+`agent repair-swebench` 从 Verified 数据集读取一题，在题目镜像的 `/testbed` 中运行 Agent，再启动新的同镜像容器验证补丁。Agent 只收到 issue 文本，不会收到测试补丁或隐藏测试名称；当前命令先做可见验证，官方 harness 判分仍单独执行。
+
+```bash
+uv run agent repair-swebench \
+  --instance pytest-dev__pytest-7205 \
+  --verify "pytest -q testing/test_setuponly.py::test_show_fixture_action_with_bytes" \
+  --provider deepseek \
+  --budget-reminders \
+  --artifacts /tmp/patchloop-repair-runs/pytest-7205
+```
+
+这个适配器是第一条真实任务链路，先确认镜像中的 base commit、`/testbed` 工作目录、补丁收集和双容器验证都正常，再接官方判卷与批量任务调度。
+
 ### 在 Docker 沙箱里跑
 
 `--sandbox docker` 时命令全部在容器里执行，本机不跑 agent 的任何命令。`--workdir` 指定的目录会挂载到容器的 `/work`；不给 `--workdir` 则直接用镜像自带的仓库（SWE-bench 镜像的代码在 `/testbed`）。
