@@ -9,13 +9,19 @@ from typing import Callable
 
 GitCommand = Callable[[list[str]], subprocess.CompletedProcess]
 
+_IGNORED_PATHS = (
+    ":(exclude,glob)**/__pycache__/**",
+    ":(exclude,glob)**/*.pyc",
+)
+
 
 def _collect_patch(git: GitCommand) -> str:
     """Stage everything under the working directory, read the diff, then unstage again."""
     if git(["rev-parse", "--is-inside-work-tree"]).returncode != 0:
         return ""
-    git(["add", "-A", "--", "."])
-    patch = git(["diff", "--cached", "--", "."]).stdout
+    pathspec = [".", *_IGNORED_PATHS]
+    git(["add", "-A", "--", *pathspec])
+    patch = git(["diff", "--cached", "--", *pathspec]).stdout
     git(["reset", "-q", "--", "."])
     return patch
 

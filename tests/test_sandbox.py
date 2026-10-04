@@ -52,6 +52,16 @@ def test_local_diff_returns_staged_and_unstaged_changes(tmp_path):
     assert staged.stdout.strip() == ""
 
 
+def test_local_diff_excludes_python_bytecode_without_gitignore(tmp_path):
+    _git_repo(tmp_path)
+    (tmp_path / "__pycache__").mkdir()
+    (tmp_path / "__pycache__" / "calc.pyc").write_bytes(b"binary")
+    (tmp_path / "calc.py").write_text("two\n")
+    patch = LocalRunner(tmp_path).diff()
+    assert "calc.pyc" not in patch
+    assert "+two" in patch
+
+
 def test_local_diff_outside_git_is_empty(tmp_path):
     assert LocalRunner(tmp_path).diff() == ""
 
