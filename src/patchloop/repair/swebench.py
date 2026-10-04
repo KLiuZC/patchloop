@@ -55,6 +55,15 @@ class SWEbenchTask:
         return asdict(self)
 
 
+def _profile_status(output: str, exit_code: int) -> str:
+    """Separate an invalid test selector from an actual test failure."""
+    if exit_code == 0:
+        return "passed"
+    if exit_code == 4 and ("not found" in output or "no tests ran" in output):
+        return "inconclusive"
+    return "failed"
+
+
 class SWEbenchRepairRunner:
     """Run one SWE-bench task in Docker and independently verify its patch."""
 
@@ -191,7 +200,7 @@ class SWEbenchRepairRunner:
             self._check_base(runner)
             output, exit_code = self._run_profile(runner)
         return BaselineResult(
-            status="passed" if exit_code == 0 else "failed",
+            status=_profile_status(output, exit_code),
             profile_id="swebench",
             command=self.task.verification_command,
             base_sha=self.task.base_commit,
@@ -223,7 +232,7 @@ class SWEbenchRepairRunner:
                     baseline=baseline,
                 )
             output, exit_code = self._run_profile(runner)
-        candidate_status = "passed" if exit_code == 0 else "failed"
+        candidate_status = _profile_status(output, exit_code)
         status = candidate_status if baseline.status == "failed" else "inconclusive"
         return ValidationResult(
             status=status,

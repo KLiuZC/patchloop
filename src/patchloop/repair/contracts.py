@@ -7,7 +7,7 @@ from typing import Literal
 
 ExecutionStatus = Literal["completed", "interrupted", "error"]
 ValidationStatus = Literal["not_run", "passed", "failed", "inconclusive"]
-BaselineStatus = Literal["passed", "failed", "error"]
+BaselineStatus = Literal["passed", "failed", "inconclusive", "error"]
 ReviewStatus = Literal["pending", "accepted", "rejected", "stale"]
 
 
