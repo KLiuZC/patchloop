@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "instance_id": "pallets__flask-5014",
+  "dataset": "SWE-bench/SWE-bench_Verified",
+  "base_sha": "7ee9ceb71e868944a46e1ff00b506772a53a4f1d",
+  "image": "swebench/sweb.eval.x86_64.pallets_1776_flask-5014:latest",
+  "patch_sha256": "165c0d5aca96068ddb66053d70b8a51a70edd79f8087216d290d41fdf6bb9300",
+  "task_sha256": "635620ed3f8dcd3b47afa399f9f3f69019ea1c123782a1b101aab52477626dbe",
+  "visible_validation_sha256": "8dbad6656ab7a7e6862058ee900a582121f90fbb2d8f9ebae62f4d490c7677e8",
+  "visible_validation_status": "passed",
+  "status": "passed",
+  "resolved": true,
+  "patch_applied": true,
+  "tests": {
+    "FAIL_TO_PASS": {
+      "passed": 1,
+      "failed": 0
+    },
+    "PASS_TO_PASS": {
+      "passed": 59,
+      "failed": 0
+    }
+  },
+  "harness_run_id": "repair-judge-20261007-030212-d3bb7c4fcb",
+  "harness_report_dir": "/Users/jackliu/code/swebench-work/logs/evaluation/repair-judge-20261007-030212-d3bb7c4fcb",
+  "attempt_dir": "official/repair-judge-20261007-030212-d3bb7c4fcb",
+  "started_at": "2026-10-07T03:02:12.837432+00:00",
+  "error": "",
+  "command": [
+    "/Users/jackliu/.local/bin/swebench",
+    "eval",
+    "verified",
+    "-p",
+    "/private/tmp/patchloop-repair-smoke2-13l7rhjf/runs/pallets__flask-5014/official/repair-judge-20261007-030212-d3bb7c4fcb/predictions.jsonl",
+    "--run-id",
+    "repair-judge-20261007-030212-d3bb7c4fcb",
+    "-i",
+    "pallets__flask-5014",
+    "-j",
+    "1",
+    "--timeout",
+    "1800"
+  ],
+  "harness_exit_code": 0,
+  "ambiguous_failure": false,
+  "harness_failure_reason": null,
+  "reason": "resolved",
+  "finished_at": "2026-10-07T03:02:42.534773+00:00",
+  "wall_seconds": 29.7
+}

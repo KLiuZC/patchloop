@@ -13,7 +13,8 @@ from rich.table import Table
 from .eval import DEFAULT_DATASET, evaluate, load_instances, read_id_file
 from .llm import LLM, PROVIDERS
 from .loop import run
-from .repair import Limits, RepairRunner, RepairTask, VerificationProfile
+from .repair import Limits, RepairRunner, RepairTask, SWEbenchRepairRunner, SWEbenchTask, VerificationProfile
+from .repair.judge import judge_repair
 from .sandbox import DockerRunner, LocalRunner
 from .subset import DEFAULT_REPOS, DIFFICULTY_MIX, breakdown, select_subset, write_subset
 
@@ -161,6 +162,7 @@ def repair_command(
             image,
             workdir=container_workdir,
             mount=root,
+            mount_target="/work",
             platform=platform,
             memory=memory,
         )
@@ -186,6 +188,89 @@ def repair_command(
         f"stop={result.stop_reason} · artifacts={result.artifacts_dir}"
     )
     raise typer.Exit(code=0 if result.validation_status == "passed" else 1)
+
+
+@app.command("repair-swebench")
+def repair_swebench_command(
+    instance_id: str = typer.Option(..., "--instance", "-i", help="SWE-bench instance id."),
+    verify: str = typer.Option("pytest -q", "--verify", help="Visible verification command inside /testbed."),
+    artifacts: Path = typer.Option(Path("repair-runs"), "--artifacts", help="Directory for task artifacts."),
+    provider: str = typer.Option("deepseek", "--provider", "-p", help="One of: " + ", ".join(PROVIDERS)),
+    model: Optional[str] = typer.Option(None, "--model", "-m", help="Override the provider's default model."),
+    memory: str = typer.Option("3g", "--memory"),
+    max_model_calls: int = typer.Option(40, "--max-model-calls"),
+    command_timeout: int = typer.Option(180, "--command-timeout"),
+    budget_reminders: bool = typer.Option(True, "--budget-reminders/--no-budget-reminders"),
+    explicit_finish: bool = typer.Option(False, "--explicit-finish"),
+    judge: bool = typer.Option(False, "--judge/--no-judge", help="Grade the saved patch with the official harness after repair."),
+    harness_dir: Optional[Path] = typer.Option(None, "--harness-dir", help="Official harness work directory ($SWEBENCH_WORKDIR)."),
+    judge_timeout: int = typer.Option(1800, "--judge-timeout", min=1, help="Official per-instance test timeout in seconds."),
+):
+    """Run one SWE-bench repair attempt and save an independently verified patch."""
+    load_dotenv()
+    try:
+        llm = LLM(provider, model)
+        loaded = load_instances([instance_id], DEFAULT_DATASET)
+        task = SWEbenchTask.from_instance(loaded[0], verification_command=verify)
+        result = SWEbenchRepairRunner(
+            task,
+            artifacts / instance_id,
+            memory=memory,
+        ).run(
+            llm,
+            max_model_calls=max_model_calls,
+            command_timeout=command_timeout,
+            budget_reminders=budget_reminders,
+            explicit_finish=explicit_finish,
+        )
+    except (ValueError, RuntimeError) as e:
+        console.print(f"[red]{escape(str(e))}[/]")
+        raise typer.Exit(code=2)
+    console.print(
+        f"execution={result.execution_status} · visible={result.validation_status} · "
+        f"stop={result.stop_reason} · artifacts={result.artifacts_dir}"
+    )
+    if judge:
+        if result.execution_status == "error":
+            console.print("official=not_run · repair execution failed")
+            raise typer.Exit(code=2)
+        _grade_saved_repair(Path(result.artifacts_dir), harness_dir, judge_timeout)
+    raise typer.Exit(code=0 if result.validation_status == "passed" else 1)
+
+
+@app.command("repair-judge")
+def repair_judge_command(
+    artifacts: Path = typer.Option(..., "--artifacts", exists=True, file_okay=False, help="Existing task directory containing task.json and patch.diff."),
+    harness_dir: Optional[Path] = typer.Option(None, "--harness-dir", help="Official harness work directory ($SWEBENCH_WORKDIR, default ~/code/swebench-work)."),
+    timeout: int = typer.Option(1800, "--timeout", min=1, help="Official per-instance test timeout in seconds."),
+):
+    """Grade an existing repair patch without calling the model or rerunning visible tests."""
+    load_dotenv()
+    _grade_saved_repair(artifacts, harness_dir, timeout)
+
+
+def _grade_saved_repair(artifacts: Path, harness_dir: Path | None, timeout: int) -> None:
+    console.print("Grading saved patch with the official harness; no model calls ...")
+    try:
+        result = judge_repair(artifacts, harness_dir=harness_dir, timeout=timeout)
+    except (OSError, ValueError, RuntimeError) as e:
+        console.print(f"[red]{escape(str(e))}[/]")
+        raise typer.Exit(code=2)
+    counts = []
+    for group, label in [("FAIL_TO_PASS", "F2P"), ("PASS_TO_PASS", "P2P")]:
+        test = result["tests"].get(group)
+        counts.append(f"{label}={test['passed']}/{test['passed'] + test['failed']}" if test else f"{label}=not_run")
+    resolved = "unknown" if result["resolved"] is None else str(result["resolved"]).lower()
+    console.print(escape(
+        f"visible={result['visible_validation_status']} · official={result['status']} · "
+        f"resolved={resolved} · {' · '.join(counts)}"
+    ))
+    if result.get("harness_failure_reason"):
+        console.print(escape(f"harness label={result['harness_failure_reason']} (see per-instance report and test output)"))
+    if result["error"]:
+        console.print(escape(result["error"]), style="red")
+    console.print(escape(f"patch_sha256={result['patch_sha256']} · {artifacts / 'official.json'}"))
+    raise typer.Exit(code={"passed": 0, "failed": 1, "error": 2}[result["status"]])
 
 
 def _cmd_of(arguments: str) -> str:

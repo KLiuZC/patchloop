@@ -1,0 +1,12 @@
+[
+  {
+    "instance_id": "pytest-dev__pytest-7432",
+    "exit_code": 0,
+    "wall_seconds": 80.3
+  },
+  {
+    "instance_id": "pallets__flask-5014",
+    "exit_code": 0,
+    "wall_seconds": 57.3
+  }
+]

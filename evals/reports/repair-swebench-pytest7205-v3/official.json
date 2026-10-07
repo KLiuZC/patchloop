@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "instance_id": "pytest-dev__pytest-7205",
+  "dataset": "SWE-bench/SWE-bench_Verified",
+  "base_sha": "5e7f1ab4bf58e473e5d7f878eb2b499d7deabd29",
+  "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-7205:latest",
+  "patch_sha256": "194bdaaa0638e87dbd780460f7b2b2b99dc1e584a7e5af167094b80fa1502452",
+  "task_sha256": "6257e3476b4753868f161052965e6f0ffd34a3fa2f3f4c60de22c029ac1721f3",
+  "visible_validation_sha256": "ae09af7d6b3522c51ef1dd074cf8d289282fadb9c766108458eaf519998193d7",
+  "visible_validation_status": "passed",
+  "status": "failed",
+  "resolved": false,
+  "patch_applied": true,
+  "tests": {
+    "FAIL_TO_PASS": {
+      "passed": 1,
+      "failed": 9
+    },
+    "PASS_TO_PASS": {
+      "passed": 16,
+      "failed": 0
+    }
+  },
+  "harness_run_id": "repair-judge-20261007-024442-59b7816fc0",
+  "harness_report_dir": "/Users/jackliu/code/swebench-work/logs/evaluation/repair-judge-20261007-024442-59b7816fc0",
+  "attempt_dir": "official/repair-judge-20261007-024442-59b7816fc0",
+  "started_at": "2026-10-07T02:44:42.268746+00:00",
+  "error": "",
+  "command": [
+    "/Users/jackliu/.local/bin/swebench",
+    "eval",
+    "verified",
+    "-p",
+    "/private/tmp/patchloop-repair-runs/swebench-pytest-7205-v3/pytest-dev__pytest-7205/official/repair-judge-20261007-024442-59b7816fc0/predictions.jsonl",
+    "--run-id",
+    "repair-judge-20261007-024442-59b7816fc0",
+    "-i",
+    "pytest-dev__pytest-7205",
+    "-j",
+    "1",
+    "--timeout",
+    "1800"
+  ],
+  "harness_exit_code": 0,
+  "ambiguous_failure": true,
+  "harness_failure_reason": "no_tests_collected",
+  "reason": "tests_not_resolved",
+  "finished_at": "2026-10-07T02:45:16.239597+00:00",
+  "wall_seconds": 34.0
+}

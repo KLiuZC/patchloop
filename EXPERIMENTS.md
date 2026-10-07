@@ -34,6 +34,10 @@
 | 2026-10-02 | v30-finish-r2：提醒 + finish 第 2 遍 | deepseek / deepseek-flash | 平均 26.9 | 11,039,914 / 339,194 | **23/30（76.7%）** | 估算 ¥1.923；墙钟 2490.4 s。1 空补丁、22 道主动交卷、8 道被上限停止、8 道使用到第 40 轮，零运行错误 |
 | 2026-10-02 | v30-finish-r3：提醒 + finish 第 3 遍 | deepseek / deepseek-flash | 平均 26.2 | 10,477,183 / 308,774 | **20/30（66.7%）** | 估算 ¥1.771；墙钟 2307.7 s。1 空补丁、24 道主动交卷、6 道被上限停止、6 道使用到第 40 轮，零运行错误 |
 | 2026-10-03 | finish 三遍汇总与配置决定 | deepseek / deepseek-flash | 平均 26.3 | 31,815,089 / 991,404 | **66/90（73.3%）** | 样本标准差 5.8 个百分点。相较仅提醒组净增 2/90；平均估算费用 ¥1.636→¥1.867，被上限停止 15→20。保留可选、确认默认关闭；推荐后续只开启轮数提醒。详见 [finish 报告](evals/reports/4c-explicit-finish/README.md) |
+| 2026-10-05 | RepairRunner：pytest-7205 单题真实 SWE-bench 适配 | deepseek / deepseek-flash | 40 | 831,972 / 29,681 | 可见验证通过；官方 **0/1** | 题目镜像/base commit 恢复、`/testbed` Agent 执行、独立候选容器验证和官方 harness 均跑通。估算 ¥0.149；补丁应用成功；F2P 1/10、P2P 16/16。候选只对 bytes 特判 `saferepr`，普通字符串参数仍不符合官方预期，属于语义不完整；官方 `no_tests_collected` 标签被内部 setup 子进程的 `no tests ran` 文本误触发。详见 [单题报告](evals/reports/repair-swebench-pytest7205-v3/README.md) |
+| 2026-10-07 | RepairRunner 官方判卷集成：只重判 pytest-7205 已保存的 v3 补丁 | 官方 harness / 无模型调用 | - | 0 新增模型用量 | 可见验证 passed；官方 **0/1** | `repair-judge` 自动生成答卷、独立保存 official 结果与补丁哈希；原始产物逐字节未变。两次重判均 F2P 1/10、P2P 16/16，各用独立判卷 ID，不算两次新的答题实验。110 个测试通过；代码审查发现的报告格式异常和快照校验问题已修复。详见 [单题记录](evals/reports/repair-swebench-pytest7205-v3/README.md) |
+| 2026-10-07 | RepairRunner 自动判卷：pytest-7432 | deepseek / deepseek-flash | 9 | 31,433 / 2,457 | 可见通过；官方 **1/1** | 基线复现 --runxfail 跳过位置错误；候选通过。F2P 1/1、P2P 77/77；估算 ¥0.0132，完整 CLI 80.3 s。固定题面复现脚本，未改变模型策略 |
+| 2026-10-07 | RepairRunner 自动判卷：Flask-5014 | deepseek / deepseek-flash | 7 | 18,430 / 789 | 可见通过；官方 **1/1** | 基线未拒绝空 Blueprint 名称；候选通过。F2P 1/1、P2P 59/59；估算 ¥0.0065，完整 CLI 57.3 s。和 pytest 题一起验证跨仓库链路，开发集两题结果不作为留出集成绩，见 [两题集成报告](evals/reports/repair-real-task-smoke2/README.md) |
 
 ## 环境备忘
 
@@ -90,3 +94,19 @@
 - 70 次合法 finish 中 57 次解决、13 次未解决；另有 9 次被上限停止的补丁判为解决。交卷不是成功证明，也不能仅凭未解决就认定过早交卷。两道 Pylint 的已知测试导入问题仍保留在分母中。
 - **决定：finish 保留为实验选项，默认关闭。** 已确认 CLI、loop、eval 默认值都是 `False`，无需重复改实现。后续主配置传 `--budget-reminders`，不传 `--explicit-finish`；预算提醒的代码默认值仍保持不变。
 - 完整对比和原始结果链接见 [finish 实验报告](evals/reports/4c-explicit-finish/README.md)。下一步建议固定上述配置，在排除 smoke5/verified30 的新题单上验证泛化，再决定后续机制。当前仍在 finish 分支，未自动合并或发起新评测。
+
+## RepairRunner 官方判卷接入（2026-10-07）
+
+- 新增 `agent repair-judge --artifacts <具体题目目录>`，只读取已保存 task、patch、summary 和可见验证，不创建模型客户端、不重跑可见测试。`repair-swebench --judge` 可在新修复结束后自动调用同一路径，默认仍只做可见验证。
+- 可见验证保留在 `validation.json`；最近一次官方结果单独保存在 `official.json`。每次判卷有新的唯一 ID，保存 patch/predictions 快照、官方汇总、逐题报告和日志，重判不覆盖前次尝试。
+- 原始补丁与修复摘要、可见验证哈希必须一致；创建快照和判卷期间内容变化会拒绝采用成绩。新修复不能覆盖已有产物目录。
+- 官方 `passed/failed/error` 分别表示 resolved、明确未解决、判卷异常。harness 非零退出、报告缺失/损坏/矛盾、明确基础设施错误不会写成模型答错；空补丁如被官方明确记为未解决则保留。模糊失败标签原样保留，不能取代逐题判卷或人工根因分析。
+- 已使用原 v3 补丁验证 CLI、官方报告解析和重判记录。CLI 返回 1 是官方未解决的预期返回码；没有新的模型修复、人工改补丁或把隐藏反馈回传给模型。本阶段的有效验收是结果正确记录，不要求候选补丁变为通过。
+
+## RepairRunner 跨仓库集成验证（2026-10-07）
+
+- 在提交 `e9eb3d2` 上冻结运行代码，轮数提醒开启、finish 关闭，每题 40 轮、3GB 容器，pytest-7432 和 Flask-5014 各答题一次。
+- 可见验证根据原始题面制定，先确认干净基线确实触发失败，再运行同一配置的修复与 `--judge`。没有读取标准答案来制定修复，也没有将本次官方测试失败反馈给模型。
+- 两题均“基线失败 → 可见验证通过 → 官方 resolved”，F2P 分别 1/1、1/1，P2P 分别 77/77、59/59。没有修改测试文件、没有手工修补候选，补丁哈希与官方答卷一致。
+- 合计估算 ¥0.0197；源代码与运行前哈希一致，未新增镜像，临时容器已清理。原始配置、profile、补丁、可见/官方结果见 [两题报告](evals/reports/repair-real-task-smoke2/README.md)。
+- 本次是已使用过的开发题集成验证，不扩入基线分母，不声称 2/2 代表泛化成功率。原 pytest-7205 的官方失败仍保留；下一步先审查分支，再进入产品接口阶段。

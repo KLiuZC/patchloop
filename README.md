@@ -45,7 +45,7 @@ uv run agent run --workdir examples/toy_repo --provider glm \
 
 ### 独立修复闭环
 
-`agent repair` 会在固定 `base_sha` 的临时 Git worktree 中运行 Agent，收集候选补丁，然后从同一个干净基线重新应用补丁并运行固定验证命令。验证结果不会使用 Agent 工作区中的测试状态。
+`agent repair` 会在固定 `base_sha` 的临时独立 Git 克隆中运行 Agent，收集候选补丁，然后从同一个干净基线重新应用补丁并运行固定验证命令。验证结果不会使用 Agent 工作区中的测试状态。
 
 ```bash
 uv run agent repair \
@@ -69,7 +69,75 @@ uv run agent repair \
   --artifacts /tmp/patchloop-repair-runs/toy-version-parser
 ```
 
-一次修复会产生 `task.json`、`events.jsonl`、`trajectory/`、`patch.diff`、`validation.json` 和 `summary.json`。验证器先在一个干净 worktree 中运行基线命令，再在第二个干净 worktree 中应用补丁并运行候选命令，避免测试缓存或生成文件污染结果。`validation.json` 同时保存 `baseline` 和 `candidate` 两次结果；如果基线本来就通过，最终状态会是 `inconclusive`，不会把没有复现的任务标成修复成功。`execution_status` 表示 Agent 是否完成执行，`validation_status` 表示候选补丁是否通过独立验证，`review_status` 表示人工审查状态。Agent 调用 `finish` 或回复文字都不能直接把验证状态变成通过。
+一次修复会产生 `task.json`、`events.jsonl`、`trajectory/`、`patch.diff`、`validation.json` 和 `summary.json`。验证器先在一个干净克隆中运行基线命令，再在第二个干净克隆中应用补丁并运行候选命令，避免测试缓存或生成文件污染结果。`validation.json` 同时保存 `baseline` 和 `candidate` 两次结果；如果基线本来就通过，最终状态会是 `inconclusive`，候选命令自身仍可记录为 `passed`。`execution_status` 表示 Agent 是否完成执行，`validation_status` 表示是否有证据表明补丁修复了复现的问题，`review_status` 表示人工审查状态。Agent 调用 `finish` 或回复文字都不能直接把验证状态变成通过。
+
+可见验证命令使用退出码约定：0 为通过、1 为断言失败，其他码（例如 pytest 未收集到测试、用法错误、超时或命令不存在）为 `inconclusive`。验证器读取实际进程退出码，不解析日志中的文本标记。自定义脚本应遵守此约定，并保留测试命令的退出码；基线未明确失败时，整体结果不能是修复成功。
+
+两种修复入口均拒绝复用非空产物目录。普通模型或工具异常会尽可能在清理沙箱前保存已有补丁、已收到的用量和轨迹终态，并写入验证报告及最终摘要；验证环境启动失败也会留档，已完成的基线结果会保留。用量仅包含服务商已返回的数据，失败请求的实际账单仍以服务商记录为准。
+
+当前面向单用户串行运行，限制模型调用次数和单条命令时长；尚未实现整个任务的总时限、强制终止后的完整留档或重启续跑。
+
+### SWE-bench 单题适配器
+
+`agent repair-swebench` 从 Verified 数据集读取一题，在题目镜像的 `/testbed` 中运行 Agent，再启动新的同镜像容器验证补丁。Agent 只收到 issue 文本，不会收到测试补丁或隐藏测试名称。默认做可见验证，加 `--judge` 后自动把已保存补丁交给官方 harness，官方反馈不会进入本次模型循环。
+
+```bash
+# 复现来自题面；不使用仅在官方判卷阶段注入的测试名称。
+PATCHLOOP_VERIFY_CMD=$(cat <<'PROFILE'
+set -e
+cat > /tmp/test_bw_issue.py <<'PYTEST'
+import pytest
+
+@pytest.mark.parametrize("data", [b"Hello World"])
+def test_data(data):
+    pass
+PYTEST
+python -bb -m pytest --setup-show -q /tmp/test_bw_issue.py
+PROFILE
+)
+
+docker info >/dev/null && uv run agent repair-swebench \
+  --instance pytest-dev__pytest-7205 \
+  --verify "$PATCHLOOP_VERIFY_CMD" \
+  --provider deepseek \
+  --budget-reminders \
+  --judge \
+  --artifacts /tmp/patchloop-repair-runs/pytest-7205-new-attempt
+```
+
+每次新答题应使用空的产物目录；已有目录会被拒绝，避免覆盖历史补丁和判卷记录。镜像需要预先准备，本命令不会通过 `--task-repo` 重建镜像。
+
+### 对已有补丁只判卷
+
+`repair-judge` 不创建模型客户端、不重跑修复或可见测试。`--artifacts` 指向含有 `task.json`、`summary.json` 和 `patch.diff` 的**具体题目目录**，与 `repair-swebench` 接收的父目录不同：
+
+```bash
+docker info >/dev/null && uv run agent repair-judge \
+  --artifacts /tmp/patchloop-repair-runs/swebench-pytest-7205-v3/pytest-dev__pytest-7205
+```
+
+官方 harness 工作目录按 `--harness-dir`、`SWEBENCH_WORKDIR`、`~/code/swebench-work` 的顺序选取。`repair-judge --timeout`（自动判卷对应 `--judge-timeout`）设置官方单题测试超时，默认 1800 秒，不是整个下载/启动阶段的总超时。需要本机已有 `swebench` CLI 与正常运行的 Docker；使用 `.env` 的 HF_TOKEN 时会传递给 harness，但不要求模型 API key。
+
+新增产物：
+
+```text
+official.json                         最近一次判卷结果：独立于可见验证
+official/<唯一判卷ID>/
+  patch.diff                          本次提交的准确补丁快照
+  predictions.jsonl                   自动生成的官方答卷格式
+  harness.log                        判卷程序的标准输出及错误
+  results.json / report.json          官方汇总及逐题报告（如已产生）
+  test_output.txt / run_instance.log  原始测试及执行日志（如已产生）
+  result.json                        本次判卷结果；重判不会覆盖旧尝试
+```
+
+官方结果保存 `instance_id`、`base_sha`、`patch_sha256`、可见验证状态、判卷 ID、F2P/P2P 计数和原始异常标签。开始前核对 patch 与原修复摘要/可见验证哈希；提交快照创建或判卷期间原件改变会报错。`validation.json`、原始 `summary.json` 和轨迹保持不变。读取或展示历史 `official.json` 时应确认其补丁哈希仍与当前 `patch.diff` 一致。
+
+`official.status` 的含义：`passed` 是官方 resolved；`failed` 是官方明确未解决（包括空补丁或补丁不能应用）；`error` 是 harness 启动/执行失败、报告缺失或格式不完整、官方明确的基础设施异常，此时 `resolved=null`。`no_tests_collected` 等模糊标签原样保留，不覆盖逐题 resolved 结论，不自动当作根因。CLI 退出码分别为 0、1、2；`--judge` 开启时以官方判卷退出码为准，修复执行本身失败则跳过判卷。
+
+这个适配器已用原有 `pytest-7205` 补丁验收“只判卷”路径：可见 bytes 复现通过，官方 F2P 1/10、P2P 16/16，最终 0/1，表示**判卷流程成功执行，但候选补丁未解决题目**。详见 [单题实验报告](evals/reports/repair-swebench-pytest7205-v3/README.md)。
+
+后续已在 pytest-7432 和 Flask-5014 各运行一次完整 `repair-swebench --judge`：均从可见基线失败到候选通过，并被官方判为 resolved；F2P 各 1/1，P2P 为 77/77 与 59/59。记录、复现脚本及补丁见 [两题集成验证](evals/reports/repair-real-task-smoke2/README.md)。这是已有开发题上的工程验收，不是新的留出集成绩。
 
 ### 在 Docker 沙箱里跑
 
@@ -173,6 +241,7 @@ tests/               项目自身的单元测试：uv run pytest
 - [x] 最小 loop + bash 工具
 - [x] Docker 沙箱
 - [x] SWE-bench Verified 子集评测流水线
+- [x] RepairRunner 真实任务适配与可见/官方结果分离（两仓库集成验证）
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
 - [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录
 - [x] 剩余轮数提醒的 30 题单变量对比

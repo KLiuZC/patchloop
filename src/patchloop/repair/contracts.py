@@ -7,7 +7,7 @@ from typing import Literal
 
 ExecutionStatus = Literal["completed", "interrupted", "error"]
 ValidationStatus = Literal["not_run", "passed", "failed", "inconclusive"]
-BaselineStatus = Literal["passed", "failed", "error"]
+BaselineStatus = Literal["passed", "failed", "inconclusive", "error"]
 ReviewStatus = Literal["pending", "accepted", "rejected", "stale"]
 
 
@@ -15,7 +15,7 @@ ReviewStatus = Literal["pending", "accepted", "rejected", "stale"]
 class Limits:
     max_model_calls: int = 30
     command_timeout_seconds: int = 60
-    task_timeout_seconds: int = 600
+    task_timeout_seconds: int = 600  # Reserved; only call/command limits are currently enforced.
 
 
 @dataclass(frozen=True)
@@ -88,11 +88,15 @@ class ValidationResult:
     seconds: float = 0.0
     error: str = ""
     baseline: BaselineResult | None = None
+    candidate_status: ValidationStatus = "not_run"
+    candidate_error: str = ""
 
     def to_dict(self) -> dict:
         value = asdict(self)
         baseline = value.pop("baseline", None)
-        value["candidate"] = dict(value)
+        candidate_status = value.pop("candidate_status")
+        candidate_error = value.pop("candidate_error")
+        value["candidate"] = {**value, "status": candidate_status, "error": candidate_error}
         value["baseline"] = baseline
         return value
 
@@ -113,6 +117,7 @@ class RepairResult:
     completion_tokens: int = 0
     cost: float | None = None
     seconds: float = 0.0
+    turns: int = 0
 
     def to_dict(self) -> dict:
         value = asdict(self)

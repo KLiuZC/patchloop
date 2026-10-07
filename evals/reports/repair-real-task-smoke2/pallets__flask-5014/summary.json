@@ -1,0 +1,47 @@
+{
+  "task_id": "pallets__flask-5014",
+  "execution_status": "completed",
+  "validation_status": "passed",
+  "review_status": "pending",
+  "stop_reason": "no_tool_calls",
+  "patch": "diff --git a/src/flask/blueprints.py b/src/flask/blueprints.py\nindex eb50585d..1aa82562 100644\n--- a/src/flask/blueprints.py\n+++ b/src/flask/blueprints.py\n@@ -190,6 +190,9 @@ class Blueprint(Scaffold):\n             root_path=root_path,\n         )\n \n+        if not name:\n+            raise ValueError(\"'name' may not be empty.\")\n+\n         if \".\" in name:\n             raise ValueError(\"'name' may not contain a dot '.' character.\")\n \n",
+  "validation": {
+    "status": "passed",
+    "profile_id": "swebench",
+    "command": "set -e\npython - <<'VISIBLE_CHECK'\nfrom flask import Blueprint, Flask\n\napp = Flask(__name__)\nblueprint = Blueprint(\"valid_name\", __name__)\napp.register_blueprint(blueprint)\nassert app.blueprints[\"valid_name\"] is blueprint\ntry:\n    Blueprint(\"\", __name__)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"Blueprint must reject an empty name with ValueError\")\nprint(\"VISIBLE CHECK PASSED: empty name rejected, valid blueprint still registers\")\nVISIBLE_CHECK\n",
+    "base_sha": "7ee9ceb71e868944a46e1ff00b506772a53a4f1d",
+    "patch_sha256": "165c0d5aca96068ddb66053d70b8a51a70edd79f8087216d290d41fdf6bb9300",
+    "exit_code": 0,
+    "output": "VISIBLE CHECK PASSED: empty name rejected, valid blueprint still registers\n",
+    "seconds": 2.0,
+    "error": "",
+    "candidate": {
+      "status": "passed",
+      "profile_id": "swebench",
+      "command": "set -e\npython - <<'VISIBLE_CHECK'\nfrom flask import Blueprint, Flask\n\napp = Flask(__name__)\nblueprint = Blueprint(\"valid_name\", __name__)\napp.register_blueprint(blueprint)\nassert app.blueprints[\"valid_name\"] is blueprint\ntry:\n    Blueprint(\"\", __name__)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"Blueprint must reject an empty name with ValueError\")\nprint(\"VISIBLE CHECK PASSED: empty name rejected, valid blueprint still registers\")\nVISIBLE_CHECK\n",
+      "base_sha": "7ee9ceb71e868944a46e1ff00b506772a53a4f1d",
+      "patch_sha256": "165c0d5aca96068ddb66053d70b8a51a70edd79f8087216d290d41fdf6bb9300",
+      "exit_code": 0,
+      "output": "VISIBLE CHECK PASSED: empty name rejected, valid blueprint still registers\n",
+      "seconds": 2.0,
+      "error": ""
+    },
+    "baseline": {
+      "status": "failed",
+      "profile_id": "swebench",
+      "command": "set -e\npython - <<'VISIBLE_CHECK'\nfrom flask import Blueprint, Flask\n\napp = Flask(__name__)\nblueprint = Blueprint(\"valid_name\", __name__)\napp.register_blueprint(blueprint)\nassert app.blueprints[\"valid_name\"] is blueprint\ntry:\n    Blueprint(\"\", __name__)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"Blueprint must reject an empty name with ValueError\")\nprint(\"VISIBLE CHECK PASSED: empty name rejected, valid blueprint still registers\")\nVISIBLE_CHECK\n",
+      "base_sha": "7ee9ceb71e868944a46e1ff00b506772a53a4f1d",
+      "exit_code": 1,
+      "output": "Traceback (most recent call last):\n  File \"<stdin>\", line 12, in <module>\nAssertionError: Blueprint must reject an empty name with ValueError\n\n[exit code 1]",
+      "seconds": 1.6,
+      "error": ""
+    }
+  },
+  "artifacts_dir": "/tmp/patchloop-repair-smoke2-13l7rhjf/runs/pallets__flask-5014",
+  "error": "",
+  "prompt_tokens": 18430,
+  "cached_tokens": 15360,
+  "completion_tokens": 789,
+  "cost": 0.006533199999999999,
+  "seconds": 21.9
+}

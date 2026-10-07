@@ -4,18 +4,39 @@ import shlex
 import signal
 import subprocess
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
 GitCommand = Callable[[list[str]], subprocess.CompletedProcess]
 
 
+@dataclass(frozen=True)
+class CommandResult:
+    output: str
+    exit_code: int
+    timed_out: bool = False
+
+    def display(self, timeout: int) -> str:
+        if self.timed_out:
+            return self.output + f"\n[command timed out after {timeout}s]"
+        if self.exit_code != 0:
+            return self.output + f"\n[exit code {self.exit_code}]"
+        return self.output
+
+_IGNORED_PATHS = (
+    ":(exclude,glob)**/__pycache__/**",
+    ":(exclude,glob)**/*.pyc",
+)
+
+
 def _collect_patch(git: GitCommand) -> str:
     """Stage everything under the working directory, read the diff, then unstage again."""
     if git(["rev-parse", "--is-inside-work-tree"]).returncode != 0:
         return ""
-    git(["add", "-A", "--", "."])
-    patch = git(["diff", "--cached", "--", "."]).stdout
+    pathspec = [".", *_IGNORED_PATHS]
+    git(["add", "-A", "--", *pathspec])
+    patch = git(["diff", "--cached", "--", *pathspec]).stdout
     git(["reset", "-q", "--", "."])
     return patch
 
@@ -47,6 +68,9 @@ class LocalRunner:
         self.close()
 
     def run(self, cmd: str, timeout: int) -> str:
+        return self.run_result(cmd, timeout).display(timeout)
+
+    def run_result(self, cmd: str, timeout: int) -> CommandResult:
         # own process group, so a timeout kills the whole pipeline rather than just the shell
         proc = subprocess.Popen(
             cmd,
@@ -63,10 +87,8 @@ class LocalRunner:
         except subprocess.TimeoutExpired:
             os.killpg(proc.pid, signal.SIGKILL)
             out, _ = proc.communicate()
-            return (out or "") + f"\n[command timed out after {timeout}s]"
-        if proc.returncode != 0:
-            out += f"\n[exit code {proc.returncode}]"
-        return out
+            return CommandResult(out or "", 124, timed_out=True)
+        return CommandResult(out or "", proc.returncode)
 
     def put(self, path: str, content: str) -> None:
         target = Path(path) if Path(path).is_absolute() else self.workdir / path
@@ -101,10 +123,12 @@ class DockerRunner:
         memory: str = "2g",
         cpus: float = 2.0,
         network: str = "none",
+        mount_target: str | None = None,
     ):
         self.image = image
         self.workdir = workdir
         self.mount = Path(mount).resolve() if mount else None
+        self.mount_target = mount_target or workdir
         self.platform = platform
         self.memory = memory
         self.cpus = cpus
@@ -131,7 +155,7 @@ class DockerRunner:
         if self.platform:
             cmd += ["--platform", self.platform]
         if self.mount:
-            cmd += ["--volume", f"{self.mount}:{self.workdir}"]
+            cmd += ["--volume", f"{self.mount}:{self.mount_target}"]
         cmd += [self.image, "sleep", "infinity"]
         proc = subprocess.run(cmd, capture_output=True, text=True)
         if proc.returncode != 0:
@@ -153,15 +177,13 @@ class DockerRunner:
         self.close()
 
     def run(self, cmd: str, timeout: int) -> str:
+        return self.run_result(cmd, timeout).display(timeout)
+
+    def run_result(self, cmd: str, timeout: int) -> CommandResult:
         if not self._started:
             raise RuntimeError("container is not running; call start() first")
         proc = self._exec(["timeout", "-s", "KILL", str(timeout), "bash", "-lc", cmd], timeout=timeout + 15)
-        out = proc.stdout
-        if proc.returncode in (124, 137):
-            return out + f"\n[command timed out after {timeout}s]"
-        if proc.returncode != 0:
-            out += f"\n[exit code {proc.returncode}]"
-        return out
+        return CommandResult(proc.stdout, proc.returncode, timed_out=proc.returncode in (124, 137))
 
     def put(self, path: str, content: str) -> None:
         proc = subprocess.run(

@@ -1,0 +1,52 @@
+{
+  "purpose": "integration smoke tests, not a new holdout benchmark",
+  "source_commit": "e9eb3d2e5d54b852a35d081b383e992a21d53574",
+  "source_sha256": {
+    "src/patchloop/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/patchloop/baseline.py": "014f5ebec8960405a221e40f404d76a7645f768c3b1a17bcc0ef3a067a801298",
+    "src/patchloop/cli.py": "cd2d5c3e488b1d96c2522b484fbad9af18a3c450ee10814c169e04ccb19907d5",
+    "src/patchloop/eval.py": "9fba515e2f8116da49c41f1db93b243c29037cc7ecccf766e50f6cda8bfd251a",
+    "src/patchloop/llm.py": "506ff8fa85ae78d020ef49eaf8f2e43ce56d91f6f17eb721219db3c2f6a87957",
+    "src/patchloop/loop.py": "7d6b3f105ae7690a532738ec39f0d4d9fc25ea60a3e138012eb09412e48bb9f2",
+    "src/patchloop/prompts.py": "d8888e3b3a305d4c5b546ec09603e247e84ed240ae0cdfcbaa57d8499878e2f4",
+    "src/patchloop/repair/__init__.py": "78714bc5efa8c11a6dac87c3dd2c39b6c6c6c3ca714458ebf8fcb7ae1d87fbf0",
+    "src/patchloop/repair/artifacts.py": "27d9aa92d5ac50d03867d804b3cac165f8a3e1b9856344b0c682c47ec662ea99",
+    "src/patchloop/repair/contracts.py": "5e97827635ada5f07cf53ed5001e33249a307e78d7a97b371547ef1843f41d62",
+    "src/patchloop/repair/judge.py": "f6c2bb9032e6dea822714a508b98aa65baf56aeed60335d1bcc9874c911df36d",
+    "src/patchloop/repair/runner.py": "fdbd985944bb46611090c6d584c81f589a8c10bfdf1a7768f76eb935fac40958",
+    "src/patchloop/repair/swebench.py": "6c2125f43ae8f59067fd45e9beea425f0aa475f3285a5af51f8e5458af4ce533",
+    "src/patchloop/repair/verifier.py": "5210fcb667433ba915f8601ff3d0f64c809c108125bb4b202ef7c26f8d156347",
+    "src/patchloop/repair/workspace.py": "8e48bb761f0a2d3eb318c1ebc71b2f3a900ddbe2f51b82fc812dd872762d1e7f",
+    "src/patchloop/sandbox.py": "daaba4a5d87c90940faf4366f3fe31fbdc417c52c2d94cfcc02b6b8c6e621caf",
+    "src/patchloop/subset.py": "8dba512ec843521d92254f0f849e5cbda3bfecb27f16bc15eb9f8aadb9c6fc5f",
+    "src/patchloop/tools.py": "cc579e7abcbb2fd6bcd965fa111dd44768500c1b3041bc7d8c1ff2b65d4f6c08",
+    "src/patchloop/trajectory.py": "63302fb6615534653560ece24bfeb322c413487fbc9ff74db5d4ea14536f51bc"
+  },
+  "settings": {
+    "model": "deepseek-flash",
+    "budget_reminders": true,
+    "explicit_finish": false,
+    "max_model_calls": 40,
+    "command_timeout": 180,
+    "memory": "3g",
+    "judge": true
+  },
+  "tasks": [
+    {
+      "instance_id": "pytest-dev__pytest-7432",
+      "base_commit": "e6e300e729dd33956e5448d8be9a0b1540b4e53a",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-7432:latest",
+      "profile": "pytest7432.sh",
+      "profile_sha256": "3ea3fdba6c41581c9a3634aef74cf3ff3ad5c9af723ae05635cf71cfc0c1d522",
+      "image_id": "sha256:475e41d85faa1a6811cb66ef7a7fd2fd39392e7facbeb0d827b24b9f9f4c8341"
+    },
+    {
+      "instance_id": "pallets__flask-5014",
+      "base_commit": "7ee9ceb71e868944a46e1ff00b506772a53a4f1d",
+      "image": "swebench/sweb.eval.x86_64.pallets_1776_flask-5014:latest",
+      "profile": "flask5014.sh",
+      "profile_sha256": "7b8e42dc4e4211c78b7449ae83af0583033c9ce1535ce2cc0f69cf38901eebad",
+      "image_id": "sha256:02bd1eab88ddf8639bb2b825e2f7aac3c85193a360e452c875c5c6e7d342bb6b"
+    }
+  ]
+}
