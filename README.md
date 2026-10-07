@@ -131,6 +131,8 @@ official/<唯一判卷ID>/
 
 这个适配器已用原有 `pytest-7205` 补丁验收“只判卷”路径：可见 bytes 复现通过，官方 F2P 1/10、P2P 16/16，最终 0/1，表示**判卷流程成功执行，但候选补丁未解决题目**。详见 [单题实验报告](evals/reports/repair-swebench-pytest7205-v3/README.md)。
 
+后续已在 pytest-7432 和 Flask-5014 各运行一次完整 `repair-swebench --judge`：均从可见基线失败到候选通过，并被官方判为 resolved；F2P 各 1/1，P2P 为 77/77 与 59/59。记录、复现脚本及补丁见 [两题集成验证](evals/reports/repair-real-task-smoke2/README.md)。这是已有开发题上的工程验收，不是新的留出集成绩。
+
 ### 在 Docker 沙箱里跑
 
 `--sandbox docker` 时命令全部在容器里执行，本机不跑 agent 的任何命令。`--workdir` 指定的目录会挂载到容器的 `/work`；不给 `--workdir` 则直接用镜像自带的仓库（SWE-bench 镜像的代码在 `/testbed`）。
@@ -233,6 +235,7 @@ tests/               项目自身的单元测试：uv run pytest
 - [x] 最小 loop + bash 工具
 - [x] Docker 沙箱
 - [x] SWE-bench Verified 子集评测流水线
+- [x] RepairRunner 真实任务适配与可见/官方结果分离（两仓库集成验证）
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
 - [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录
 - [x] 剩余轮数提醒的 30 题单变量对比

@@ -1,0 +1,54 @@
+[
+  {
+    "instance_id": "pytest-dev__pytest-7432",
+    "turns": 9,
+    "visible": "passed",
+    "official": "passed",
+    "f2p": {
+      "passed": 1,
+      "failed": 0
+    },
+    "p2p": {
+      "passed": 77,
+      "failed": 0
+    },
+    "prompt_tokens": 31433,
+    "cached_tokens": 28672,
+    "completion_tokens": 2457,
+    "estimated_cost_cny": 0.013162440000000001,
+    "repair_seconds": 33.1,
+    "judge_seconds": 35.6,
+    "patch_sha256": "d40ad81272a6f5f257f033911b86b0e21d86f0d57299f6b1cc08b21996921b04",
+    "trace_sha256": "5c57b9da924e702eea8c15575d07e4fcba267f5ebc4da8dc740227ff58c98c50",
+    "changed_files": [
+      "diff --git a/src/_pytest/skipping.py b/src/_pytest/skipping.py"
+    ],
+    "official_attempt": "repair-judge-20261007-030109-d766475dcd"
+  },
+  {
+    "instance_id": "pallets__flask-5014",
+    "turns": 7,
+    "visible": "passed",
+    "official": "passed",
+    "f2p": {
+      "passed": 1,
+      "failed": 0
+    },
+    "p2p": {
+      "passed": 59,
+      "failed": 0
+    },
+    "prompt_tokens": 18430,
+    "cached_tokens": 15360,
+    "completion_tokens": 789,
+    "estimated_cost_cny": 0.006533199999999999,
+    "repair_seconds": 21.9,
+    "judge_seconds": 29.7,
+    "patch_sha256": "165c0d5aca96068ddb66053d70b8a51a70edd79f8087216d290d41fdf6bb9300",
+    "trace_sha256": "fbca5d6be82e163f62cbee71d7d57bbf09e625ad70a03620046fb4851a1c10aa",
+    "changed_files": [
+      "diff --git a/src/flask/blueprints.py b/src/flask/blueprints.py"
+    ],
+    "official_attempt": "repair-judge-20261007-030212-d3bb7c4fcb"
+  }
+]
