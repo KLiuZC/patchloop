@@ -47,3 +47,23 @@ def test_cli_rejects_single_shot_agent_options_before_model_setup(monkeypatch, o
     result = CliRunner().invoke(cli.app, ["eval", "-r", "fake", "-i", "x__y-1", "--mode", "single-shot", option])
     assert result.exit_code == 2
     assert "requires --mode agent" in result.output
+
+
+def test_serve_uses_local_address_and_selected_database(monkeypatch, tmp_path):
+    import uvicorn
+
+    calls = []
+    monkeypatch.setattr(uvicorn, "run", lambda app, **kwargs: calls.append((app, kwargs)))
+    monkeypatch.setattr(cli, "LLM", lambda *a: pytest.fail("serving tasks must not create a model client"))
+    monkeypatch.setattr(cli, "load_dotenv", lambda: pytest.fail("task API does not need provider credentials"))
+    database = tmp_path / "records.sqlite3"
+    result = CliRunner().invoke(cli.app, ["serve", "--db", str(database), "--port", "8123"])
+    assert result.exit_code == 0, result.output
+    app, options = calls[0]
+    assert options == {"host": "127.0.0.1", "port": 8123}
+    assert app.state.task_store.path == database
+
+
+def test_serve_rejects_invalid_port():
+    result = CliRunner().invoke(cli.app, ["serve", "--port", "65536"])
+    assert result.exit_code == 2
