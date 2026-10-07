@@ -7,6 +7,7 @@ import { clearPendingReview, keepLatestReview, readPendingReview, reviewError, r
 import { formatDate } from '../lib/task'
 import DiffViewer from './DiffViewer'
 import ValidationPanel from './ValidationPanel'
+import DeliveryPanel from './DeliveryPanel'
 import { ErrorNotice, LoadingState, ReviewBadge } from './ui'
 
 function EvidenceDetails({ evidence }) {
@@ -173,7 +174,7 @@ function ReviewSession({ taskId }) {
     <section className="panel review-heading-panel"><div className="panel-heading"><h2><ClipboardCheck size={18} />人工审查</h2>
       <button type="button" className="button button-quiet button-small" disabled={busy || snapshot.isFetching} onClick={reload}><RefreshCw size={14} className={snapshot.isFetching ? 'spin' : ''} />重新加载审查资料</button></div>
       <div className="review-current"><span>当前状态</span>{current.isError ? <span>暂无法读取</span> : current.data ? <ReviewBadge value={current.data.status} /> : <span>正在读取…</span>}<span className="muted">{current.data ? `已记录 ${current.data.revision} 次审查` : ''}</span></div>
-      <p className="review-help">核对补丁和测试结果后提交意见。此操作只保存审查决定，补丁尚未应用到仓库。</p>
+      <p className="review-help">核对补丁和测试结果后提交意见。接受后，可在下方生成独立修改分支。</p>
       {current.isError && <ErrorNotice error={new ApiError(reviewError(current.error), current.error.status)} onRetry={() => current.refetch()} />}
       {frozen && reviewReason(frozen) && <p className="notice notice-warning">{reviewReason(frozen)}</p>}
       {(changed || conflict) && <p className="notice notice-warning" role="alert">审查资料或其他审查决定已更新。你的意见已保留，请重新加载资料后核对。</p>}
@@ -194,6 +195,8 @@ function ReviewSession({ taskId }) {
       <div className="review-actions"><button type="button" className="button button-quiet review-reject" disabled={blocked || !frozen?.can_reject || frozen.status === 'rejected'} onClick={() => decide('rejected')}><X size={16} />拒绝补丁</button>
         <button type="button" className="button button-primary" disabled={blocked || !frozen?.can_accept || frozen.status === 'accepted'} onClick={() => decide('accepted')}><Check size={16} />接受补丁</button>{busy && <span className="review-help" role="status">正在处理审查…</span>}</div>
     </section>
+
+    <DeliveryPanel key={`${taskId}-${current.data?.revision ?? 0}-${current.data?.status ?? 'unknown'}`} taskId={taskId} reviewState={current.isError ? null : current.data} />
 
     <section className="panel review-history"><div className="panel-heading"><h2><History size={18} />审查历史</h2><span className="muted">最新在前</span></div>
       {history.isPending && <LoadingState label="正在读取审查历史…" />}

@@ -94,7 +94,10 @@ def _snapshot(task: TaskRecord) -> tuple[ReviewEvidence, bool]:
                   and confirmed(baseline, "failed", 1) and confirmed(candidate, "passed", 0))
     if _read_artifacts(root) != contents:
         raise ValueError("repair evidence changed while it was being read")
-    record_bytes = _json_bytes(task.model_dump(mode="json"))
+    record_value = task.model_dump(mode="json")
+    if task.path_policy is None:
+        record_value.pop("path_policy")
+    record_bytes = _json_bytes(record_value)
     return ReviewEvidence(
         base_sha=task.base_sha, patch_sha256=patch_hash,
         validation_sha256=_digest(contents["validation.json"]), task_sha256=_digest(contents["task.json"]),

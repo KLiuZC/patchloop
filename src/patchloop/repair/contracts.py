@@ -1,7 +1,5 @@
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-import fnmatch
-import re
 from typing import Literal
 
 
@@ -47,18 +45,15 @@ class RepairTask:
 
     def validate_patch_paths(self, patch: str) -> list[str]:
         """Return changed paths that violate the task's path policy."""
-        paths: set[str] = set()
-        for line in patch.splitlines():
-            match = re.match(r"^diff --git a/(.+) b/(.+)$", line)
-            if match:
-                paths.update(match.groups())
-        violations: list[str] = []
-        for path in sorted(paths):
-            if self.allowed_paths and not any(fnmatch.fnmatch(path, pattern) for pattern in self.allowed_paths):
-                violations.append(f"path not allowed: {path}")
-            if any(fnmatch.fnmatch(path, pattern) for pattern in self.protected_paths):
-                violations.append(f"path protected: {path}")
-        return violations
+        if not patch or not (self.allowed_paths or self.protected_paths):
+            return []
+        from .patch_policy import PatchPolicyError, inspect_patch
+        try:
+            inspect_patch(self.repo_path, self.base_sha, patch.encode("utf-8"),
+                          allowed_paths=self.allowed_paths, protected_paths=self.protected_paths)
+        except (PatchPolicyError, OSError, ValueError) as exc:
+            return [str(exc)]
+        return []
 
 
 @dataclass

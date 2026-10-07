@@ -10,7 +10,9 @@ from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 
 from .models import (ReviewHistory, ReviewResponse, ReviewState, ReviewSubmission,
+                     DeliveryResponse, DeliveryState, DeliverySubmission,
                      TaskPage, TaskRecord, TaskStatus, TaskSubmission)
+from .delivery import DeliveryService
 from .review import ReviewConflict, ReviewNotFound
 from .store import InvalidTaskCursor, TaskStore
 
@@ -48,9 +50,10 @@ def _repository_base(submission: TaskSubmission, server_directory: Path) -> tupl
     return root, workdir, base
 
 
-def create_app(db_path: Path = Path("data/tasks.sqlite3")) -> FastAPI:
+def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: Path | None = None) -> FastAPI:
     """Create the task API. No worker, model client or Docker container is started."""
     store = TaskStore(Path(db_path))
+    delivery_service = DeliveryService(store, deliveries_root)
     server_directory = Path.cwd().resolve()
 
     @asynccontextmanager
@@ -65,6 +68,7 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3")) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.task_store = store
+    app.state.delivery_service = delivery_service
 
     @app.exception_handler(sqlite3.Error)
     async def storage_error(request: Request, exc: sqlite3.Error):
@@ -83,6 +87,7 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3")) -> FastAPI:
             goal=submission.goal, verification_command=submission.verification_command,
             status="queued", created_at=now, updated_at=now,
             execution=submission.execution,
+            path_policy=submission.path_policy,
         )
         store.create(task)
         response.headers["Location"] = f"/tasks/{task.task_id}"
@@ -128,6 +133,17 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3")) -> FastAPI:
     @app.post("/tasks/{task_id}/reviews", response_model=ReviewResponse, status_code=201)
     def submit_review(task_id: UUID, submission: ReviewSubmission, response: Response) -> ReviewResponse:
         result = store.submit_review(task_id, submission)
+        if result.replayed:
+            response.status_code = 200
+        return result
+
+    @app.get("/tasks/{task_id}/delivery", response_model=DeliveryState)
+    def get_delivery(task_id: UUID) -> DeliveryState:
+        return delivery_service.inspect(task_id)
+
+    @app.post("/tasks/{task_id}/delivery", response_model=DeliveryResponse, status_code=201)
+    def deliver_patch(task_id: UUID, submission: DeliverySubmission, response: Response) -> DeliveryResponse:
+        result = delivery_service.deliver(task_id, submission)
         if result.replayed:
             response.status_code = 200
         return result

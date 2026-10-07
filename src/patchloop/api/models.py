@@ -47,6 +47,25 @@ class ExecutionConfig(BaseModel):
         return self
 
 
+class PathPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    allowed_paths: list[Annotated[str, StringConstraints(min_length=1, max_length=512)]] = Field(default_factory=list, max_length=100)
+    protected_paths: list[Annotated[str, StringConstraints(min_length=1, max_length=512)]] = Field(
+        default_factory=lambda: ["tests/**", "**/tests/**", "testing/**", "**/testing/**",
+                                 "test_*.py", "**/test_*.py", "*_test.py", "**/*_test.py",
+                                 "conftest.py", "**/conftest.py"], max_length=100,
+    )
+
+    @field_validator("allowed_paths", "protected_paths")
+    @classmethod
+    def validate_patterns(cls, patterns: list[str]) -> list[str]:
+        for pattern in patterns:
+            if not pattern.strip() or "\x00" in pattern or pattern.startswith("/") or any(part in (".", "..") for part in pattern.split("/")):
+                raise ValueError("path patterns must be nonempty repository-relative globs without . or .. components")
+        return list(dict.fromkeys(pattern + "**" if pattern.endswith("/") else pattern for pattern in patterns))
+
+
 class TaskSubmission(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -55,6 +74,7 @@ class TaskSubmission(BaseModel):
     verification_command: NonEmptyText
     base_sha: Annotated[str, StringConstraints(min_length=1, max_length=256)] | None = None
     execution: ExecutionConfig | None = None
+    path_policy: PathPolicy = Field(default_factory=PathPolicy)
 
     @field_validator("repo_path", "goal", "verification_command", "base_sha")
     @classmethod
@@ -87,6 +107,7 @@ class TaskRecord(BaseModel):
     error: str = ""
     result: dict | None = None
     cleanup_pending: bool = False
+    path_policy: PathPolicy | None = None
 
     def to_repair_task(self) -> RepairTask:
         """Use the same frozen verification and limits for execution and review."""
@@ -100,6 +121,8 @@ class TaskRecord(BaseModel):
                                              timeout_seconds=config.verification_timeout_seconds),
             limits=Limits(max_model_calls=config.max_model_calls, command_timeout_seconds=config.command_timeout_seconds),
             budget_reminders=config.budget_reminders, explicit_finish=config.explicit_finish,
+            allowed_paths=tuple(self.path_policy.allowed_paths) if self.path_policy else (),
+            protected_paths=tuple(self.path_policy.protected_paths) if self.path_policy else (),
         )
 
 
@@ -203,4 +226,53 @@ class ReviewHistory(BaseModel):
 class ReviewResponse(BaseModel):
     review: ReviewRecord
     current: ReviewState
+    replayed: bool
+
+
+class DeliverySubmission(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: UUID
+    review_id: UUID
+    review_revision: int = Field(ge=1, strict=True)
+    evidence: ReviewEvidence
+    target_head: Annotated[str, StringConstraints(pattern=r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")]
+
+
+class DeliveryRecord(BaseModel):
+    delivery_id: UUID
+    task_id: UUID
+    request_id: UUID
+    review_id: UUID
+    review_revision: int
+    evidence: ReviewEvidence
+    target_head: str
+    branch: str
+    worktree_path: str
+    status: Literal["preparing", "completed", "failed"]
+    commit_sha: str | None = None
+    tree_sha: str | None = None
+    error: str = ""
+    created_at: datetime
+    updated_at: datetime
+
+
+class DeliveryState(BaseModel):
+    task_id: UUID
+    can_deliver: bool = False
+    reason: str = ""
+    review_id: UUID | None = None
+    review_revision: int = 0
+    evidence: ReviewEvidence | None = None
+    target_head: str | None = None
+    branch: str | None = None
+    worktree_path: str | None = None
+    dirty: bool = False
+    changed_paths: list[str] = Field(default_factory=list)
+    policy: PathPolicy = Field(default_factory=PathPolicy)
+    delivery: DeliveryRecord | None = None
+    delivery_intact: bool | None = None
+
+
+class DeliveryResponse(BaseModel):
+    delivery: DeliveryRecord
     replayed: bool

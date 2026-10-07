@@ -617,7 +617,19 @@ def test_v4_migration_preserves_existing_rows_results_and_is_reentrant(tmp_path)
             CREATE INDEX tasks_status_created_order ON tasks(status, created_at DESC, task_id DESC);
             PRAGMA user_version=4;
         """)
-    old_store = TaskStore(database)
+    class LegacyStore(TaskStore):
+        def create(self, record):
+            # Reproduce the v4 writer before the path-policy column existed.
+            with self._connection() as connection:
+                connection.execute("""
+                    INSERT INTO tasks (task_id, repo_path, workdir, base_sha, goal, verification_command,
+                                       status, created_at, updated_at, execution_json)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (str(record.task_id), record.repo_path, record.workdir, record.base_sha, record.goal,
+                      record.verification_command, record.status, record.created_at.isoformat(), record.updated_at.isoformat(),
+                      record.execution.model_dump_json() if record.execution else None))
+
+    old_store = LegacyStore(database)
     completed = archive_task(old_store, tmp_path)
     unconfigured = completed.model_copy(update={
         "task_id": uuid4(), "status": "queued", "execution": None, "result": None,
@@ -649,8 +661,10 @@ def test_v4_migration_preserves_existing_rows_results_and_is_reentrant(tmp_path)
         assert post(restarted, completed, first_body, expected=200)["review"] == accepted["review"]
         assert restarted.get(f"/tasks/{completed.task_id}").json() == expected_records[completed.task_id]
     with sqlite3.connect(database) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 5
-        assert connection.execute("SELECT * FROM tasks ORDER BY task_id").fetchall() == old_rows
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
+        upgraded_rows = connection.execute("SELECT * FROM tasks ORDER BY task_id").fetchall()
+        assert [row[:-1] for row in upgraded_rows] == old_rows
+        assert all(row[-1] is None for row in upgraded_rows)
         assert connection.execute("SELECT count(*) FROM task_reviews").fetchone()[0] == 1
     assert file_snapshot(completed) == files_before
 

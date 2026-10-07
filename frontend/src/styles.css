@@ -314,6 +314,14 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
 .review-history-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.875rem; font-size: 0.75rem; color: #667082; }
 .review-history-heading time { margin-left: auto; }
 .review-comment { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8125rem; line-height: 1.8; margin-top: 0.75rem; color: #4e5b71; }
+.delivery-panel { padding: 1.5rem; }
+.delivery-panel > p { font-size: 0.8125rem; line-height: 1.8; color: #606b80; overflow-wrap: anywhere; }
+.delivery-fields { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 0.625rem 1rem; margin: 1rem 0; font-size: 0.8125rem; }
+.delivery-fields dt { color: #667082; }
+.delivery-fields dd { min-width: 0; margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; color: #505b72; }
+.delivery-fields code { font-size: 0.75rem; }
+.delivery-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 1rem; }
+.field textarea.mono-input { font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.8125rem; min-height: 4.5rem; }
 
 @media (min-width: 100rem) {
   .main-content { padding-top: 2.875rem; }
@@ -410,6 +418,10 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
   .review-evidence dl { grid-template-columns: minmax(0, 1fr); gap: 0.375rem; }
   .review-evidence dd + dt { margin-top: 0.5rem; }
   .review-actions > .button { flex: 1; }
+  .delivery-panel { padding: 1.1875rem; }
+  .delivery-fields { grid-template-columns: minmax(0, 1fr); gap: 0.375rem; }
+  .delivery-fields dd + dt { margin-top: 0.625rem; }
+  .delivery-actions > .button { flex: 1; }
   .diff-stats { gap: 0.4375rem; }
   .code-toolbar { padding: 0.875rem; }
   .turn-list { padding: 1.125rem 0.875rem 0; }

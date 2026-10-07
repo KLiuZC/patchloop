@@ -6,6 +6,9 @@ import { MotionConfig } from 'motion/react'
 import ReviewPanel from '../components/ReviewPanel'
 import { ApiError } from '../lib/api'
 import { createQueryClient } from '../lib/query-client'
+
+// Review behavior is isolated here; delivery has its own interaction suite.
+vi.mock('../components/DeliveryPanel', () => ({ default: () => null }))
 import { clearPendingReview, readPendingReview } from '../lib/review-draft'
 import { getReview, listReviews, loadReviewSnapshot, submitReview } from '../lib/reviews'
 import { secondId, taskId } from './fixtures'

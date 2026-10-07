@@ -39,7 +39,7 @@ class TaskStore:
             connection.execute("PRAGMA journal_mode=WAL")
             connection.execute("BEGIN IMMEDIATE")
             version = connection.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3, 4, 5):
+            if version not in (0, 1, 2, 3, 4, 5, 6):
                 raise RuntimeError(f"unsupported task database schema version: {version}")
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS tasks (
@@ -91,20 +91,36 @@ class TaskStore:
                     UNIQUE(task_id, request_id)
                 )
             """)
-            connection.execute("PRAGMA user_version=5")
+            if version < 6:
+                columns = {row[1] for row in connection.execute("PRAGMA table_info(tasks)")}
+                if "path_policy_json" not in columns:
+                    connection.execute("ALTER TABLE tasks ADD COLUMN path_policy_json TEXT")
+            connection.execute("""
+                CREATE TABLE IF NOT EXISTS task_deliveries (
+                    delivery_id TEXT PRIMARY KEY,
+                    task_id TEXT NOT NULL REFERENCES tasks(task_id),
+                    request_id TEXT NOT NULL,
+                    review_id TEXT NOT NULL REFERENCES task_reviews(review_id),
+                    record_json TEXT NOT NULL,
+                    UNIQUE(task_id, review_id),
+                    UNIQUE(task_id, request_id)
+                )
+            """)
+            connection.execute("PRAGMA user_version=6")
 
     def create(self, record: TaskRecord) -> None:
         with self._connection() as connection:
             connection.execute("""
                 INSERT INTO tasks (
                     task_id, repo_path, workdir, base_sha, goal, verification_command,
-                    status, created_at, updated_at, execution_json
+                    status, created_at, updated_at, execution_json, path_policy_json
                 ) VALUES (
                     :task_id, :repo_path, :workdir, :base_sha, :goal, :verification_command,
-                    :status, :created_at, :updated_at, :execution_json
+                    :status, :created_at, :updated_at, :execution_json, :path_policy_json
                 )
             """, {**record.model_dump(mode="json"), "created_at": utc_timestamp(record.created_at),
-                  "execution_json": record.execution.model_dump_json() if record.execution else None})
+                  "execution_json": record.execution.model_dump_json() if record.execution else None,
+                  "path_policy_json": record.path_policy.model_dump_json() if record.path_policy else None})
 
     def get(self, task_id: UUID) -> TaskRecord | None:
         with self._connection() as connection:
@@ -153,6 +169,8 @@ class TaskStore:
     @staticmethod
     def _decode(row) -> TaskRecord:
         value = dict(row)
+        policy = value.pop("path_policy_json", None)
+        value["path_policy"] = json.loads(policy) if policy is not None else None
         for column, field in (("execution_json", "execution"), ("result_json", "result")):
             raw = value.pop(column)
             value[field] = json.loads(raw) if raw is not None else None

@@ -164,6 +164,16 @@ describe('任务工作台', () => {
     expect(validateTaskForm({ ...form, memory_mb: '0' })).toHaveProperty('memory_mb')
   })
 
+  it('freezes visible path rules and preserves meaningful pattern whitespace', () => {
+    const form = { ...defaultForm, repo_path: '/repo', goal: 'fix', allowed_paths: 'src/**\n spaced name.py ', protected_paths: 'tests/**\n**/tests/**' }
+    expect(validateTaskForm(form)).toEqual({})
+    expect(buildTaskPayload(form).path_policy).toEqual({ allowed_paths: ['src/**', ' spaced name.py '], protected_paths: ['tests/**', '**/tests/**'] })
+    expect(buildTaskPayload({ ...form, protected_paths: undefined }).path_policy.protected_paths).toContain('**/test_*.py')
+    expect(buildTaskPayload({ ...form, protected_paths: '' }).path_policy.protected_paths).toEqual([])
+    expect(validateTaskForm({ ...form, protected_paths: '../tests/**' })).toHaveProperty('protected_paths')
+    expect(validateTaskForm({ ...form, allowed_paths: '/src/**' })).toHaveProperty('allowed_paths')
+  })
+
   it('handles a missing task without crashing the whole page', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ detail: 'Task not found' }, 404)))
     mount(`/tasks/${taskId}`)
