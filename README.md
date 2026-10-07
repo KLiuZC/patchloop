@@ -43,6 +43,41 @@ uv run agent run --workdir examples/toy_repo --provider glm \
 
 默认用两家的 flash 模型（`glm-5.3-flash`、`deepseek-flash`），便宜、够开发用；正式评测时用 `-m glm-5.3` / `-m deepseek-v4-pro` 切到旗舰。跑完后用 `git checkout -- examples/toy_repo` 还原玩具仓库。每次运行的完整轨迹写在 `traj/<run_id>.jsonl`。
 
+### 本地任务接口
+
+任务接口使用 FastAPI 和 SQLite，支持提交修复请求、按编号查询和服务重启后读取历史记录。当前阶段提交的任务会保持 `queued`，后台执行将在下一阶段接入；此接口不调用模型、不执行验证命令，也不需要 Docker 或 API key。
+
+在项目根目录启动服务：
+
+```bash
+uv sync
+uv run agent serve
+```
+
+默认地址为 `http://127.0.0.1:8000`，接口调试页面为 `http://127.0.0.1:8000/docs`。服务仅监听本机。默认数据库是启动目录下的 `data/tasks.sqlite3`，该目录已被 Git 忽略；`--db /绝对路径/tasks.sqlite3` 可指定存储位置，`--port 8001` 可更改端口。
+
+保持服务终端运行，在另一个终端提交任务：
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "repo_path": "examples/toy_repo",
+    "goal": "支持版本号字符串的 v 前缀，不改变现有版本号行为",
+    "verification_command": "python -m pytest -q"
+  }'
+```
+
+成功返回 HTTP 201，包含 `task_id`、`status: "queued"`、完整 `base_sha` 和创建时间。`repo_path` 支持服务所在机器上的绝对路径，或相对于服务启动目录的路径；存储时拆分为 Git 根目录 `repo_path` 与子目录 `workdir`。默认在提交时固定 HEAD，也可通过 `base_sha` 指定已有提交或引用；之后移动分支不会改变已提交的任务，工作区未提交改动不会纳入任务基线。
+
+复制响应中的 `task_id`，查询任务：
+
+```bash
+curl -sS "http://127.0.0.1:8000/tasks/<task_id>"
+```
+
+按 Ctrl+C 停止服务，再使用同一数据库启动，原编号仍可查询。换启动目录时请用 `--db` 指向原数据库。每次 POST 都创建独立任务；重复提交会得到不同编号。任务不存在返回 404，参数或 Git 基线无效返回 422，存储暂时不可用返回 503。任务状态不代表补丁验证结论。
+
 ### 独立修复闭环
 
 `agent repair` 会在固定 `base_sha` 的临时独立 Git 克隆中运行 Agent，收集候选补丁，然后从同一个干净基线重新应用补丁并运行固定验证命令。验证结果不会使用 Agent 工作区中的测试状态。
@@ -225,6 +260,7 @@ src/patchloop/
   subset.py      可复现的选题：按难度分层、按仓库封顶、固定种子
   cli.py         命令行入口
   repair/        独立修复闭环：任务契约、worktree、产物与验证器
+  api/           本地任务提交、查询与 SQLite 存储
 examples/toy_repo/   带一个已知 bug 的玩具仓库，用于冒烟
 examples/toy_image/  玩具仓库对应的 Docker 镜像（python + git + pytest）
 evals/subsets/       题目子集（每行一个 instance id）
@@ -242,6 +278,8 @@ tests/               项目自身的单元测试：uv run pytest
 - [x] Docker 沙箱
 - [x] SWE-bench Verified 子集评测流水线
 - [x] RepairRunner 真实任务适配与可见/官方结果分离（两仓库集成验证）
+- [x] 本地任务提交/查询接口与 SQLite 持久化
+- [ ] 后台串行执行任务并保存修复结果
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
 - [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录
 - [x] 剩余轮数提醒的 30 题单变量对比

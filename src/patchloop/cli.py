@@ -28,6 +28,19 @@ def main() -> None:
     """A minimal coding agent."""
 
 
+@app.command("serve")
+def serve_command(
+    db: Path = typer.Option(Path("data/tasks.sqlite3"), "--db", help="Persistent SQLite task database."),
+    port: int = typer.Option(8000, "--port", min=1, max=65535, help="Local HTTP port."),
+):
+    """Serve task submission and queries on 127.0.0.1; tasks are saved but not executed."""
+    import uvicorn
+
+    from .api import create_app
+
+    uvicorn.run(create_app(db), host="127.0.0.1", port=port)
+
+
 @app.command("run")
 def run_command(
     task: str = typer.Option(..., "--task", "-t", help="What the agent should do."),
