@@ -1,4 +1,3 @@
-import json
 import shlex
 import time
 from dataclasses import asdict, dataclass
@@ -6,11 +5,11 @@ from pathlib import Path
 from typing import Any
 
 from ..eval import task_text
-from ..loop import run
+from ..loop import RunResult, run
 from ..sandbox import DockerRunner
 from .artifacts import ArtifactStore, sha256_text
 from .contracts import BaselineResult, RepairResult, ValidationResult
-from .verifier import _exit_code
+from .verifier import baseline_error, profile_status
 
 
 @dataclass(frozen=True)
@@ -56,12 +55,7 @@ class SWEbenchTask:
 
 
 def _profile_status(output: str, exit_code: int) -> str:
-    """Separate an invalid test selector from an actual test failure."""
-    if exit_code == 0:
-        return "passed"
-    if exit_code == 4 and ("not found" in output or "no tests ran" in output):
-        return "inconclusive"
-    return "failed"
+    return profile_status(exit_code)
 
 
 class SWEbenchRepairRunner:
@@ -89,25 +83,25 @@ class SWEbenchRepairRunner:
         )
 
     def _check_base(self, runner: DockerRunner) -> None:
-        exists = runner.run(
+        exists = runner.run_result(
             f"git cat-file -e {shlex.quote(self.task.base_commit)}^{{commit}}",
             timeout=30,
         )
-        if "[exit code" in exists or "[command timed out" in exists:
+        if exists.exit_code != 0:
             raise RuntimeError(f"base commit is not available in image: {self.task.base_commit}")
-        checkout = runner.run(
+        checkout = runner.run_result(
             f"git checkout --detach {shlex.quote(self.task.base_commit)}",
             timeout=60,
         )
-        if "[exit code" in checkout or "[command timed out" in checkout:
-            raise RuntimeError(f"could not checkout base commit: {self.task.base_commit}\n{checkout}")
+        if checkout.exit_code != 0:
+            raise RuntimeError(f"could not checkout base commit: {self.task.base_commit}\n{checkout.output}")
         actual = runner.run("git rev-parse HEAD", timeout=30).strip()
         if actual != self.task.base_commit:
             raise RuntimeError(f"base commit mismatch after checkout: expected {self.task.base_commit}, got {actual}")
 
     def _run_profile(self, runner: DockerRunner) -> tuple[str, int]:
-        output = runner.run(self.task.verification_command, timeout=180)
-        return output, _exit_code(output)
+        result = runner.run_result(self.task.verification_command, timeout=180)
+        return result.display(180), result.exit_code
 
     def run(
         self,
@@ -118,13 +112,13 @@ class SWEbenchRepairRunner:
         budget_reminders: bool = True,
         explicit_finish: bool = False,
     ) -> RepairResult:
-        if any(self.artifacts.root.iterdir()):
-            raise ValueError("use a new --artifacts directory for a new repair, or repair-judge to grade a saved patch")
+        self.artifacts.require_empty()
         started = time.time()
         self.artifacts.write_task(self.task)
         self.artifacts.event("run_started", instance_id=self.task.instance_id, base_commit=self.task.base_commit)
         patch = ""
         execution = None
+        error = ""
         try:
             with self._runner() as runner:
                 self._check_base(runner)
@@ -139,8 +133,10 @@ class SWEbenchRepairRunner:
                     run_id=self.task.instance_id,
                     budget_reminders=budget_reminders,
                     explicit_finish=explicit_finish,
+                    capture_errors=True,
                 )
                 patch = execution.patch
+                error = execution.error
                 self.artifacts.event(
                     "execution_finished",
                     stop_reason=execution.stop_reason,
@@ -150,42 +146,48 @@ class SWEbenchRepairRunner:
         except Exception as exc:
             error = f"{type(exc).__name__}: {exc}"
             self.artifacts.event("execution_error", error=error)
-            result = RepairResult(
-                task_id=self.task.instance_id,
-                execution_status="error",
-                validation_status="inconclusive",
-                stop_reason="error",
-                artifacts_dir=self.artifacts.root,
-                error=error,
-                seconds=round(time.time() - started, 1),
-            )
-            self.artifacts.write_patch("")
-            self.artifacts.write_summary(result.to_dict())
-            return result
 
-        self.artifacts.write_patch(patch)
-        baseline = self._clean_verification()
-        if not patch:
-            validation = ValidationResult(
-                status="inconclusive",
-                profile_id="swebench",
-                command=self.task.verification_command,
-                base_sha=self.task.base_commit,
-                error="empty patch",
-                baseline=baseline,
-            )
+        execution = execution or RunResult(run_id=self.task.instance_id, stop_reason="error", error=error)
+        patch_hash = self.artifacts.write_patch(patch)
+        baseline = None
+        validation = ValidationResult(
+            status="inconclusive", profile_id="swebench",
+            command=self.task.verification_command, base_sha=self.task.base_commit,
+            patch_sha256=patch_hash or None,
+        )
+        if error:
+            validation.error = f"execution failed; verification not run: {error}"
         else:
-            validation = self._candidate_verification(patch, baseline)
+            try:
+                baseline = self._clean_verification()
+                validation.baseline = baseline
+                if not patch:
+                    validation.error = "empty patch"
+                else:
+                    validation = self._candidate_verification(patch, baseline)
+            except Exception as exc:
+                validation.error = f"{type(exc).__name__}: {exc}"
+                if baseline is None:
+                    validation.baseline = BaselineResult(
+                        status="error", profile_id="swebench", command=self.task.verification_command,
+                        base_sha=self.task.base_commit, error=validation.error,
+                    )
+                else:
+                    validation.candidate_status = "inconclusive"
+                    validation.candidate_error = validation.error
+                self.artifacts.event("validation_error", error=validation.error)
         self.artifacts.write_validation(validation)
         self.artifacts.event("validation_finished", status=validation.status, exit_code=validation.exit_code)
         result = RepairResult(
             task_id=self.task.instance_id,
-            execution_status="completed" if execution.finished else "interrupted",
+            execution_status="error" if error else "completed" if execution.finished else "interrupted",
             validation_status=validation.status,
-            stop_reason=execution.stop_reason,
+            stop_reason="error" if error else execution.stop_reason,
             patch=patch,
             validation=validation,
             artifacts_dir=self.artifacts.root,
+            error=error,
+            turns=execution.turns,
             prompt_tokens=execution.prompt_tokens,
             cached_tokens=execution.cached_tokens,
             completion_tokens=execution.completion_tokens,
@@ -216,11 +218,11 @@ class SWEbenchRepairRunner:
         with self._runner() as runner:
             self._check_base(runner)
             runner.put("/tmp/patchloop-candidate.patch", patch)
-            apply_output = runner.run(
+            applied = runner.run_result(
                 "git apply --binary --whitespace=nowarn /tmp/patchloop-candidate.patch",
                 timeout=60,
             )
-            apply_exit = _exit_code(apply_output)
+            apply_exit = applied.exit_code
             if apply_exit != 0:
                 return ValidationResult(
                     status="failed",
@@ -228,7 +230,10 @@ class SWEbenchRepairRunner:
                     command=self.task.verification_command,
                     base_sha=self.task.base_commit,
                     exit_code=apply_exit,
-                    output=apply_output,
+                    output=applied.display(60),
+                    patch_sha256=sha256_text(patch),
+                    candidate_status="failed",
+                    candidate_error="patch did not apply",
                     seconds=round(time.time() - started, 1),
                     error="patch did not apply",
                     baseline=baseline,
@@ -245,6 +250,7 @@ class SWEbenchRepairRunner:
             exit_code=exit_code,
             output=output,
             seconds=round(time.time() - started, 1),
-            error="" if status == candidate_status else "baseline verification already passed",
+            error=baseline_error(baseline),
+            candidate_status=candidate_status,
             baseline=baseline,
         )

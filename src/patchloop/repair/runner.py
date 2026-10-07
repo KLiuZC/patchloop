@@ -1,8 +1,7 @@
 import time
 from pathlib import Path
-from typing import Callable
 
-from ..loop import run
+from ..loop import RunResult, run
 from .artifacts import ArtifactStore
 from .contracts import RepairResult, RepairTask, ValidationResult
 from .verifier import RunnerFactory, verify_patch
@@ -18,6 +17,7 @@ class RepairRunner:
         self.runner_factory = runner_factory
 
     def run(self, llm) -> RepairResult:
+        self.artifacts.require_empty()
         started = time.time()
         self.artifacts.write_task(self.task)
         self.artifacts.event("run_started", task_id=self.task.task_id, base_sha=self.task.base_sha)
@@ -38,8 +38,10 @@ class RepairRunner:
                         budget_reminders=self.task.budget_reminders,
                         explicit_finish=self.task.explicit_finish,
                         run_id=self.task.task_id,
+                        capture_errors=True,
                     )
                     patch = execution.patch
+                    error = execution.error
                 self.artifacts.event(
                     "execution_finished",
                     stop_reason=execution.stop_reason,
@@ -51,30 +53,29 @@ class RepairRunner:
             self.artifacts.event("execution_error", error=error)
 
         patch_hash = self.artifacts.write_patch(patch)
-        if execution is None:
-            result = RepairResult(
-                task_id=self.task.task_id,
-                execution_status="error",
-                validation_status="inconclusive",
-                stop_reason="error",
-                patch=patch,
-                artifacts_dir=self.artifacts.root,
-                error=error,
-            )
-            self.artifacts.write_summary(result.to_dict())
-            return result
-
-        try:
-            validation = verify_patch(self.task, patch, self.runner_factory)
-        except Exception as exc:
+        execution = execution or RunResult(run_id=self.task.task_id, stop_reason="error", error=error)
+        if error:
             validation = ValidationResult(
                 status="inconclusive",
                 profile_id=self.task.verification.id,
                 command=self.task.verification.command,
                 base_sha=self.task.base_sha,
-                error=f"{type(exc).__name__}: {exc}",
+                patch_sha256=patch_hash or None,
+                error=f"execution failed; verification not run: {error}",
             )
-            self.artifacts.event("validation_error", error=validation.error)
+        else:
+            try:
+                validation = verify_patch(self.task, patch, self.runner_factory)
+            except Exception as exc:
+                validation = ValidationResult(
+                    status="inconclusive",
+                    profile_id=self.task.verification.id,
+                    command=self.task.verification.command,
+                    base_sha=self.task.base_sha,
+                    patch_sha256=patch_hash or None,
+                    error=f"{type(exc).__name__}: {exc}",
+                )
+                self.artifacts.event("validation_error", error=validation.error)
         self.artifacts.write_validation(validation)
         self.artifacts.event(
             "validation_finished",
@@ -84,12 +85,14 @@ class RepairRunner:
         )
         result = RepairResult(
             task_id=self.task.task_id,
-            execution_status="completed" if execution.finished else "interrupted",
+            execution_status="error" if error else "completed" if execution.finished else "interrupted",
             validation_status=validation.status,
-            stop_reason=execution.stop_reason,
+            stop_reason="error" if error else execution.stop_reason,
             patch=patch,
             validation=validation,
             artifacts_dir=self.artifacts.root,
+            error=error,
+            turns=execution.turns,
             prompt_tokens=execution.prompt_tokens,
             cached_tokens=execution.cached_tokens,
             completion_tokens=execution.completion_tokens,

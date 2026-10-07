@@ -46,6 +46,39 @@ def test_tool_output_is_fed_back_and_run_finishes(tmp_path):
     assert "hi" in tool_msg["content"]
 
 
+def test_tool_exception_keeps_received_usage_and_response(tmp_path):
+    class BrokenRunner(LocalRunner):
+        def run(self, cmd, timeout):
+            raise RuntimeError("container disappeared")
+
+    llm = FakeLLM([message(tool_calls=[tool_call("c1", '{"cmd":"echo hi"}')])])
+    result = run("task", llm, BrokenRunner(tmp_path), traj_dir=tmp_path / "traj", capture_errors=True)
+    assert result.stop_reason == "error" and not result.finished
+    assert result.prompt_tokens == 10 and result.completion_tokens == 5
+    rows = [json.loads(line) for line in (tmp_path / "traj" / f"{result.run_id}.jsonl").read_text().splitlines()]
+    assert rows[-2]["assistant"]["tool_calls"][0]["id"] == "c1"
+    assert "container disappeared" in rows[-1]["error"]
+
+
+def test_failed_default_run_preserves_existing_staged_files(tmp_path):
+    import subprocess
+
+    def git(*args):
+        return subprocess.run(["git", *args], cwd=tmp_path, capture_output=True, text=True, check=True).stdout
+
+    git("init", "-q")
+    (tmp_path / "file.txt").write_text("base\n")
+    git("add", ".")
+    git("-c", "user.name=test", "-c", "user.email=test@example.com", "commit", "-qm", "base")
+    (tmp_path / "file.txt").write_text("user's staged change\n")
+    git("add", "file.txt")
+    before = git("diff", "--cached")
+    assert before
+    with pytest.raises(StopIteration):
+        run("task", FakeLLM([]), LocalRunner(tmp_path), traj_dir=tmp_path / "traj")
+    assert git("diff", "--cached") == before
+
+
 def test_bad_arguments_are_reported_to_the_model(tmp_path):
     llm = FakeLLM([
         message(tool_calls=[tool_call("c1", "{not json")]),
@@ -204,7 +237,9 @@ def test_reminder_is_logged_before_a_failed_request(tmp_path):
         run("task", llm, MemoryRunner(tmp_path), max_turns=40,
             traj_dir=tmp_path, run_id="interrupted", budget_reminders=True)
     rows = [json.loads(l) for l in (tmp_path / "interrupted.jsonl").read_text().splitlines()]
-    assert rows[-1]["type"] == "budget_reminder" and rows[-1]["turn"] == 21
+    assert rows[-2]["type"] == "budget_reminder" and rows[-2]["turn"] == 21
+    assert rows[-1]["type"] == "result" and rows[-1]["stop_reason"] == "error"
+    assert rows[-1]["turns"] == 20
 
 
 def finish_message(summary="Completed task"):

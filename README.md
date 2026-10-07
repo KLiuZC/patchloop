@@ -45,7 +45,7 @@ uv run agent run --workdir examples/toy_repo --provider glm \
 
 ### 独立修复闭环
 
-`agent repair` 会在固定 `base_sha` 的临时 Git worktree 中运行 Agent，收集候选补丁，然后从同一个干净基线重新应用补丁并运行固定验证命令。验证结果不会使用 Agent 工作区中的测试状态。
+`agent repair` 会在固定 `base_sha` 的临时独立 Git 克隆中运行 Agent，收集候选补丁，然后从同一个干净基线重新应用补丁并运行固定验证命令。验证结果不会使用 Agent 工作区中的测试状态。
 
 ```bash
 uv run agent repair \
@@ -69,7 +69,13 @@ uv run agent repair \
   --artifacts /tmp/patchloop-repair-runs/toy-version-parser
 ```
 
-一次修复会产生 `task.json`、`events.jsonl`、`trajectory/`、`patch.diff`、`validation.json` 和 `summary.json`。验证器先在一个干净 worktree 中运行基线命令，再在第二个干净 worktree 中应用补丁并运行候选命令，避免测试缓存或生成文件污染结果。`validation.json` 同时保存 `baseline` 和 `candidate` 两次结果；如果基线本来就通过，最终状态会是 `inconclusive`，不会把没有复现的任务标成修复成功。`execution_status` 表示 Agent 是否完成执行，`validation_status` 表示候选补丁是否通过独立验证，`review_status` 表示人工审查状态。Agent 调用 `finish` 或回复文字都不能直接把验证状态变成通过。
+一次修复会产生 `task.json`、`events.jsonl`、`trajectory/`、`patch.diff`、`validation.json` 和 `summary.json`。验证器先在一个干净克隆中运行基线命令，再在第二个干净克隆中应用补丁并运行候选命令，避免测试缓存或生成文件污染结果。`validation.json` 同时保存 `baseline` 和 `candidate` 两次结果；如果基线本来就通过，最终状态会是 `inconclusive`，候选命令自身仍可记录为 `passed`。`execution_status` 表示 Agent 是否完成执行，`validation_status` 表示是否有证据表明补丁修复了复现的问题，`review_status` 表示人工审查状态。Agent 调用 `finish` 或回复文字都不能直接把验证状态变成通过。
+
+可见验证命令使用退出码约定：0 为通过、1 为断言失败，其他码（例如 pytest 未收集到测试、用法错误、超时或命令不存在）为 `inconclusive`。验证器读取实际进程退出码，不解析日志中的文本标记。自定义脚本应遵守此约定，并保留测试命令的退出码；基线未明确失败时，整体结果不能是修复成功。
+
+两种修复入口均拒绝复用非空产物目录。普通模型或工具异常会尽可能在清理沙箱前保存已有补丁、已收到的用量和轨迹终态，并写入验证报告及最终摘要；验证环境启动失败也会留档，已完成的基线结果会保留。用量仅包含服务商已返回的数据，失败请求的实际账单仍以服务商记录为准。
+
+当前面向单用户串行运行，限制模型调用次数和单条命令时长；尚未实现整个任务的总时限、强制终止后的完整留档或重启续跑。
 
 ### SWE-bench 单题适配器
 

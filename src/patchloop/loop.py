@@ -25,6 +25,7 @@ class RunResult:
     patch: str = ""
     budget_reminders_sent: int = 0
     stop_reason: str = "max_turns"
+    error: str = ""
 
 
 def cached_tokens_of(usage) -> int:
@@ -47,6 +48,7 @@ def run(
     run_id: str | None = None,
     budget_reminders: bool = False,
     explicit_finish: bool = False,
+    capture_errors: bool = False,
 ) -> RunResult:
     run_id = run_id or time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
     run_started = time.time()
@@ -76,88 +78,109 @@ def run(
         {"role": "user", "content": task},
     ]
 
-    for turn in range(1, max_turns + 1):
-        started = time.time()
-        reminder = budget_reminder(turn, max_turns, explicit_finish) if budget_reminders else None
-        if reminder:
-            # All previous tool results are already in messages; never split a tool-call group.
-            messages.append(reminder)
-            traj.budget_reminder(turn, max_turns - turn + 1, reminder)
-            result.budget_reminders_sent += 1
-        msg, usage = llm.chat(messages, tools)
-        assistant = _assistant_message(msg)
-        messages.append(assistant)
+    failure = None
+    try:
+        for turn in range(1, max_turns + 1):
+            started = time.time()
+            reminder = budget_reminder(turn, max_turns, explicit_finish) if budget_reminders else None
+            if reminder:
+                # All previous tool results are already in messages; never split a tool-call group.
+                messages.append(reminder)
+                traj.budget_reminder(turn, max_turns - turn + 1, reminder)
+                result.budget_reminders_sent += 1
+            msg, usage = llm.chat(messages, tools)
+            assistant = _assistant_message(msg)
+            messages.append(assistant)
 
-        tool_records = []
-        calls = msg.tool_calls or []
-        submission = None
-        for call in calls:
-            if explicit_finish and call.function.name == "finish":
-                if len(calls) != 1:
-                    output = "finish was not accepted: call it alone after reading all other tool results."
-                else:
-                    try:
-                        submission = _finish_summary(call.function.arguments)
-                    except ValueError as e:
-                        output = f"invalid finish arguments: {e}"
-                    else:
-                        output = "Submission accepted. Evaluation has not been performed by this tool."
-            else:
-                output = _execute(call, runner, timeout)
-            messages.append({"role": "tool", "tool_call_id": call.id, "content": output})
-            tool_records.append(
-                {
-                    "id": call.id,
-                    "name": call.function.name,
-                    "arguments": call.function.arguments,
-                    "output": output,
+            result.turns = turn
+            turn_usage = None
+            if usage:
+                cached = cached_tokens_of(usage)
+                result.prompt_tokens += usage.prompt_tokens
+                result.cached_tokens += cached
+                result.completion_tokens += usage.completion_tokens
+                turn_usage = {
+                    "prompt_tokens": usage.prompt_tokens,
+                    "cached_tokens": cached,
+                    "completion_tokens": usage.completion_tokens,
                 }
-            )
+            tool_records = []
+            calls = msg.tool_calls or []
+            submission = None
+            try:
+                for call in calls:
+                    if explicit_finish and call.function.name == "finish":
+                        if len(calls) != 1:
+                            output = "finish was not accepted: call it alone after reading all other tool results."
+                        else:
+                            try:
+                                submission = _finish_summary(call.function.arguments)
+                            except ValueError as e:
+                                output = f"invalid finish arguments: {e}"
+                            else:
+                                output = "Submission accepted. Evaluation has not been performed by this tool."
+                    else:
+                        output = _execute(call, runner, timeout)
+                    messages.append({"role": "tool", "tool_call_id": call.id, "content": output})
+                    tool_records.append(
+                        {
+                            "id": call.id,
+                            "name": call.function.name,
+                            "arguments": call.function.arguments,
+                            "output": output,
+                        }
+                    )
 
-        result.turns = turn
-        turn_usage = None
-        if usage:
-            cached = cached_tokens_of(usage)
-            result.prompt_tokens += usage.prompt_tokens
-            result.cached_tokens += cached
-            result.completion_tokens += usage.completion_tokens
-            turn_usage = {
-                "prompt_tokens": usage.prompt_tokens,
-                "cached_tokens": cached,
-                "completion_tokens": usage.completion_tokens,
-            }
-        traj.turn(
-            turn=turn,
-            assistant=assistant,
-            tools=tool_records,
-            usage=turn_usage,
-            seconds=round(time.time() - started, 2),
-        )
-        if on_turn:
-            on_turn(turn, assistant, tool_records)
+            finally:
+                traj.turn(
+                    turn=turn,
+                    assistant=assistant,
+                    tools=tool_records,
+                    usage=turn_usage,
+                    seconds=round(time.time() - started, 2),
+                )
+            if on_turn:
+                on_turn(turn, assistant, tool_records)
 
-        if submission is not None:
-            result.finished = True
-            result.final_message = submission
-            result.stop_reason = "finish"
-            break
-        if not calls:
-            if not explicit_finish:
+            if submission is not None:
                 result.finished = True
-                result.final_message = msg.content or ""
-                result.stop_reason = "no_tool_calls"
+                result.final_message = submission
+                result.stop_reason = "finish"
                 break
-            if turn < max_turns:
-                feedback = {"role": "user", "content": FINISH_REQUIRED}
-                messages.append(feedback)
-                traj.finish_required(turn + 1, feedback)
+            if not calls:
+                if not explicit_finish:
+                    result.finished = True
+                    result.final_message = msg.content or ""
+                    result.stop_reason = "no_tool_calls"
+                    break
+                if turn < max_turns:
+                    feedback = {"role": "user", "content": FINISH_REQUIRED}
+                    messages.append(feedback)
+                    traj.finish_required(turn + 1, feedback)
 
-    result.patch = runner.diff()
-    if result.patch:
-        (traj_dir / f"{run_id}.patch").write_text(result.patch, encoding="utf-8")
+    except Exception as exc:
+        failure = exc
+        result.finished = False
+        result.stop_reason = "error"
+        result.error = f"{type(exc).__name__}: {exc}"
+
+    # Repair callers own disposable workspaces and opt into snapshots on error.
+    # Legacy callers may use the user's index: preserve it on a failed request.
+    if failure is None or capture_errors:
+        try:
+            result.patch = runner.diff()
+            if result.patch:
+                (traj_dir / f"{run_id}.patch").write_text(result.patch, encoding="utf-8")
+        except Exception as exc:
+            failure = failure or exc
+            result.finished = False
+            result.stop_reason = "error"
+            result.error += ("; " if result.error else "") + f"patch snapshot failed: {type(exc).__name__}: {exc}"
     result.seconds = round(time.time() - run_started, 1)
     result.cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
     traj.close(result)
+    if failure is not None and not capture_errors:
+        raise failure
     return result
 
 

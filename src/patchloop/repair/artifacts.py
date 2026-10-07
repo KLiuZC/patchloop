@@ -23,6 +23,10 @@ class ArtifactStore:
     def write_task(self, task: RepairTask) -> None:
         self._write_json("task.json", task.to_dict())
 
+    def require_empty(self) -> None:
+        if any(self.root.iterdir()):
+            raise ValueError("use a new --artifacts directory for a new repair, or repair-judge to grade a saved patch")
+
     def event(self, event_type: str, **payload: Any) -> None:
         record = {"type": event_type, "at": time.time(), **payload}
         with self.events_path.open("a", encoding="utf-8") as stream:

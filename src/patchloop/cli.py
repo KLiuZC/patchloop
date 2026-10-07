@@ -162,6 +162,7 @@ def repair_command(
             image,
             workdir=container_workdir,
             mount=root,
+            mount_target="/work",
             platform=platform,
             memory=memory,
         )
