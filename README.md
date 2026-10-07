@@ -84,7 +84,7 @@ uv run agent repair-swebench \
   --artifacts /tmp/patchloop-repair-runs/pytest-7205
 ```
 
-这个适配器是第一条真实任务链路，先确认镜像中的 base commit、`/testbed` 工作目录、补丁收集和双容器验证都正常，再接官方判卷与批量任务调度。
+这个适配器已经完成第一条真实任务链路验证。`pytest-7205` 的可见 bytes 复现通过，官方 hidden/F2P 只通过 1/10，最终为 0/1；这说明容器、base commit、补丁收集、双容器验证和官方判卷链路都正常，但可见复现通过不等于真实题目 resolved。详见 [单题实验报告](evals/reports/repair-swebench-pytest7205-v3/README.md)。
 
 ### 在 Docker 沙箱里跑
 

@@ -34,6 +34,7 @@
 | 2026-10-02 | v30-finish-r2：提醒 + finish 第 2 遍 | deepseek / deepseek-flash | 平均 26.9 | 11,039,914 / 339,194 | **23/30（76.7%）** | 估算 ¥1.923；墙钟 2490.4 s。1 空补丁、22 道主动交卷、8 道被上限停止、8 道使用到第 40 轮，零运行错误 |
 | 2026-10-02 | v30-finish-r3：提醒 + finish 第 3 遍 | deepseek / deepseek-flash | 平均 26.2 | 10,477,183 / 308,774 | **20/30（66.7%）** | 估算 ¥1.771；墙钟 2307.7 s。1 空补丁、24 道主动交卷、6 道被上限停止、6 道使用到第 40 轮，零运行错误 |
 | 2026-10-03 | finish 三遍汇总与配置决定 | deepseek / deepseek-flash | 平均 26.3 | 31,815,089 / 991,404 | **66/90（73.3%）** | 样本标准差 5.8 个百分点。相较仅提醒组净增 2/90；平均估算费用 ¥1.636→¥1.867，被上限停止 15→20。保留可选、确认默认关闭；推荐后续只开启轮数提醒。详见 [finish 报告](evals/reports/4c-explicit-finish/README.md) |
+| 2026-10-05 | RepairRunner：pytest-7205 单题真实 SWE-bench 适配 | deepseek / deepseek-flash | 40 | 831,972 / 29,681 | 可见验证通过；官方 **0/1** | 题目镜像/base commit 恢复、`/testbed` Agent 执行、独立候选容器验证和官方 harness 均跑通。估算 ¥0.149；补丁应用成功；F2P 1/10、P2P 16/16。候选只对 bytes 特判 `saferepr`，普通字符串参数仍不符合官方预期，属于语义不完整；官方 `no_tests_collected` 标签被内部 setup 子进程的 `no tests ran` 文本误触发。详见 [单题报告](evals/reports/repair-swebench-pytest7205-v3/README.md) |
 
 ## 环境备忘
 
