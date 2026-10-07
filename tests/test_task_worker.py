@@ -62,7 +62,7 @@ def test_v1_database_migration_keeps_original_tasks_storage_only(tmp_path):
     assert saved.execution is None and saved.validation_status == "not_run"
     assert store.claim(tmp_path / "runs") is None
     with sqlite3.connect(database) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 4
 
 
 def test_concurrent_claims_never_duplicate_a_task(store):

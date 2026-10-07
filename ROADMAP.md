@@ -1,6 +1,6 @@
 # patchloop 发展路线
 
-更新日期：2026-10-07。当前代码与验收记录基线：`724cde3`；worker 实现提交：`4f936f0`。本文中的未来接口、页面和分支均为计划，完成验收后再更新状态。
+更新日期：2026-10-07。worker 阶段代码与验收记录基线：`724cde3`；worker 实现提交：`4f936f0`。本文中的未来接口、页面和分支均为计划，完成验收后再更新状态。
 
 ## 1. 目标与当前位置
 
@@ -42,13 +42,17 @@ DevFlow 的分析工作流不等于已完成自动改码、测试和发布修复
 
 ## 3. 产品主线
 
-### M1：任务工作台（下一阶段）
+### M1：任务工作台（进行中）
 
 建议分支：`feat/task-ui`。目标是通过网页提交和查看修复任务，复用当前 API 与 worker。
 
+前端采用 React + JavaScript（`.jsx` / `.js`）+ Vite，配合 React Router、TanStack Query、Tailwind CSS 与按需使用的 Motion。界面采用系统字体、清晰的信息层级、克制的半透明层和即时操作反馈，并支持键盘操作与减少动态效果设置。
+
+当前进度：任务列表接口已实现；前端工程和三个页面尚待搭建。
+
 工作内容：
 
-1. 新增 `GET /tasks` 列表接口，支持有界分页、状态筛选和稳定排序；列表返回摘要，详情继续使用现有接口。
+1. 已实现 `GET /tasks` 列表接口：默认 20 条、最多 100 条，支持执行状态筛选、游标分页和稳定排序；列表返回摘要，详情继续使用现有接口。
 2. 创建提交页：填写仓库、修复目标、验证命令和执行配置，清楚展示所选模型、镜像和预算。
 3. 创建列表页：显示历史任务、执行状态、验证状态、时间和错误提示，支持刷新后重新打开任务。
 4. 创建详情页：展示工具命令与输出、代码 diff、修复前后测试、用量和产物下载。
@@ -127,9 +131,9 @@ M4 的交付验收不要求自动合并到主分支。后续是否增加自动�
 
 ## 6. 下一阶段的具体顺序
 
-1. 提交当前阶段文档，完成 `feat/task-worker` 的合并前核对并合并。
-2. 从最新 `main` 创建 `feat/task-ui`。
-3. 定义任务列表响应和三个页面需要展示的字段，补列表查询与分页测试。
+1. 已完成 worker 归档、路线文档和 `feat/task-worker` 合并。
+2. 已从 `main` 创建 `feat/task-ui`。
+3. 已定义任务列表摘要并实现列表查询、分页、筛选及对应测试。
 4. 搭建提交、列表、详情页面，接入现有 API；界面明确区分执行、验证和审查状态。
 5. 用已有记录与模拟任务验证刷新、空列表、错误、日志和 diff 展示，再完成一次小任务的真实验收。
 6. 归档验证结果，提交并审查该分支；进入 M2 前重新评估范围。
@@ -139,7 +143,7 @@ M4 的交付验收不要求自动合并到主分支。后续是否增加自动�
 ## 7. 当前证据入口
 
 - 修复任务与状态：[contracts.py](src/patchloop/repair/contracts.py)、[runner.py](src/patchloop/repair/runner.py)、[verifier.py](src/patchloop/repair/verifier.py)。
-- API 的现有三条路由：[app.py](src/patchloop/api/app.py)；尚无任务列表、审查或发布路由。
+- API 的提交、列表、单题查询和产物四条路由：[app.py](src/patchloop/api/app.py)；审查和发布路由尚未实现。
 - 领取、持久化与恢复：[store.py](src/patchloop/api/store.py)、[worker.py](src/patchloop/worker.py)。
 - 独立官方判卷：[judge.py](src/patchloop/repair/judge.py)；历史实验入口：[EXPERIMENTS.md](EXPERIMENTS.md)。
 - DevFlow 页面参考：其本地副本的 `frontend/app/chat/page.tsx`、`workflow-runs/page.tsx`、`action-drafts/page.tsx`。页面存在及源码调用关系不替代全栈验收。

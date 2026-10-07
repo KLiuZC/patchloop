@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -10,6 +10,12 @@ from ..repair.contracts import ValidationStatus
 
 TaskStatus = Literal["queued", "running", "completed", "interrupted", "error"]
 NonEmptyText = Annotated[str, StringConstraints(min_length=1, max_length=20000)]
+
+
+def utc_timestamp(value: datetime) -> str:
+    if value.utcoffset() is None:
+        raise ValueError("timestamp must include a timezone")
+    return value.astimezone(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
 class ExecutionConfig(BaseModel):
@@ -80,3 +86,42 @@ class TaskRecord(BaseModel):
     error: str = ""
     result: dict | None = None
     cleanup_pending: bool = False
+
+
+class TaskSummary(BaseModel):
+    """List metadata; large repair results and execution configuration stay in the detail endpoint."""
+
+    task_id: UUID
+    repo_path: str
+    workdir: str
+    goal: str
+    status: TaskStatus
+    validation_status: ValidationStatus
+    created_at: datetime
+    updated_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+    error: str
+    cleanup_pending: bool
+
+
+class TaskPage(BaseModel):
+    items: list[TaskSummary]
+    next_cursor: str | None
+
+
+class TaskCursor(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    version: Literal[1] = 1
+    created_at: Annotated[str, StringConstraints(min_length=1, max_length=64)]
+    task_id: UUID
+    status: TaskStatus | None
+
+    @field_validator("created_at")
+    @classmethod
+    def validate_timestamp(cls, value: str) -> str:
+        parsed = datetime.fromisoformat(value)
+        if parsed.utcoffset() is None or parsed.utcoffset().total_seconds() != 0:
+            raise ValueError("cursor timestamp must be UTC")
+        return utc_timestamp(parsed)
