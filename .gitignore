@@ -8,3 +8,7 @@ dist/
 .DS_Store
 evals/results/*/traj/
 /data/
+node_modules/
+coverage/
+frontend/.env*
+!frontend/.env.example

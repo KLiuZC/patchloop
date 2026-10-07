@@ -1,0 +1,141 @@
+{
+  "task_id": "83c7e88c-0808-43bf-a048-f7c2a3958013",
+  "checked_at": "2026-10-07T10:54:20.792967+00:00",
+  "scope": "网页真实模型单任务工程验收；不计入 SWE-bench 成绩",
+  "source_artifacts_dir": "/Users/jackliu/code/python/patchloop/data/task-runs/83c7e88c-0808-43bf-a048-f7c2a3958013",
+  "task_record_source": "GET /tasks/{task_id} 响应 JSON，格式化保存；另与只读 SQLite 查询交叉核对",
+  "source_provenance": {
+    "implementation_commit": "07bbc8e3c4144d41eef0a410e9ef1342a45f9880",
+    "repair_base_sha": "07bbc8e3c4144d41eef0a410e9ef1342a45f9880",
+    "pre_run_clean_worktree_verified": true,
+    "post_run_clean_worktree_verified": true,
+    "note": "本次实现与待修复玩具仓库属于同一 Git 仓库；运行前已提交并核对工作区干净。"
+  },
+  "result": {
+    "execution_status": "completed",
+    "validation_status": "passed",
+    "review_status": "pending",
+    "stop_reason": "no_tool_calls",
+    "turns": 4,
+    "prompt_tokens": 3635,
+    "cached_tokens": 2688,
+    "completion_tokens": 329,
+    "error": ""
+  },
+  "baseline": {
+    "status": "failed",
+    "exit_code": 1,
+    "passed_tests": 1,
+    "failed_tests": 1
+  },
+  "candidate": {
+    "status": "passed",
+    "exit_code": 0,
+    "passed_tests": 2,
+    "failed_tests": 0
+  },
+  "estimated_cost_cny": 0.00231676,
+  "budget_reminders_sent": 0,
+  "timing": {
+    "created_at": "2026-10-07T10:49:58.125530Z",
+    "started_at": "2026-10-07T10:50:47.267083Z",
+    "finished_at": "2026-10-07T10:50:57.038327Z",
+    "created_to_started_seconds": 49.141553,
+    "worker_record_seconds": 9.771244,
+    "repair_seconds": 9.6,
+    "agent_loop_seconds": 6.7,
+    "verification_report_seconds": 1.1
+  },
+  "patch_sha256": "f72ffa5b31b3872a693bfb79019d99db789c3bf8e9a7430b61e22a3902f1eef7",
+  "changed_files": [
+    "examples/toy_repo/calc.py"
+  ],
+  "review_observation": "补丁额外接受大写 V；现有测试只覆盖无前缀与小写 v。没有据此修改验证分数或批准补丁。",
+  "image_id": "sha256:a332fc2b8bd3fdb081f36325f89e7a4617c3192bea9cc46eddad7cf3729bec85",
+  "platform": "linux/arm64",
+  "cleanup_pending": false,
+  "remaining_task_containers": [],
+  "checks": {
+    "database_result_equals_http_and_summary": true,
+    "summary_validation_equals_report": true,
+    "patch_matches_summary_and_trace": true,
+    "base_sha_consistent": true,
+    "trace_usage_matches_summary": true,
+    "only_calc_changed": true,
+    "original_calc_and_tests_still_at_base": true,
+    "patch_applies_cleanly": true,
+    "artifact_http_downloads_match_disk": true
+  },
+  "archive_sha256": {
+    "task.json": "bbdcff5ecf28dee3c025f7f483247bc2257178a572984be309cc3082603413c8",
+    "summary.json": "8511223f13b6dd02b4b83c9969a9f64e51d7ce4ba56dd65d7febb45d8cb484d8",
+    "validation.json": "55594812e3c52a8ef7fb324dced27d2cdf49d0af7b83c2f042be48ace008d614",
+    "patch.diff": "f72ffa5b31b3872a693bfb79019d99db789c3bf8e9a7430b61e22a3902f1eef7",
+    "runtime.json": "9250f8e43105ea7985e851704d02cfbdf43a2e149dcb3a070fb326cafe55dae1",
+    "events.jsonl": "2fcb3e4abc41c4f81fc4c0524d188fb8ff0e3a0bdd2f7b6ada7f5b10f9548a2c",
+    "task-record.json": "0c732934f7314ef05febce770b2b83e6e9911b07161f845258c984c319c4f19c"
+  },
+  "local_trace": {
+    "path": "/Users/jackliu/code/python/patchloop/data/task-runs/83c7e88c-0808-43bf-a048-f7c2a3958013/trajectory/83c7e88c-0808-43bf-a048-f7c2a3958013.jsonl",
+    "sha256": "dd8233227c5f6dc2b8ce0e0fcb9cfb9daad148912692bad473314de11bb4b9a5",
+    "archived": false,
+    "turns": [
+      {
+        "turn": 1,
+        "tool_count": 1,
+        "usage": {
+          "prompt_tokens": 543,
+          "cached_tokens": 384,
+          "completion_tokens": 65
+        }
+      },
+      {
+        "turn": 2,
+        "tool_count": 1,
+        "usage": {
+          "prompt_tokens": 803,
+          "cached_tokens": 512,
+          "completion_tokens": 61
+        }
+      },
+      {
+        "turn": 3,
+        "tool_count": 1,
+        "usage": {
+          "prompt_tokens": 1005,
+          "cached_tokens": 768,
+          "completion_tokens": 173
+        }
+      },
+      {
+        "turn": 4,
+        "tool_count": 0,
+        "usage": {
+          "prompt_tokens": 1284,
+          "cached_tokens": 1024,
+          "completion_tokens": 30
+        }
+      }
+    ]
+  },
+  "task_count_before_browser_checks": 3,
+  "browser_checks": {
+    "url": "http://127.0.0.1:5173/tasks/83c7e88c-0808-43bf-a048-f7c2a3958013",
+    "execution_and_validation_statuses_match": true,
+    "diff_visible": true,
+    "log_turns_visible": 4,
+    "log_parse_warnings": 0,
+    "baseline_and_candidate_output_equal_api": true,
+    "refresh_preserves_task_result": true,
+    "list_reopens_same_task": true,
+    "task_record_unchanged_after_reading": true,
+    "task_count_before": 3,
+    "task_count_after": 3,
+    "desktop_viewport_width": 1440,
+    "desktop_document_width": 1440,
+    "mobile_viewport_width": 390,
+    "mobile_document_width": 390,
+    "browser_errors": [],
+    "observation_scope": "运行结束后只读核对；本次未重新提交任务，也没有现场观察排队到运行的页面转换。"
+  }
+}

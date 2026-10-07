@@ -43,6 +43,29 @@ uv run agent run --workdir examples/toy_repo --provider glm \
 
 默认用两家的 flash 模型（`glm-5.3-flash`、`deepseek-flash`），便宜、够开发用；正式评测时用 `-m glm-5.3` / `-m deepseek-v4-pro` 切到旗舰。跑完后用 `git checkout -- examples/toy_repo` 还原玩具仓库。每次运行的完整轨迹写在 `traj/<run_id>.jsonl`。
 
+### 网页工作台
+
+前端采用 React + JavaScript + Vite，提供任务提交、历史列表和详情页面，可查看代码差异、逐轮日志、修复前后验证与用量。默认通过同源代理连接现有任务 API。
+
+在项目根目录分别打开两个终端：
+
+```bash
+# 终端 1：任务 API
+uv run agent serve
+```
+
+```bash
+# 终端 2：网页
+npm --prefix frontend ci
+npm --prefix frontend run dev
+```
+
+打开 `http://127.0.0.1:5173`。查看历史记录无需启动模型；需要运行新任务时，再启动 `uv run agent worker`，或指定新任务编号只处理一题。API 与 worker 使用同一数据库；只启动网页和 API 时，新任务会保持排队。
+
+完整启动、配置、测试与代码结构说明见 [前端说明](frontend/README.md)。前端已完成模拟请求测试、桌面/窄屏浏览器检查，以及隔离数据库下的“网页提交 → 脚本化模型 + Docker 修复 → 独立验证 → 页面更新”联调；该联调不作为新的真实模型修复成绩。
+
+已在 `07bbc8e` 上完成一次网页真实 DeepSeek flash 验收：4 轮、9.6 秒，修复前 1 项失败、修复后 2 项通过；页面、API 与原始产物核对一致，刷新和列表重开后仍可查看。补丁额外接受大写 `V`，现有测试未覆盖这一行为变化，仍保留待人工审查状态。详见 [网页真实验收归档](evals/reports/task-ui-toy-smoke/README.md)。
+
 ### 本地任务接口
 
 任务接口使用 FastAPI 和 SQLite，支持提交修复请求、按编号查询和服务重启后读取历史记录。API 进程只接收请求；独立的 worker 进程在 Docker 中串行调用 RepairRunner。仅启动 API 不需要 Docker 或 API key，启动 worker 执行任务时才需要。
@@ -77,6 +100,21 @@ curl -sS "http://127.0.0.1:8000/tasks/<task_id>"
 ```
 
 按 Ctrl+C 停止服务，再使用同一数据库启动，原编号仍可查询。换启动目录时请用 `--db` 指向原数据库。每次 POST 都创建独立任务；重复提交会得到不同编号。任务不存在返回 404，参数或 Git 基线无效返回 422，存储暂时不可用返回 503。任务状态不代表补丁验证结论。
+
+查询历史任务列表：
+
+```bash
+curl -sS "http://127.0.0.1:8000/tasks?limit=20"
+curl -sS "http://127.0.0.1:8000/tasks?status=completed&limit=20"
+```
+
+`GET /tasks` 返回 `items` 和 `next_cursor`。每页默认 20 条，允许 1–100 条，按创建时间从新到旧排序，同一时间按任务编号倒序排列。`status` 可选 `queued`、`running`、`completed`、`interrupted` 或 `error`，表示执行状态；验证结论单独显示在每条记录的 `validation_status` 中。
+
+存在下一页时，将 `next_cursor` 原样作为下一次请求的 `cursor` 参数，并保持同一个状态筛选。最后一页的 `next_cursor` 为 `null`；没有任务时返回空 `items`。更换筛选或刷新整个列表时清空游标。分页基于排序位置，新增较新的任务不会重复挤入后续页面；这不是冻结快照，任务状态仍可能在翻页期间变化。
+
+列表只读取任务摘要，不返回完整 `result`、执行配置、补丁或验证日志。点击某一项后，通过 `GET /tasks/{task_id}` 和产物接口读取详情。查询列表不会领取任务、执行修复或调用模型。
+
+升级启动时会统一旧记录的创建时间存储格式，以保证整秒和小数秒任务的排序正确；原有时间含义及任务详情保持不变。
 
 ### 后台执行任务
 
@@ -338,6 +376,7 @@ evals/results/       每次评测的答卷与汇总
 evals/reports/       已冻结的基线报告、证据及源码快照
 evals/summarize_baseline.py  离线核对并重新生成 4B 统计
 tests/               项目自身的单元测试：uv run pytest
+frontend/            React + JavaScript 工作台、接口与页面测试
 ```
 
 
@@ -352,7 +391,7 @@ tests/               项目自身的单元测试：uv run pytest
 - [x] RepairRunner 真实任务适配与可见/官方结果分离（两仓库集成验证）
 - [x] 本地任务提交/查询接口与 SQLite 持久化
 - [x] 后台串行执行任务、查询产物并恢复中断状态
-- [ ] M1：任务列表接口与提交、列表、详情工作台
+- [x] M1：任务列表接口与提交、列表、详情工作台（网页真实模型成功路径已验收）
 - [ ] M2：准确补丁的人工审查与本地分支交付
 - [ ] M3：GitHub Issue / PR / CI 读取与任务创建
 - [ ] M4：批准后的分支推送与修复 PR 交付

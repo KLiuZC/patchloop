@@ -1,3 +1,5 @@
+import base64
+import binascii
 import json
 import sqlite3
 from contextlib import contextmanager
@@ -5,7 +7,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import UUID
 
-from .models import TaskRecord
+from .models import TaskCursor, TaskPage, TaskRecord, TaskStatus, TaskSummary, utc_timestamp
+
+
+class InvalidTaskCursor(ValueError):
+    pass
 
 
 class TaskStore:
@@ -30,7 +36,7 @@ class TaskStore:
             connection.execute("PRAGMA journal_mode=WAL")
             connection.execute("BEGIN IMMEDIATE")
             version = connection.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3):
+            if version not in (0, 1, 2, 3, 4):
                 raise RuntimeError(f"unsupported task database schema version: {version}")
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS tasks (
@@ -58,6 +64,16 @@ class TaskStore:
                     connection.execute("ALTER TABLE tasks ADD COLUMN cleanup_pending INTEGER NOT NULL DEFAULT 0")
                 connection.execute("UPDATE tasks SET cleanup_pending = 1 WHERE status = 'running' OR artifacts_dir IS NOT NULL")
                 connection.execute("PRAGMA user_version=3")
+            if version < 4:
+                # A fixed UTC representation makes text ordering match chronological
+                # ordering, including timestamps with zero fractional seconds.
+                rows = connection.execute("SELECT task_id, created_at FROM tasks").fetchall()
+                connection.executemany("UPDATE tasks SET created_at = ? WHERE task_id = ?", [
+                    (utc_timestamp(datetime.fromisoformat(row["created_at"])), row["task_id"]) for row in rows
+                ])
+                connection.execute("PRAGMA user_version=4")
+            connection.execute("CREATE INDEX IF NOT EXISTS tasks_created_order ON tasks(created_at DESC, task_id DESC)")
+            connection.execute("CREATE INDEX IF NOT EXISTS tasks_status_created_order ON tasks(status, created_at DESC, task_id DESC)")
 
     def create(self, record: TaskRecord) -> None:
         with self._connection() as connection:
@@ -69,13 +85,52 @@ class TaskStore:
                     :task_id, :repo_path, :workdir, :base_sha, :goal, :verification_command,
                     :status, :created_at, :updated_at, :execution_json
                 )
-            """, {**record.model_dump(mode="json"),
+            """, {**record.model_dump(mode="json"), "created_at": utc_timestamp(record.created_at),
                   "execution_json": record.execution.model_dump_json() if record.execution else None})
 
     def get(self, task_id: UUID) -> TaskRecord | None:
         with self._connection() as connection:
             row = connection.execute("SELECT * FROM tasks WHERE task_id = ?", (str(task_id),)).fetchone()
         return self._decode(row) if row is not None else None
+
+    def list_tasks(self, *, limit: int = 20, status: TaskStatus | None = None, cursor: str | None = None) -> TaskPage:
+        if not 1 <= limit <= 100:
+            raise ValueError("limit must be between 1 and 100")
+        where = []
+        parameters = []
+        if status is not None:
+            where.append("status = ?")
+            parameters.append(status)
+        if cursor is not None:
+            try:
+                if not 1 <= len(cursor) <= 512:
+                    raise ValueError("invalid cursor length")
+                decoded = base64.b64decode(cursor + "=" * (-len(cursor) % 4), altchars=b"-_", validate=True)
+                position = TaskCursor.model_validate_json(decoded)
+            except (ValueError, binascii.Error) as exc:
+                raise InvalidTaskCursor("invalid task cursor") from exc
+            if position.status != status:
+                raise InvalidTaskCursor("cursor belongs to a different status filter; restart from the first page")
+            where.append("(created_at < ? OR (created_at = ? AND task_id < ?))")
+            parameters.extend((position.created_at, position.created_at, str(position.task_id)))
+        sql = """
+            SELECT task_id, repo_path, workdir, goal, status, validation_status,
+                created_at, updated_at, started_at, finished_at, error, cleanup_pending
+            FROM tasks
+        """
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        sql += " ORDER BY created_at DESC, task_id DESC LIMIT ?"
+        with self._connection() as connection:
+            rows = connection.execute(sql, (*parameters, limit + 1)).fetchall()
+        more = len(rows) > limit
+        rows = rows[:limit]
+        next_cursor = None
+        if more:
+            last = rows[-1]
+            position = TaskCursor(created_at=last["created_at"], task_id=last["task_id"], status=status)
+            next_cursor = base64.urlsafe_b64encode(position.model_dump_json().encode()).decode().rstrip("=")
+        return TaskPage(items=[TaskSummary.model_validate(dict(row)) for row in rows], next_cursor=next_cursor)
 
     @staticmethod
     def _decode(row) -> TaskRecord:

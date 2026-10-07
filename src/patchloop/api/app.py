@@ -6,11 +6,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 
-from .models import TaskRecord, TaskSubmission
-from .store import TaskStore
+from .models import TaskPage, TaskRecord, TaskStatus, TaskSubmission
+from .store import InvalidTaskCursor, TaskStore
 
 
 logger = logging.getLogger(__name__)
@@ -85,6 +85,18 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3")) -> FastAPI:
         store.create(task)
         response.headers["Location"] = f"/tasks/{task.task_id}"
         return task
+
+    @app.get("/tasks", response_model=TaskPage)
+    def list_tasks(
+        limit: int = Query(default=20, ge=1, le=100),
+        status: TaskStatus | None = None,
+        cursor: str | None = Query(default=None, min_length=1, max_length=512),
+    ) -> TaskPage:
+        """List newest tasks first; pass next_cursor to continue with the same filter."""
+        try:
+            return store.list_tasks(limit=limit, status=status, cursor=cursor)
+        except InvalidTaskCursor as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     @app.get("/tasks/{task_id}", response_model=TaskRecord)
     def get_task(task_id: UUID) -> TaskRecord:
