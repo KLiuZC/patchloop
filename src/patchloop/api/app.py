@@ -9,7 +9,9 @@ from uuid import UUID, uuid4
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 
-from .models import TaskPage, TaskRecord, TaskStatus, TaskSubmission
+from .models import (ReviewHistory, ReviewResponse, ReviewState, ReviewSubmission,
+                     TaskPage, TaskRecord, TaskStatus, TaskSubmission)
+from .review import ReviewConflict, ReviewNotFound
 from .store import InvalidTaskCursor, TaskStore
 
 
@@ -104,6 +106,31 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3")) -> FastAPI:
         if task is None:
             raise HTTPException(status_code=404, detail="Task not found")
         return task
+
+    @app.exception_handler(ReviewNotFound)
+    async def review_not_found(request: Request, exc: ReviewNotFound):
+        return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    @app.exception_handler(ReviewConflict)
+    async def review_conflict(request: Request, exc: ReviewConflict):
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.get("/tasks/{task_id}/review", response_model=ReviewState)
+    def get_review(task_id: UUID) -> ReviewState:
+        """Read the effective review and the exact evidence required for a decision."""
+        return store.get_review(task_id)
+
+    @app.get("/tasks/{task_id}/reviews", response_model=ReviewHistory)
+    def list_reviews(task_id: UUID) -> ReviewHistory:
+        """Read immutable decisions in revision order, independently of repair results."""
+        return store.list_reviews(task_id)
+
+    @app.post("/tasks/{task_id}/reviews", response_model=ReviewResponse, status_code=201)
+    def submit_review(task_id: UUID, submission: ReviewSubmission, response: Response) -> ReviewResponse:
+        result = store.submit_review(task_id, submission)
+        if result.replayed:
+            response.status_code = 200
+        return result
 
     @app.get("/tasks/{task_id}/artifacts/{name}", response_class=FileResponse)
     def get_artifact(task_id: UUID, name: str):

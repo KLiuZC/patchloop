@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator, model_validator
 
 from ..llm import PROVIDERS
-from ..repair.contracts import ValidationStatus
+from ..repair.contracts import Limits, RepairTask, ReviewStatus, ValidationStatus, VerificationProfile
 
 
 TaskStatus = Literal["queued", "running", "completed", "interrupted", "error"]
@@ -87,6 +88,20 @@ class TaskRecord(BaseModel):
     result: dict | None = None
     cleanup_pending: bool = False
 
+    def to_repair_task(self) -> RepairTask:
+        """Use the same frozen verification and limits for execution and review."""
+        config = self.execution
+        if config is None:
+            raise ValueError("task has no execution configuration")
+        return RepairTask(
+            task_id=str(self.task_id), repo_path=Path(self.repo_path), workdir=self.workdir,
+            base_sha=self.base_sha, goal=self.goal,
+            verification=VerificationProfile(id="api", command=self.verification_command,
+                                             timeout_seconds=config.verification_timeout_seconds),
+            limits=Limits(max_model_calls=config.max_model_calls, command_timeout_seconds=config.command_timeout_seconds),
+            budget_reminders=config.budget_reminders, explicit_finish=config.explicit_finish,
+        )
+
 
 class TaskSummary(BaseModel):
     """List metadata; large repair results and execution configuration stay in the detail endpoint."""
@@ -125,3 +140,67 @@ class TaskCursor(BaseModel):
         if parsed.utcoffset() is None or parsed.utcoffset().total_seconds() != 0:
             raise ValueError("cursor timestamp must be UTC")
         return utc_timestamp(parsed)
+
+
+Sha256 = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
+
+
+class ReviewEvidence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    base_sha: Annotated[str, StringConstraints(pattern=r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")]
+    patch_sha256: Sha256
+    validation_sha256: Sha256
+    task_sha256: Sha256
+    summary_sha256: Sha256
+    record_sha256: Sha256
+
+
+class ReviewSubmission(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: UUID
+    expected_revision: int = Field(ge=0, strict=True)
+    decision: Literal["accepted", "rejected"]
+    comment: Annotated[str, StringConstraints(max_length=4000)] = ""
+    evidence: ReviewEvidence
+
+    @field_validator("comment")
+    @classmethod
+    def validate_comment(cls, value: str) -> str:
+        if "\x00" in value:
+            raise ValueError("null bytes are not allowed")
+        return value
+
+
+class ReviewRecord(BaseModel):
+    review_id: UUID
+    task_id: UUID
+    revision: int
+    request_id: UUID
+    decision: Literal["accepted", "rejected"]
+    comment: str
+    evidence: ReviewEvidence
+    created_at: datetime
+
+
+class ReviewState(BaseModel):
+    task_id: UUID
+    status: ReviewStatus = "pending"
+    revision: int = 0
+    evidence: ReviewEvidence | None = None
+    can_accept: bool = False
+    can_reject: bool = False
+    reason: str = ""
+    latest_review: ReviewRecord | None = None
+
+
+class ReviewHistory(BaseModel):
+    task_id: UUID
+    items: list[ReviewRecord]
+
+
+class ReviewResponse(BaseModel):
+    review: ReviewRecord
+    current: ReviewState
+    replayed: bool

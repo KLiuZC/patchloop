@@ -17,7 +17,7 @@ from uuid import UUID, uuid4
 from .api.models import TaskRecord
 from .api.store import TaskStore
 from .llm import LLM
-from .repair import Limits, RepairResult, RepairRunner, RepairTask, VerificationProfile
+from .repair import RepairResult, RepairRunner
 from .sandbox import DockerRunner
 
 
@@ -89,14 +89,7 @@ def execute_task(record: TaskRecord, artifacts: Path) -> RepairResult:
         _write_json(artifacts / "runtime.json", runtime)
         return runner
 
-    task = RepairTask(
-        task_id=str(record.task_id), repo_path=Path(record.repo_path), workdir=record.workdir,
-        base_sha=record.base_sha, goal=record.goal,
-        verification=VerificationProfile(id="api", command=record.verification_command,
-                                         timeout_seconds=config.verification_timeout_seconds),
-        limits=Limits(max_model_calls=config.max_model_calls, command_timeout_seconds=config.command_timeout_seconds),
-        budget_reminders=config.budget_reminders, explicit_finish=config.explicit_finish,
-    )
+    task = record.to_repair_task()
     return RepairRunner(task, artifacts, runner_factory).run(llm)
 
 
