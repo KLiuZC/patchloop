@@ -67,3 +67,25 @@ def test_serve_uses_local_address_and_selected_database(monkeypatch, tmp_path):
 def test_serve_rejects_invalid_port():
     result = CliRunner().invoke(cli.app, ["serve", "--port", "65536"])
     assert result.exit_code == 2
+
+
+def test_worker_cli_forwards_target_database_and_single_task(monkeypatch, tmp_path):
+    from uuid import uuid4
+    import patchloop.worker as module
+
+    seen = []
+    monkeypatch.setattr(cli, "load_dotenv", lambda: None)
+
+    class Worker:
+        def __init__(self, store, artifacts, log):
+            seen.append((store.path, artifacts))
+
+        def run(self, **kwargs):
+            seen.append(kwargs)
+
+    monkeypatch.setattr(module, "TaskWorker", Worker)
+    task_id = uuid4()
+    result = CliRunner().invoke(cli.app, ["worker", "--db", str(tmp_path / "tasks.sqlite3"),
+                                         "--task-id", str(task_id), "--once"])
+    assert result.exit_code == 0, result.output
+    assert seen == [(tmp_path / "tasks.sqlite3", None), {"once": True, "task_id": task_id}]

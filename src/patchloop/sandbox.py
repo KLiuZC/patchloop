@@ -124,11 +124,13 @@ class DockerRunner:
         cpus: float = 2.0,
         network: str = "none",
         mount_target: str | None = None,
+        labels: dict[str, str] | None = None,
     ):
         self.image = image
         self.workdir = workdir
         self.mount = Path(mount).resolve() if mount else None
         self.mount_target = mount_target or workdir
+        self.labels = labels or {}
         self.platform = platform
         self.memory = memory
         self.cpus = cpus
@@ -154,6 +156,8 @@ class DockerRunner:
         ]
         if self.platform:
             cmd += ["--platform", self.platform]
+        for key, value in self.labels.items():
+            cmd += ["--label", f"{key}={value}"]
         if self.mount:
             cmd += ["--volume", f"{self.mount}:{self.mount_target}"]
         cmd += [self.image, "sleep", "infinity"]

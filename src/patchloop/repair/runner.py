@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from ..loop import RunResult, run
+from ..loop import RunInterrupted, RunResult, run
 from .artifacts import ArtifactStore
 from .contracts import RepairResult, RepairTask, ValidationResult
 from .verifier import RunnerFactory, verify_patch
@@ -24,6 +24,7 @@ class RepairRunner:
         patch = ""
         execution = None
         error = ""
+        interruption = None
         try:
             with WorktreeWorkspace(self.task.repo_path, self.task.base_sha) as workspace:
                 self.artifacts.event("workspace_ready", base_sha=self.task.base_sha)
@@ -48,6 +49,15 @@ class RepairRunner:
                     finished=execution.finished,
                     patch_present=bool(patch),
                 )
+        except RunInterrupted as exc:
+            interruption = exc
+            execution = exc.result
+            patch, error = execution.patch, execution.error
+            self.artifacts.event("execution_interrupted", error=error)
+        except KeyboardInterrupt as exc:
+            interruption = exc
+            error = "repair interrupted"
+            self.artifacts.event("execution_interrupted", error=error)
         except Exception as exc:
             error = f"{type(exc).__name__}: {exc}"
             self.artifacts.event("execution_error", error=error)
@@ -66,7 +76,10 @@ class RepairRunner:
         else:
             try:
                 validation = verify_patch(self.task, patch, self.runner_factory)
-            except Exception as exc:
+            except (Exception, KeyboardInterrupt) as exc:
+                if isinstance(exc, KeyboardInterrupt):
+                    interruption = exc
+                    error = "verification interrupted"
                 validation = ValidationResult(
                     status="inconclusive",
                     profile_id=self.task.verification.id,
@@ -85,9 +98,9 @@ class RepairRunner:
         )
         result = RepairResult(
             task_id=self.task.task_id,
-            execution_status="error" if error else "completed" if execution.finished else "interrupted",
+            execution_status="interrupted" if interruption is not None else "error" if error else "completed" if execution.finished else "interrupted",
             validation_status=validation.status,
-            stop_reason="error" if error else execution.stop_reason,
+            stop_reason="interrupted" if interruption is not None else "error" if error else execution.stop_reason,
             patch=patch,
             validation=validation,
             artifacts_dir=self.artifacts.root,
@@ -105,4 +118,6 @@ class RepairRunner:
             execution_status=result.execution_status,
             validation_status=result.validation_status,
         )
+        if interruption is not None:
+            raise interruption
         return result

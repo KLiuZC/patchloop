@@ -26,5 +26,7 @@ class Trajectory:
         self._write({"type": "finish_required", "turn": turn, "message": message})
 
     def close(self, result) -> None:
-        self._write({"type": "result", **asdict(result)})
-        self._file.close()
+        try:
+            self._write({"type": "result", **asdict(result)})
+        finally:
+            self._file.close()

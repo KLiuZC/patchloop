@@ -172,3 +172,25 @@ def test_unavailable_database_does_not_return_false_success(client, repository, 
     response = client.post("/tasks", json=payload(repository))
     assert response.status_code == 503
     assert "task_id" not in response.json()
+
+
+def test_execution_configuration_is_frozen_at_submission(client, repository, monkeypatch):
+    from patchloop.llm import PROVIDERS
+
+    response = client.post("/tasks", json=payload(repository, execution={"image": "patchloop-toy", "provider": "glm"}))
+    assert response.status_code == 201
+    record = response.json()
+    expected_model = PROVIDERS["glm"]["model"]
+    assert record["execution"]["model"] == expected_model
+    monkeypatch.setitem(PROVIDERS["glm"], "model", "future-default")
+    assert client.get(f"/tasks/{record['task_id']}").json()["execution"]["model"] == expected_model
+
+
+@pytest.mark.parametrize("execution", [
+    {}, {"image": " "}, {"image": "bad\x00image"}, {"image": "toy", "provider": "unknown"},
+    {"image": "toy", "max_model_calls": 0}, {"image": "toy", "command_timeout_seconds": -1},
+    {"image": "toy", "verification_timeout_seconds": 0}, {"image": "toy", "memory_mb": 0},
+    {"image": "toy", "api_key": "must-not-be-stored"},
+])
+def test_invalid_execution_configuration_is_rejected(client, repository, execution):
+    assert client.post("/tasks", json=payload(repository, execution=execution)).status_code == 422
