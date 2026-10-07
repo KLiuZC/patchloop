@@ -14,6 +14,7 @@ from .eval import DEFAULT_DATASET, evaluate, load_instances, read_id_file
 from .llm import LLM, PROVIDERS
 from .loop import run
 from .repair import Limits, RepairRunner, RepairTask, SWEbenchRepairRunner, SWEbenchTask, VerificationProfile
+from .repair.judge import judge_repair
 from .sandbox import DockerRunner, LocalRunner
 from .subset import DEFAULT_REPOS, DIFFICULTY_MIX, breakdown, select_subset, write_subset
 
@@ -200,6 +201,9 @@ def repair_swebench_command(
     command_timeout: int = typer.Option(180, "--command-timeout"),
     budget_reminders: bool = typer.Option(True, "--budget-reminders/--no-budget-reminders"),
     explicit_finish: bool = typer.Option(False, "--explicit-finish"),
+    judge: bool = typer.Option(False, "--judge/--no-judge", help="Grade the saved patch with the official harness after repair."),
+    harness_dir: Optional[Path] = typer.Option(None, "--harness-dir", help="Official harness work directory ($SWEBENCH_WORKDIR)."),
+    judge_timeout: int = typer.Option(1800, "--judge-timeout", min=1, help="Official per-instance test timeout in seconds."),
 ):
     """Run one SWE-bench repair attempt and save an independently verified patch."""
     load_dotenv()
@@ -222,10 +226,50 @@ def repair_swebench_command(
         console.print(f"[red]{escape(str(e))}[/]")
         raise typer.Exit(code=2)
     console.print(
-        f"execution={result.execution_status} · validation={result.validation_status} · "
+        f"execution={result.execution_status} · visible={result.validation_status} · "
         f"stop={result.stop_reason} · artifacts={result.artifacts_dir}"
     )
+    if judge:
+        if result.execution_status == "error":
+            console.print("official=not_run · repair execution failed")
+            raise typer.Exit(code=2)
+        _grade_saved_repair(Path(result.artifacts_dir), harness_dir, judge_timeout)
     raise typer.Exit(code=0 if result.validation_status == "passed" else 1)
+
+
+@app.command("repair-judge")
+def repair_judge_command(
+    artifacts: Path = typer.Option(..., "--artifacts", exists=True, file_okay=False, help="Existing task directory containing task.json and patch.diff."),
+    harness_dir: Optional[Path] = typer.Option(None, "--harness-dir", help="Official harness work directory ($SWEBENCH_WORKDIR, default ~/code/swebench-work)."),
+    timeout: int = typer.Option(1800, "--timeout", min=1, help="Official per-instance test timeout in seconds."),
+):
+    """Grade an existing repair patch without calling the model or rerunning visible tests."""
+    load_dotenv()
+    _grade_saved_repair(artifacts, harness_dir, timeout)
+
+
+def _grade_saved_repair(artifacts: Path, harness_dir: Path | None, timeout: int) -> None:
+    console.print("Grading saved patch with the official harness; no model calls ...")
+    try:
+        result = judge_repair(artifacts, harness_dir=harness_dir, timeout=timeout)
+    except (OSError, ValueError, RuntimeError) as e:
+        console.print(f"[red]{escape(str(e))}[/]")
+        raise typer.Exit(code=2)
+    counts = []
+    for group, label in [("FAIL_TO_PASS", "F2P"), ("PASS_TO_PASS", "P2P")]:
+        test = result["tests"].get(group)
+        counts.append(f"{label}={test['passed']}/{test['passed'] + test['failed']}" if test else f"{label}=not_run")
+    resolved = "unknown" if result["resolved"] is None else str(result["resolved"]).lower()
+    console.print(escape(
+        f"visible={result['visible_validation_status']} · official={result['status']} · "
+        f"resolved={resolved} · {' · '.join(counts)}"
+    ))
+    if result.get("harness_failure_reason"):
+        console.print(escape(f"harness label={result['harness_failure_reason']} (see per-instance report and test output)"))
+    if result["error"]:
+        console.print(escape(result["error"]), style="red")
+    console.print(escape(f"patch_sha256={result['patch_sha256']} · {artifacts / 'official.json'}"))
+    raise typer.Exit(code={"passed": 0, "failed": 1, "error": 2}[result["status"]])
 
 
 def _cmd_of(arguments: str) -> str:

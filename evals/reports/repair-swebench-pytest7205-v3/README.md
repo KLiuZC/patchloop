@@ -57,3 +57,19 @@ if isinstance(cached_param, bytes):
 - 官方测试输出：同目录下的 `test_output.txt`
 
 该次运行证明了真实 SWE-bench 适配器的执行和产物链路可用；不能把可见验证通过当作最终 resolved。下一步应保留这条失败样例，再接批量判卷或改进验证 profile，不把 hidden 测试反馈回同一轮 Agent。
+
+## 官方判卷集成验收（2026-10-07）
+
+已实现 `agent repair-judge`，直接读取本次 v3 的产物目录，自动生成官方预测格式并调用 harness；没有重新调用模型、修改补丁或重跑可见验证。`repair-swebench --judge` 为新任务提供答题后自动判卷的入口。
+
+验收输出：
+
+```text
+visible=passed · official=failed · resolved=false · F2P=1/10 · P2P=16/16
+```
+
+用同一补丁进行了两次判卷，均得到上述结果，并保存为不同 ID 下的独立快照。这个重复是集成和重判路径验证，不是两次独立模型答题。原 task、patch、visible validation、summary、events 的 SHA-256 在前后均一致。最终判卷 ID、耗时和哈希见 [official.json](official.json)；准确输入见 [judged.patch](judged.patch)，官方原报告见 [official-report.json](official-report.json) 和 [official-results.json](official-results.json)。这些副本便于在 `/tmp` 清理后复核判分。
+
+本次新增或调整的自动化测试覆盖：只判卷不初始化模型、可见失败后仍可官方判卷、原件和快照哈希、重复判卷不覆盖、报告缺失/损坏/矛盾、空补丁、缺少 harness、执行失败以及拒绝覆盖已有答题目录。全套 110 个测试通过。代码审查发现的快照时序和空报告字段问题已分别复现并修复。
+
+原始 `validation_status=passed` 继续仅表示可见验证通过。官方结果单独保存，不把可见结论覆盖为失败，也不把官方失败伪装为通过。`no_tests_collected` 标签仍作为原始诊断线索保存；本次确定的失败表现仍是外层字符串参数断言不符合预期。

@@ -73,18 +73,63 @@ uv run agent repair \
 
 ### SWE-bench 单题适配器
 
-`agent repair-swebench` 从 Verified 数据集读取一题，在题目镜像的 `/testbed` 中运行 Agent，再启动新的同镜像容器验证补丁。Agent 只收到 issue 文本，不会收到测试补丁或隐藏测试名称；当前命令先做可见验证，官方 harness 判分仍单独执行。
+`agent repair-swebench` 从 Verified 数据集读取一题，在题目镜像的 `/testbed` 中运行 Agent，再启动新的同镜像容器验证补丁。Agent 只收到 issue 文本，不会收到测试补丁或隐藏测试名称。默认做可见验证，加 `--judge` 后自动把已保存补丁交给官方 harness，官方反馈不会进入本次模型循环。
 
 ```bash
-uv run agent repair-swebench \
+# 复现来自题面；不使用仅在官方判卷阶段注入的测试名称。
+PATCHLOOP_VERIFY_CMD=$(cat <<'PROFILE'
+set -e
+cat > /tmp/test_bw_issue.py <<'PYTEST'
+import pytest
+
+@pytest.mark.parametrize("data", [b"Hello World"])
+def test_data(data):
+    pass
+PYTEST
+python -bb -m pytest --setup-show -q /tmp/test_bw_issue.py
+PROFILE
+)
+
+docker info >/dev/null && uv run agent repair-swebench \
   --instance pytest-dev__pytest-7205 \
-  --verify "pytest -q testing/test_setuponly.py::test_show_fixture_action_with_bytes" \
+  --verify "$PATCHLOOP_VERIFY_CMD" \
   --provider deepseek \
   --budget-reminders \
-  --artifacts /tmp/patchloop-repair-runs/pytest-7205
+  --judge \
+  --artifacts /tmp/patchloop-repair-runs/pytest-7205-new-attempt
 ```
 
-这个适配器已经完成第一条真实任务链路验证。`pytest-7205` 的可见 bytes 复现通过，官方 hidden/F2P 只通过 1/10，最终为 0/1；这说明容器、base commit、补丁收集、双容器验证和官方判卷链路都正常，但可见复现通过不等于真实题目 resolved。详见 [单题实验报告](evals/reports/repair-swebench-pytest7205-v3/README.md)。
+每次新答题应使用空的产物目录；已有目录会被拒绝，避免覆盖历史补丁和判卷记录。镜像需要预先准备，本命令不会通过 `--task-repo` 重建镜像。
+
+### 对已有补丁只判卷
+
+`repair-judge` 不创建模型客户端、不重跑修复或可见测试。`--artifacts` 指向含有 `task.json`、`summary.json` 和 `patch.diff` 的**具体题目目录**，与 `repair-swebench` 接收的父目录不同：
+
+```bash
+docker info >/dev/null && uv run agent repair-judge \
+  --artifacts /tmp/patchloop-repair-runs/swebench-pytest-7205-v3/pytest-dev__pytest-7205
+```
+
+官方 harness 工作目录按 `--harness-dir`、`SWEBENCH_WORKDIR`、`~/code/swebench-work` 的顺序选取。`repair-judge --timeout`（自动判卷对应 `--judge-timeout`）设置官方单题测试超时，默认 1800 秒，不是整个下载/启动阶段的总超时。需要本机已有 `swebench` CLI 与正常运行的 Docker；使用 `.env` 的 HF_TOKEN 时会传递给 harness，但不要求模型 API key。
+
+新增产物：
+
+```text
+official.json                         最近一次判卷结果：独立于可见验证
+official/<唯一判卷ID>/
+  patch.diff                          本次提交的准确补丁快照
+  predictions.jsonl                   自动生成的官方答卷格式
+  harness.log                        判卷程序的标准输出及错误
+  results.json / report.json          官方汇总及逐题报告（如已产生）
+  test_output.txt / run_instance.log  原始测试及执行日志（如已产生）
+  result.json                        本次判卷结果；重判不会覆盖旧尝试
+```
+
+官方结果保存 `instance_id`、`base_sha`、`patch_sha256`、可见验证状态、判卷 ID、F2P/P2P 计数和原始异常标签。开始前核对 patch 与原修复摘要/可见验证哈希；提交快照创建或判卷期间原件改变会报错。`validation.json`、原始 `summary.json` 和轨迹保持不变。读取或展示历史 `official.json` 时应确认其补丁哈希仍与当前 `patch.diff` 一致。
+
+`official.status` 的含义：`passed` 是官方 resolved；`failed` 是官方明确未解决（包括空补丁或补丁不能应用）；`error` 是 harness 启动/执行失败、报告缺失或格式不完整、官方明确的基础设施异常，此时 `resolved=null`。`no_tests_collected` 等模糊标签原样保留，不覆盖逐题 resolved 结论，不自动当作根因。CLI 退出码分别为 0、1、2；`--judge` 开启时以官方判卷退出码为准，修复执行本身失败则跳过判卷。
+
+这个适配器已用原有 `pytest-7205` 补丁验收“只判卷”路径：可见 bytes 复现通过，官方 F2P 1/10、P2P 16/16，最终 0/1，表示**判卷流程成功执行，但候选补丁未解决题目**。详见 [单题实验报告](evals/reports/repair-swebench-pytest7205-v3/README.md)。
 
 ### 在 Docker 沙箱里跑
 

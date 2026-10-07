@@ -118,6 +118,8 @@ class SWEbenchRepairRunner:
         budget_reminders: bool = True,
         explicit_finish: bool = False,
     ) -> RepairResult:
+        if any(self.artifacts.root.iterdir()):
+            raise ValueError("use a new --artifacts directory for a new repair, or repair-judge to grade a saved patch")
         started = time.time()
         self.artifacts.write_task(self.task)
         self.artifacts.event("run_started", instance_id=self.task.instance_id, base_commit=self.task.base_commit)
