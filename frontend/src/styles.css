@@ -290,6 +290,31 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
 .result-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.625rem; margin-top: 1.25rem; font-size: 0.6875rem; color: #67717e; }
 .result-footer > span:first-child { display: flex; align-items: center; gap: 0.3125rem; }
 
+.review-layout { display: grid; gap: 1.25rem; }
+.review-heading-panel, .review-form, .review-history { padding: 1.5rem; }
+.review-layout .panel-heading { flex-wrap: wrap; }
+.review-layout .panel-heading h2 { display: flex; align-items: center; gap: 0.5rem; }
+.review-current { display: flex; flex-wrap: wrap; align-items: center; gap: 0.625rem 1rem; font-size: 0.8125rem; }
+.review-help { font-size: 0.8125rem; line-height: 1.8; color: #646e80; }
+.review-heading-panel > .review-help { margin-top: 0.875rem; }
+.review-fact { display: flex; flex-wrap: wrap; align-items: center; gap: 0.625rem; }
+.review-evidence { margin-top: 1rem; font-size: 0.75rem; color: #636d81; }
+.review-evidence summary { width: fit-content; padding: 0.25rem 0; }
+.review-evidence dl { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 0.625rem 1rem; margin-bottom: 0; padding: 0.75rem; background: #f6f8fb; border-radius: 0.375rem; }
+.review-evidence dd { margin: 0; overflow-wrap: anywhere; }
+.review-form .field { margin: 0; }
+.review-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 1rem; }
+.review-reject { color: #94544f; }
+.review-feedback { color: #44795a; font-size: 0.8125rem; line-height: 1.8; margin-top: 1rem; }
+.review-retry { display: block; }
+.review-retry .review-actions { margin-top: 0.75rem; }
+.review-history .muted { font-size: 0.75rem; }
+.review-history ol { padding: 0; margin: 0; list-style: none; }
+.review-history li + li { border-top: 1px solid var(--line); margin-top: 1.25rem; padding-top: 1.25rem; }
+.review-history-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.875rem; font-size: 0.75rem; color: #667082; }
+.review-history-heading time { margin-left: auto; }
+.review-comment { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8125rem; line-height: 1.8; margin-top: 0.75rem; color: #4e5b71; }
+
 @media (min-width: 100rem) {
   .main-content { padding-top: 2.875rem; }
   .task-row { min-height: 6.375rem; }
@@ -381,6 +406,10 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
   .detail-tabs svg { width: 0.8125rem; }
   .goal-panel, .validation-panel { padding: 1.1875rem; }
   .verification-comparison { --comparison-gap: 0.75rem; --connector-width: 0.875rem; }
+  .review-heading-panel, .review-form, .review-history { padding: 1.1875rem; }
+  .review-evidence dl { grid-template-columns: minmax(0, 1fr); gap: 0.375rem; }
+  .review-evidence dd + dt { margin-top: 0.5rem; }
+  .review-actions > .button { flex: 1; }
   .diff-stats { gap: 0.4375rem; }
   .code-toolbar { padding: 0.875rem; }
   .turn-list { padding: 1.125rem 0.875rem 0; }

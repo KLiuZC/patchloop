@@ -10,6 +10,18 @@ export function StatusBadge({ value, validation = false }) {
   return <span className={`badge badge-${info.tone}`}><Icon size={13} className={value === 'running' ? 'spin' : ''} aria-hidden="true" />{info.label}</span>
 }
 
+export function ReviewBadge({ value }) {
+  const info = {
+    pending: { label: '待审查', tone: 'neutral', icon: Clock3 },
+    accepted: { label: '已接受', tone: 'green', icon: CheckCircle2 },
+    rejected: { label: '已拒绝', tone: 'red', icon: XCircle },
+    stale: { label: '审查已过期', tone: 'amber', icon: TriangleAlert },
+  }[value]
+  if (!info) return <span className="badge badge-neutral">暂无法读取</span>
+  const Icon = info.icon
+  return <span className={`badge badge-${info.tone}`}><Icon size={13} aria-hidden="true" />{info.label}</span>
+}
+
 export function ErrorNotice({ error, onRetry, children }) {
   return <div className="notice notice-error" role="alert">
     <AlertCircle size={18} aria-hidden="true" />

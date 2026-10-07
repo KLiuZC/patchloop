@@ -16,8 +16,8 @@ export class ApiError extends Error {
   }
 }
 
-function invalidResponse(status, method) {
-  return new ApiError(`服务器返回的数据格式无效。${method === 'POST' ? uncertainSubmission : ''}`, status)
+function invalidResponse(status, method, uncertainMessage) {
+  return new ApiError(`服务器返回的数据格式无效。${method === 'POST' ? uncertainMessage : ''}`, status)
 }
 
 function detailMessage(detail) {
@@ -33,7 +33,9 @@ function detailMessage(detail) {
   }).filter(Boolean).join('；')
 }
 
-async function request(url, { method = 'GET', signal, body, artifact = false, validate } = {}) {
+export async function request(url, {
+  method = 'GET', signal, body, artifact = false, validate, uncertainMessage = uncertainSubmission,
+} = {}) {
   let response
   let text
   try {
@@ -50,7 +52,7 @@ async function request(url, { method = 'GET', signal, body, artifact = false, va
       throw new ApiError(`请求失败（HTTP ${response.status}）。`, response.status)
     }
     throw new ApiError(method === 'POST'
-      ? `网络连接失败。${uncertainSubmission}`
+      ? `网络连接失败。${uncertainMessage}`
       : '网络连接失败，请检查网络连接后重试。')
   }
 
@@ -67,9 +69,9 @@ async function request(url, { method = 'GET', signal, body, artifact = false, va
   try {
     data = JSON.parse(text)
   } catch {
-    throw invalidResponse(response.status, method)
+    throw invalidResponse(response.status, method, uncertainMessage)
   }
-  if (!validate(data)) throw invalidResponse(response.status, method)
+  if (!validate(data)) throw invalidResponse(response.status, method, uncertainMessage)
   return data
 }
 
