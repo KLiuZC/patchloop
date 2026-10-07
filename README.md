@@ -145,6 +145,8 @@ Ctrl+C 或 SIGTERM 会停止 worker，并在释放修复工作区前尽可能保
 
 worker 会清理该任务带标签的容器；清理失败时保留 `cleanup_pending=true` 并停止，下一次启动先重试清理，完成后才领取新题。恢复不会自动重新答题，API 重启也不会改变正在运行的任务。当前没有自动续跑或整个任务的总时限。
 
+已完成一次真实 DeepSeek 玩具任务验收：接口提交后由 worker 在 Docker 中修复，基线 1 项失败、候选 2 项全部通过，4 轮结束，RepairRunner 耗时 8.1 秒。数据库与产物核对一致，任务容器已清理。详细配置、时间口径、版本记录和原始证据见 [worker 真实验收归档](evals/reports/task-worker-toy-smoke/README.md)；这是单任务工程验收，与 SWE-bench 成绩分开记录。
+
 ### 独立修复闭环
 
 `agent repair` 会在固定 `base_sha` 的临时独立 Git 克隆中运行 Agent，收集候选补丁，然后从同一个干净基线重新应用补丁并运行固定验证命令。验证结果不会使用 Agent 工作区中的测试状态。

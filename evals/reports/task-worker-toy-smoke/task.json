@@ -1,0 +1,22 @@
+{
+  "task_id": "72806f28-8d03-4ce6-93fc-dff92e13fce4",
+  "repo_path": "/Users/jackliu/code/python/patchloop",
+  "base_sha": "fc575689a09ca4c44f653e4056db074f46ce0ea8",
+  "goal": "支持版本号字符串的 v 前缀，不改变现有行为。不要修改 tests/ 目录。",
+  "workdir": "examples/toy_repo",
+  "issue": null,
+  "allowed_paths": [],
+  "protected_paths": [],
+  "verification": {
+    "id": "api",
+    "command": "python -m pytest -q",
+    "timeout_seconds": 180
+  },
+  "limits": {
+    "max_model_calls": 10,
+    "command_timeout_seconds": 60,
+    "task_timeout_seconds": 600
+  },
+  "budget_reminders": true,
+  "explicit_finish": false
+}

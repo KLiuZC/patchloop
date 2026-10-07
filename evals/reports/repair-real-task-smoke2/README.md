@@ -16,12 +16,16 @@
 - Flask-5014：题面要求空名称 Blueprint 抛出 ValueError。可见脚本检查空名被拒绝，并确认普通名称仍能注册到 Flask 应用。原始代码接受空名，断言失败。
 - 两个脚本均在模型答题前于干净容器确认复现失败，随后固定脚本，模型没有收到官方测试补丁、标准答案或判卷反馈。脚本分别为 [pytest7432.sh](profiles/pytest7432.sh) 和 [flask5014.sh](profiles/flask5014.sh)。
 
+
+
 ## 实际结果
 
-| 题目 | Agent 轮数 | 基线复现 | 候选可见验证 | 官方 F2P | 官方 P2P | resolved | 估算模型费用 |
-| --- | ---: | --- | --- | --- | --- | --- | ---: |
-| pytest-7432 | 9 | failed，exit 1 | passed，exit 0 | 1/1 | 77/77 | true | ¥0.0132 |
-| Flask-5014 | 7 | failed，exit 1 | passed，exit 0 | 1/1 | 59/59 | true | ¥0.0065 |
+
+| 题目          | Agent 轮数 | 基线复现          | 候选可见验证        | 官方 F2P | 官方 P2P | resolved | 估算模型费用  |
+| ----------- | -------- | ------------- | ------------- | ------ | ------ | -------- | ------- |
+| pytest-7432 | 9        | failed，exit 1 | passed，exit 0 | 1/1    | 77/77  | true     | ¥0.0132 |
+| Flask-5014  | 7        | failed，exit 1 | passed，exit 0 | 1/1    | 59/59  | true     | ¥0.0065 |
+
 
 两次均 `execution=completed`、`stop=no_tool_calls`、`visible=passed`、`official=passed`，没有执行/API 异常，没有空补丁。模型费用合计估算 ¥0.0197，来自项目价格表与返回用量，不等于平台账单。
 
