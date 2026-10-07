@@ -43,6 +43,27 @@ uv run agent run --workdir examples/toy_repo --provider glm \
 
 默认用两家的 flash 模型（`glm-5.3-flash`、`deepseek-flash`），便宜、够开发用；正式评测时用 `-m glm-5.3` / `-m deepseek-v4-pro` 切到旗舰。跑完后用 `git checkout -- examples/toy_repo` 还原玩具仓库。每次运行的完整轨迹写在 `traj/<run_id>.jsonl`。
 
+### 网页工作台
+
+前端采用 React + JavaScript + Vite，提供任务提交、历史列表和详情页面，可查看代码差异、逐轮日志、修复前后验证与用量。默认通过同源代理连接现有任务 API。
+
+在项目根目录分别打开两个终端：
+
+```bash
+# 终端 1：任务 API
+uv run agent serve
+```
+
+```bash
+# 终端 2：网页
+npm --prefix frontend ci
+npm --prefix frontend run dev
+```
+
+打开 `http://127.0.0.1:5173`。查看历史记录无需启动模型；需要运行新任务时，再启动 `uv run agent worker`，或指定新任务编号只处理一题。API 与 worker 使用同一数据库；只启动网页和 API 时，新任务会保持排队。
+
+完整启动、配置、测试与代码结构说明见 [前端说明](frontend/README.md)。前端已完成模拟请求测试、桌面/窄屏浏览器检查，以及隔离数据库下的“网页提交 → 脚本化模型 + Docker 修复 → 独立验证 → 页面更新”联调；该联调不作为新的真实模型修复成绩。
+
 ### 本地任务接口
 
 任务接口使用 FastAPI 和 SQLite，支持提交修复请求、按编号查询和服务重启后读取历史记录。API 进程只接收请求；独立的 worker 进程在 Docker 中串行调用 RepairRunner。仅启动 API 不需要 Docker 或 API key，启动 worker 执行任务时才需要。
@@ -353,6 +374,7 @@ evals/results/       每次评测的答卷与汇总
 evals/reports/       已冻结的基线报告、证据及源码快照
 evals/summarize_baseline.py  离线核对并重新生成 4B 统计
 tests/               项目自身的单元测试：uv run pytest
+frontend/            React + JavaScript 工作台、接口与页面测试
 ```
 
 
@@ -367,7 +389,7 @@ tests/               项目自身的单元测试：uv run pytest
 - [x] RepairRunner 真实任务适配与可见/官方结果分离（两仓库集成验证）
 - [x] 本地任务提交/查询接口与 SQLite 持久化
 - [x] 后台串行执行任务、查询产物并恢复中断状态
-- [ ] M1：任务列表接口与提交、列表、详情工作台
+- [x] M1 实现：任务列表接口与提交、列表、详情工作台（网页真实模型验收待完成）
 - [ ] M2：准确补丁的人工审查与本地分支交付
 - [ ] M3：GitHub Issue / PR / CI 读取与任务创建
 - [ ] M4：批准后的分支推送与修复 PR 交付
