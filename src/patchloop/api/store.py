@@ -1,5 +1,7 @@
+import json
 import sqlite3
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import UUID
 
@@ -25,10 +27,11 @@ class TaskStore:
     def initialize(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connection() as connection:
-            version = connection.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1):
-                raise RuntimeError(f"unsupported task database schema version: {version}")
             connection.execute("PRAGMA journal_mode=WAL")
+            connection.execute("BEGIN IMMEDIATE")
+            version = connection.execute("PRAGMA user_version").fetchone()[0]
+            if version not in (0, 1, 2, 3):
+                raise RuntimeError(f"unsupported task database schema version: {version}")
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS tasks (
                     task_id TEXT PRIMARY KEY,
@@ -42,21 +45,90 @@ class TaskStore:
                     updated_at TEXT NOT NULL
                 )
             """)
-            connection.execute("PRAGMA user_version=1")
+            if version < 2:
+                for definition in (
+                    "execution_json TEXT", "result_json TEXT", "artifacts_dir TEXT",
+                    "started_at TEXT", "finished_at TEXT", "error TEXT NOT NULL DEFAULT ''",
+                    "validation_status TEXT NOT NULL DEFAULT 'not_run'",
+                ):
+                    connection.execute(f"ALTER TABLE tasks ADD COLUMN {definition}")
+            if version < 3:
+                columns = {row[1] for row in connection.execute("PRAGMA table_info(tasks)")}
+                if "cleanup_pending" not in columns:
+                    connection.execute("ALTER TABLE tasks ADD COLUMN cleanup_pending INTEGER NOT NULL DEFAULT 0")
+                connection.execute("UPDATE tasks SET cleanup_pending = 1 WHERE status = 'running' OR artifacts_dir IS NOT NULL")
+                connection.execute("PRAGMA user_version=3")
 
     def create(self, record: TaskRecord) -> None:
         with self._connection() as connection:
             connection.execute("""
                 INSERT INTO tasks (
                     task_id, repo_path, workdir, base_sha, goal, verification_command,
-                    status, created_at, updated_at
+                    status, created_at, updated_at, execution_json
                 ) VALUES (
                     :task_id, :repo_path, :workdir, :base_sha, :goal, :verification_command,
-                    :status, :created_at, :updated_at
+                    :status, :created_at, :updated_at, :execution_json
                 )
-            """, record.model_dump(mode="json"))
+            """, {**record.model_dump(mode="json"),
+                  "execution_json": record.execution.model_dump_json() if record.execution else None})
 
     def get(self, task_id: UUID) -> TaskRecord | None:
         with self._connection() as connection:
             row = connection.execute("SELECT * FROM tasks WHERE task_id = ?", (str(task_id),)).fetchone()
-        return TaskRecord.model_validate(dict(row)) if row is not None else None
+        return self._decode(row) if row is not None else None
+
+    @staticmethod
+    def _decode(row) -> TaskRecord:
+        value = dict(row)
+        for column, field in (("execution_json", "execution"), ("result_json", "result")):
+            raw = value.pop(column)
+            value[field] = json.loads(raw) if raw is not None else None
+        return TaskRecord.model_validate(value)
+
+    def claim(self, artifacts_root: Path, task_id: UUID | None = None) -> TaskRecord | None:
+        """Atomically move one runnable request from queued to running."""
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            if connection.execute("SELECT 1 FROM tasks WHERE cleanup_pending = 1 LIMIT 1").fetchone():
+                return None
+            row = connection.execute("""
+                SELECT * FROM tasks WHERE status = 'queued' AND execution_json IS NOT NULL
+                AND (? IS NULL OR task_id = ?) ORDER BY created_at, task_id LIMIT 1
+            """, (str(task_id) if task_id else None,) * 2).fetchone()
+            if row is None:
+                return None
+            now = datetime.now(timezone.utc).isoformat()
+            artifacts_dir = str(artifacts_root.resolve() / row["task_id"])
+            connection.execute("""
+                UPDATE tasks SET status = 'running', started_at = ?, updated_at = ?, artifacts_dir = ?, cleanup_pending = 1
+                WHERE task_id = ? AND status = 'queued'
+            """, (now, now, artifacts_dir, row["task_id"]))
+            claimed = connection.execute("SELECT * FROM tasks WHERE task_id = ?", (row["task_id"],)).fetchone()
+            return self._decode(claimed)
+
+    def finish(self, task_id: UUID, *, status: str, validation_status: str, error: str = "", result: dict | None = None) -> None:
+        if status not in ("completed", "interrupted", "error"):
+            raise ValueError("finish requires a terminal status")
+        if validation_status not in ("not_run", "passed", "failed", "inconclusive"):
+            raise ValueError("invalid validation status")
+        now = datetime.now(timezone.utc).isoformat()
+        with self._connection() as connection:
+            changed = connection.execute("""
+                UPDATE tasks SET status = ?, validation_status = ?, error = ?, result_json = ?,
+                    finished_at = ?, updated_at = ? WHERE task_id = ? AND status = 'running'
+            """, (status, validation_status, error, json.dumps(result, ensure_ascii=False) if result else None,
+                  now, now, str(task_id)))
+            if changed.rowcount != 1:
+                raise RuntimeError("task is no longer running; result was not written")
+
+    def running(self) -> list[TaskRecord]:
+        with self._connection() as connection:
+            return [self._decode(row) for row in connection.execute("SELECT * FROM tasks WHERE status = 'running'")]
+
+    def pending_cleanup(self) -> list[TaskRecord]:
+        with self._connection() as connection:
+            return [self._decode(row) for row in connection.execute("SELECT * FROM tasks WHERE cleanup_pending = 1")]
+
+    def mark_clean(self, task_id: UUID) -> None:
+        with self._connection() as connection:
+            connection.execute("UPDATE tasks SET cleanup_pending = 0 WHERE task_id = ?", (str(task_id),))

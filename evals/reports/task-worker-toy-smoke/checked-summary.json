@@ -1,0 +1,121 @@
+{
+  "task_id": "72806f28-8d03-4ce6-93fc-dff92e13fce4",
+  "checked_at": "2026-10-07T07:48:46.938655+00:00",
+  "scope": "single toy repository integration acceptance; no SWE-bench grading",
+  "source_artifacts_dir": "/Users/jackliu/code/python/patchloop/data/task-runs/72806f28-8d03-4ce6-93fc-dff92e13fce4",
+  "task_record_source": "read-only SQLite export serialized with the task API response schema; not a captured HTTP response",
+  "source_provenance": {
+    "repair_base_sha": "fc575689a09ca4c44f653e4056db074f46ce0ea8",
+    "implementation_commit_after_run": "4f936f06c91dddf94cd37c4ee8df2dc2d87f9699",
+    "implementation_commit_time": "2026-10-07T15:45:07+08:00",
+    "run_time_source_snapshot_recorded": false,
+    "note": "The implementation was committed after this run. No pre-run source hash was recorded; the base SHA identifies the repository to repair, not a committed worker implementation."
+  },
+  "result": {
+    "execution_status": "completed",
+    "validation_status": "passed",
+    "review_status": "pending",
+    "stop_reason": "no_tool_calls",
+    "turns": 4,
+    "prompt_tokens": 3589,
+    "cached_tokens": 2304,
+    "completion_tokens": 388,
+    "error": ""
+  },
+  "baseline": {
+    "status": "failed",
+    "exit_code": 1,
+    "passed_tests": 1,
+    "failed_tests": 1
+  },
+  "candidate": {
+    "status": "passed",
+    "exit_code": 0,
+    "passed_tests": 2,
+    "failed_tests": 0
+  },
+  "budget_reminders_sent": 0,
+  "estimated_cost_cny": 0.00288308,
+  "timing": {
+    "created_to_started_seconds": 68.601551,
+    "worker_record_seconds": 8.23548,
+    "repair_seconds": 8.1,
+    "agent_loop_seconds": 6.6,
+    "verification_report_seconds": 1.0
+  },
+  "patch_sha256": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+  "changed_files": [
+    "examples/toy_repo/calc.py"
+  ],
+  "image_id": "sha256:a332fc2b8bd3fdb081f36325f89e7a4617c3192bea9cc46eddad7cf3729bec85",
+  "platform": "linux/arm64",
+  "cleanup_pending": false,
+  "remaining_task_containers": [],
+  "checks": {
+    "database_result_equals_summary": true,
+    "summary_validation_equals_report": true,
+    "patch_matches_summary_and_trace": true,
+    "base_sha_consistent": true,
+    "trace_usage_matches_summary": true,
+    "only_calc_changed": true,
+    "original_calc_still_at_base": true
+  },
+  "archive_sha256": {
+    "task.json": "b670d087a5f80def5a1f983c9327da00580efcfb8695190f5edd26ad46a5e332",
+    "summary.json": "d74c0072af38abb50f53660b2e8fa69c20b99479e311a86d02408935db681f25",
+    "validation.json": "a9ce27d8fdd145d56e77e02736f941ec0542906dfdc64b0cc0e3c4e1f80b1d1a",
+    "runtime.json": "81d8bf1e959343cc64113912edc20795b522c639e88f98f9c3216ab760536e31",
+    "events.jsonl": "87244283447f85cb22e57293e66dd9e524d0d340367856a7e31072a2cf95c81c",
+    "patch.diff": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+    "task-record.json": "49b43d6d958965280e6bf5b23f9f88c7e8dc26e59351778df9bda2479ac943d3"
+  },
+  "local_trace": {
+    "path": "/Users/jackliu/code/python/patchloop/data/task-runs/72806f28-8d03-4ce6-93fc-dff92e13fce4/trajectory/72806f28-8d03-4ce6-93fc-dff92e13fce4.jsonl",
+    "sha256": "574dfe9f82cbd78fd52dfdc8097dd2297a9bda499ab5701a4858caa416fcb4bf",
+    "archived": false,
+    "turns": [
+      {
+        "turn": 1,
+        "tool_names": [
+          "bash"
+        ],
+        "usage": {
+          "prompt_tokens": 543,
+          "cached_tokens": 0,
+          "completion_tokens": 83
+        }
+      },
+      {
+        "turn": 2,
+        "tool_names": [
+          "bash"
+        ],
+        "usage": {
+          "prompt_tokens": 765,
+          "cached_tokens": 512,
+          "completion_tokens": 85
+        }
+      },
+      {
+        "turn": 3,
+        "tool_names": [
+          "bash"
+        ],
+        "usage": {
+          "prompt_tokens": 1001,
+          "cached_tokens": 768,
+          "completion_tokens": 174
+        }
+      },
+      {
+        "turn": 4,
+        "tool_names": [],
+        "usage": {
+          "prompt_tokens": 1280,
+          "cached_tokens": 1024,
+          "completion_tokens": 46
+        }
+      }
+    ]
+  }
+}

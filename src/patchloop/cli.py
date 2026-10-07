@@ -1,8 +1,10 @@
 import json
 import os
+import sqlite3
 import subprocess
 from pathlib import Path
 from typing import List, Optional
+from uuid import UUID
 
 import typer
 from dotenv import load_dotenv
@@ -33,12 +35,37 @@ def serve_command(
     db: Path = typer.Option(Path("data/tasks.sqlite3"), "--db", help="Persistent SQLite task database."),
     port: int = typer.Option(8000, "--port", min=1, max=65535, help="Local HTTP port."),
 ):
-    """Serve task submission and queries on 127.0.0.1; tasks are saved but not executed."""
+    """Serve task submission and queries on 127.0.0.1; start a worker separately to execute tasks."""
     import uvicorn
 
     from .api import create_app
 
     uvicorn.run(create_app(db), host="127.0.0.1", port=port)
+
+
+@app.command("worker")
+def worker_command(
+    db: Path = typer.Option(Path("data/tasks.sqlite3"), "--db", help="Same SQLite database used by agent serve."),
+    artifacts: Optional[Path] = typer.Option(None, "--artifacts", help="Default: task-runs beside the database."),
+    once: bool = typer.Option(False, "--once", help="Process at most one queued task, then exit."),
+    task_id: Optional[UUID] = typer.Option(None, "--task-id", help="Process only this queued task, then exit."),
+):
+    """Run queued repair tasks serially in Docker (macOS/Linux)."""
+    from .api.store import TaskStore
+    from .worker import TaskWorker, worker_signals
+
+    load_dotenv()
+    try:
+        with worker_signals():
+            TaskWorker(TaskStore(db), artifacts, log=lambda line: console.print(escape(line), highlight=False)).run(
+                once=once, task_id=task_id,
+            )
+    except KeyboardInterrupt:
+        console.print("Worker stopped.")
+        raise typer.Exit(code=130)
+    except (OSError, ValueError, RuntimeError, sqlite3.Error) as exc:
+        console.print(escape(f"{type(exc).__name__}: {exc}"), style="red")
+        raise typer.Exit(code=2)
 
 
 @app.command("run")

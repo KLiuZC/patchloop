@@ -7,7 +7,7 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from .models import TaskRecord, TaskSubmission
 from .store import TaskStore
@@ -59,7 +59,7 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3")) -> FastAPI:
     app = FastAPI(
         title="Patchloop Task API",
         version="0.1.0",
-        description="Submit and query saved repair requests. Tasks remain queued until worker support is added.",
+        description="Submit repair requests, query worker progress and download repair artifacts.",
         lifespan=lifespan,
     )
     app.state.task_store = store
@@ -80,6 +80,7 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3")) -> FastAPI:
             task_id=uuid4(), repo_path=str(root), workdir=workdir, base_sha=base,
             goal=submission.goal, verification_command=submission.verification_command,
             status="queued", created_at=now, updated_at=now,
+            execution=submission.execution,
         )
         store.create(task)
         response.headers["Location"] = f"/tasks/{task.task_id}"
@@ -91,5 +92,21 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3")) -> FastAPI:
         if task is None:
             raise HTTPException(status_code=404, detail="Task not found")
         return task
+
+    @app.get("/tasks/{task_id}/artifacts/{name}", response_class=FileResponse)
+    def get_artifact(task_id: UUID, name: str):
+        task = get_task(task_id)
+        allowed = {
+            "task.json": "task.json", "summary.json": "summary.json", "validation.json": "validation.json",
+            "patch.diff": "patch.diff", "events.jsonl": "events.jsonl", "worker-error.json": "worker-error.json",
+            "runtime.json": "runtime.json", "trajectory.jsonl": f"trajectory/{task_id}.jsonl",
+        }
+        if name not in allowed or task.artifacts_dir is None:
+            raise HTTPException(status_code=404, detail="Artifact not available")
+        root = Path(task.artifacts_dir).resolve()
+        path = (root / allowed[name]).resolve()
+        if not path.is_relative_to(root) or not path.is_file():
+            raise HTTPException(status_code=404, detail="Artifact not available")
+        return FileResponse(path, media_type="text/plain; charset=utf-8", filename=name)
 
     return app

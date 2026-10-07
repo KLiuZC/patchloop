@@ -28,6 +28,12 @@ class RunResult:
     error: str = ""
 
 
+class RunInterrupted(KeyboardInterrupt):
+    def __init__(self, result: RunResult):
+        super().__init__("run interrupted")
+        self.result = result
+
+
 def cached_tokens_of(usage) -> int:
     """Prompt tokens served from the provider's cache; the field name differs per provider."""
     hit = getattr(usage, "prompt_cache_hit_tokens", None)  # DeepSeek
@@ -158,10 +164,10 @@ def run(
                     messages.append(feedback)
                     traj.finish_required(turn + 1, feedback)
 
-    except Exception as exc:
+    except (Exception, KeyboardInterrupt) as exc:
         failure = exc
         result.finished = False
-        result.stop_reason = "error"
+        result.stop_reason = "interrupted" if isinstance(exc, KeyboardInterrupt) else "error"
         result.error = f"{type(exc).__name__}: {exc}"
 
     # Repair callers own disposable workspaces and opt into snapshots on error.
@@ -171,6 +177,20 @@ def run(
             result.patch = runner.diff()
             if result.patch:
                 (traj_dir / f"{run_id}.patch").write_text(result.patch, encoding="utf-8")
+        except KeyboardInterrupt as exc:
+            failure = exc
+            result.finished = False
+            result.stop_reason = "interrupted"
+            result.error += ("; " if result.error else "") + "patch snapshot interrupted"
+            if capture_errors:
+                # The caller still owns a live disposable checkout. Retry once
+                # before cleanup, and retain received usage even if retry fails.
+                try:
+                    result.patch = runner.diff()
+                    if result.patch:
+                        (traj_dir / f"{run_id}.patch").write_text(result.patch, encoding="utf-8")
+                except (Exception, KeyboardInterrupt) as retry_error:
+                    result.error += f"; patch snapshot retry failed: {type(retry_error).__name__}: {retry_error}"
         except Exception as exc:
             failure = failure or exc
             result.finished = False
@@ -178,7 +198,17 @@ def run(
             result.error += ("; " if result.error else "") + f"patch snapshot failed: {type(exc).__name__}: {exc}"
     result.seconds = round(time.time() - run_started, 1)
     result.cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
-    traj.close(result)
+    try:
+        traj.close(result)
+    except KeyboardInterrupt as exc:
+        result.finished = False
+        result.stop_reason = "interrupted"
+        result.error += ("; " if result.error else "") + "trajectory finalization interrupted"
+        if capture_errors:
+            raise RunInterrupted(result) from exc
+        raise
+    if isinstance(failure, KeyboardInterrupt) and capture_errors:
+        raise RunInterrupted(result) from failure
     if failure is not None and not capture_errors:
         raise failure
     return result

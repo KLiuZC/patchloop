@@ -45,7 +45,7 @@ uv run agent run --workdir examples/toy_repo --provider glm \
 
 ### 本地任务接口
 
-任务接口使用 FastAPI 和 SQLite，支持提交修复请求、按编号查询和服务重启后读取历史记录。当前阶段提交的任务会保持 `queued`，后台执行将在下一阶段接入；此接口不调用模型、不执行验证命令，也不需要 Docker 或 API key。
+任务接口使用 FastAPI 和 SQLite，支持提交修复请求、按编号查询和服务重启后读取历史记录。API 进程只接收请求；独立的 worker 进程在 Docker 中串行调用 RepairRunner。仅启动 API 不需要 Docker 或 API key，启动 worker 执行任务时才需要。
 
 在项目根目录启动服务：
 
@@ -56,7 +56,7 @@ uv run agent serve
 
 默认地址为 `http://127.0.0.1:8000`，接口调试页面为 `http://127.0.0.1:8000/docs`。服务仅监听本机。默认数据库是启动目录下的 `data/tasks.sqlite3`，该目录已被 Git 忽略；`--db /绝对路径/tasks.sqlite3` 可指定存储位置，`--port 8001` 可更改端口。
 
-保持服务终端运行，在另一个终端提交任务：
+保持服务终端运行，在另一个终端提交任务。下面的请求只登记任务，不提供执行配置，因此会一直保持 `queued`：
 
 ```bash
 curl -sS -X POST http://127.0.0.1:8000/tasks \
@@ -77,6 +77,75 @@ curl -sS "http://127.0.0.1:8000/tasks/<task_id>"
 ```
 
 按 Ctrl+C 停止服务，再使用同一数据库启动，原编号仍可查询。换启动目录时请用 `--db` 指向原数据库。每次 POST 都创建独立任务；重复提交会得到不同编号。任务不存在返回 404，参数或 Git 基线无效返回 422，存储暂时不可用返回 503。任务状态不代表补丁验证结论。
+
+### 后台执行任务
+
+worker 支持 macOS/Linux，每个数据库只允许一个 worker，按创建时间串行领取任务。API 在任务运行时仍可响应查询。已有数据库会自动升级并保留记录；旧记录及未提供 `execution` 的新记录只保存、不执行，需要修复时重新提交一条带执行配置的请求。
+
+先重启 API 以加载新接口，并确认 Docker 和已有玩具镜像可用：
+
+```bash
+uv run agent serve
+```
+
+在另一个终端检查环境：
+
+```bash
+docker info >/dev/null
+docker image inspect patchloop-toy --format '{{.Architecture}}'
+```
+
+worker 从项目 `.env` 读取模型密钥。API 请求中只传模型名称，不传密钥。通过调试页面 `POST /tasks` 或 curl 提交：
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "repo_path": "examples/toy_repo",
+    "goal": "支持版本号字符串的 v 前缀，不改变现有版本号行为。不要修改 tests/ 目录。",
+    "verification_command": "python -m pytest -q",
+    "execution": {
+      "image": "patchloop-toy",
+      "provider": "deepseek",
+      "max_model_calls": 10,
+      "command_timeout_seconds": 60,
+      "verification_timeout_seconds": 180,
+      "budget_reminders": true
+    }
+  }'
+```
+
+复制返回的编号，首次验收只执行这一题：
+
+```bash
+uv run agent worker --task-id "<task_id>"
+```
+
+`<task_id>` 替换为返回的 UUID。worker 会在前台终端打印任务状态，API 在另一终端继续运行。`--once` 表示最多领取一题后退出；不加这两个选项时，worker 持续等待并执行带配置的新任务。worker 启动后会产生模型调用费用。
+
+`execution` 会保存提供商、提交时解析出的模型名、镜像、轮数、命令/验证超时、内存及提醒开关。默认 30 轮、2GB 内存、提醒开启、finish 关闭；`model` 可覆盖默认模型。镜像必须已存在，worker 不自动下载或构建镜像；执行时固定本地镜像 ID，修复与验证共用该 ID。`platform` 默认按本地镜像架构选择，也可指定 `linux/amd64` 或 `linux/arm64`，不匹配会在创建模型客户端前报错。
+
+持续使用 `GET /tasks/{task_id}` 查询：
+
+| 字段 | 含义 |
+| --- | --- |
+| `status` | `queued` 排队、`running` 运行、`completed` 执行完成、`error` 执行出错、`interrupted` 未完成或被中断 |
+| `validation_status` | `not_run` 尚未验证、`passed` 验证通过、`failed` 未修复、`inconclusive` 证据不足 |
+| `started_at` / `finished_at` | 开始和结束时间 |
+| `artifacts_dir` | 本地日志、补丁和报告目录 |
+| `result` | RepairRunner 原始结果，包含停止原因、验证详情、用量和补丁 |
+| `error` | 执行或中断原因 |
+| `cleanup_pending` | 该任务的容器清理尚未确认完成，worker 会暂停领取下一题 |
+
+`completed` 可以同时对应 `validation_status=failed`；模型执行结束不能直接视为修复成功。达到轮数上限仍会验证已有补丁，执行状态为 `interrupted`。worker 命令正常退出表示本轮处理已结束，任务结果以查询字段为准。
+
+产物默认保存在数据库同级的 `task-runs/<task_id>/`，可通过 worker 的 `--artifacts` 修改。API 和 worker 必须使用同一个 `--db` 文件。还可以通过 `GET /tasks/{task_id}/artifacts/{name}` 下载 `patch.diff`、`events.jsonl`、`trajectory.jsonl`、`task.json`、`summary.json`、`validation.json`、`runtime.json` 或 `worker-error.json`；未生成的产物返回 404。`runtime.json` 记录实际镜像 ID、架构和本题容器名。
+
+Ctrl+C 或 SIGTERM 会停止 worker，并在释放修复工作区前尽可能保存已有补丁、用量和中断摘要。恢复时先核对已归档的任务、补丁哈希和验证报告；如果终态已归档但数据库未回写，就恢复该结果，否则标记为 `interrupted`。若进程被强杀，下一次 worker 启动时执行相同检查；未落盘的日志、补丁或报告无法保证恢复。
+
+worker 会清理该任务带标签的容器；清理失败时保留 `cleanup_pending=true` 并停止，下一次启动先重试清理，完成后才领取新题。恢复不会自动重新答题，API 重启也不会改变正在运行的任务。当前没有自动续跑或整个任务的总时限。
+
+已完成一次真实 DeepSeek 玩具任务验收：接口提交后由 worker 在 Docker 中修复，基线 1 项失败、候选 2 项全部通过，4 轮结束，RepairRunner 耗时 8.1 秒。数据库与产物核对一致，任务容器已清理。详细配置、时间口径、版本记录和原始证据见 [worker 真实验收归档](evals/reports/task-worker-toy-smoke/README.md)；这是单任务工程验收，与 SWE-bench 成绩分开记录。
 
 ### 独立修复闭环
 
@@ -261,6 +330,7 @@ src/patchloop/
   cli.py         命令行入口
   repair/        独立修复闭环：任务契约、worktree、产物与验证器
   api/           本地任务提交、查询与 SQLite 存储
+  worker.py      独立串行执行、任务领取、结果回写与中断恢复
 examples/toy_repo/   带一个已知 bug 的玩具仓库，用于冒烟
 examples/toy_image/  玩具仓库对应的 Docker 镜像（python + git + pytest）
 evals/subsets/       题目子集（每行一个 instance id）
@@ -274,12 +344,18 @@ tests/               项目自身的单元测试：uv run pytest
 
 ## 路线
 
+产品定位、DevFlow-AI 对照、分阶段任务与验收标准见 [发展路线](ROADMAP.md)。近期顺序是任务工作台 → 人工审查与本地交付 → GitHub 问题输入 → 批准后的 PR 交付；研究机制按独立实验推进。
+
 - [x] 最小 loop + bash 工具
 - [x] Docker 沙箱
 - [x] SWE-bench Verified 子集评测流水线
 - [x] RepairRunner 真实任务适配与可见/官方结果分离（两仓库集成验证）
 - [x] 本地任务提交/查询接口与 SQLite 持久化
-- [ ] 后台串行执行任务并保存修复结果
+- [x] 后台串行执行任务、查询产物并恢复中断状态
+- [ ] M1：任务列表接口与提交、列表、详情工作台
+- [ ] M2：准确补丁的人工审查与本地分支交付
+- [ ] M3：GitHub Issue / PR / CI 读取与任务创建
+- [ ] M4：批准后的分支推送与修复 PR 交付
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
 - [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录
 - [x] 剩余轮数提醒的 30 题单变量对比

@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "profile_id": "api",
+  "command": "python -m pytest -q",
+  "base_sha": "fc575689a09ca4c44f653e4056db074f46ce0ea8",
+  "patch_sha256": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+  "exit_code": 0,
+  "output": "..                                                                       [100%]\n2 passed in 0.01s\n",
+  "seconds": 1.0,
+  "error": "",
+  "candidate": {
+    "status": "passed",
+    "profile_id": "api",
+    "command": "python -m pytest -q",
+    "base_sha": "fc575689a09ca4c44f653e4056db074f46ce0ea8",
+    "patch_sha256": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+    "exit_code": 0,
+    "output": "..                                                                       [100%]\n2 passed in 0.01s\n",
+    "seconds": 1.0,
+    "error": ""
+  },
+  "baseline": {
+    "status": "failed",
+    "profile_id": "api",
+    "command": "python -m pytest -q",
+    "base_sha": "fc575689a09ca4c44f653e4056db074f46ce0ea8",
+    "exit_code": 1,
+    "output": ".F                                                                       [100%]\n=================================== FAILURES ===================================\n________________________________ test_v_prefix _________________________________\n\n    def test_v_prefix():\n>       assert parse_version(\"v1.2.3\") == (1, 2, 3)\n               ^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_calc.py:9: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ncalc.py:3: in parse_version\n    return tuple(int(part) for part in s.split(\".\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n.0 = <list_iterator object at 0xffff7f5582b0>\n\n>   return tuple(int(part) for part in s.split(\".\"))\n                 ^^^^^^^^^\nE   ValueError: invalid literal for int() with base 10: 'v1'\n\ncalc.py:3: ValueError\n=========================== short test summary info ============================\nFAILED tests/test_calc.py::test_v_prefix - ValueError: invalid literal for in...\n1 failed, 1 passed in 0.01s\n\n[exit code 1]",
+    "seconds": 0.5,
+    "error": ""
+  }
+}
