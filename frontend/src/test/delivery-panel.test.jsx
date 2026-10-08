@@ -228,6 +228,78 @@ describe('local delivery display and explicit submission', () => {
 })
 
 describe('preflight conflicts and uncertain requests', () => {
+  it('retires an unrecorded old request after a newer approval and permits a fresh explicit delivery', async () => {
+    submitDelivery.mockRejectedValueOnce(new ApiError('交付结果未确认'))
+    const user = userEvent.setup()
+    const view = mount()
+    await ready()
+    await user.click(generate())
+    await screen.findByText('交付结果未确认')
+    const original = structuredClone(submitDelivery.mock.calls[0][1])
+    const next = review({ revision: 3, latest_review: { ...review().latest_review, review_id: secondId, revision: 3 } })
+    server[taskId] = plan({ review_id: secondId, review_revision: 3, branch: 'patchloop/task-r3', worktree_path: '/repo/worktrees/task-r3' })
+    view.update(next)
+    await user.click(reconcile())
+    await ready()
+    expect(readPendingDelivery(taskId)).toBeNull()
+    expect(screen.getByText('审查已更新，旧交付请求的待确认状态已解除。')).toBeVisible()
+    expect(screen.queryByText(/尚未确认这次交付/)).not.toBeInTheDocument()
+    expect(generate()).toBeEnabled()
+    expect(submitDelivery).toHaveBeenCalledTimes(1)
+    await user.click(generate())
+    await screen.findByText('本地交付已完成。')
+    const submitted = submitDelivery.mock.calls[1][1]
+    expect(submitted).toMatchObject({ review_id: secondId, review_revision: 3, evidence, target_head: evidence.base_sha })
+    expect(submitted.request_id).not.toBe(original.request_id)
+  })
+
+  it('reconciles a superseded request restored from session storage without automatically posting', async () => {
+    savePendingDelivery(taskId, body())
+    server[taskId] = plan({ review_id: secondId, review_revision: 3 })
+    const next = review({ revision: 3, latest_review: { ...review().latest_review, review_id: secondId, revision: 3 } })
+    const first = mount(next)
+    await ready()
+    expect(readPendingDelivery(taskId)).toBeNull()
+    expect(generate()).toBeEnabled()
+    first.unmount()
+    mount(next)
+    await ready()
+    expect(generate()).toBeEnabled()
+    expect(screen.queryByText('有一条交付请求尚未确认')).not.toBeInTheDocument()
+    expect(submitDelivery).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { target_head: '0'.repeat(40) },
+    { evidence: { ...evidence, patch_sha256: '0'.repeat(64) } },
+  ])('does not retire a same-revision request merely because evidence or target differs: %j', async (change) => {
+    savePendingDelivery(taskId, body())
+    server[taskId] = plan({ ...change, can_deliver: false })
+    const user = userEvent.setup()
+    mount()
+    await ready()
+    await user.click(reconcile())
+    await ready()
+    expect(readPendingDelivery(taskId)).toEqual(body())
+    expect(generate()).toBeDisabled()
+    expect(submitDelivery).not.toHaveBeenCalled()
+  })
+
+  it('keeps an old preparing delivery available for recovery after the approval changes', async () => {
+    savePendingDelivery(taskId, body())
+    server[taskId] = plan({ review_id: secondId, review_revision: 3, delivery: record({ status: 'preparing' }) })
+    const next = review({ revision: 3, latest_review: { ...review().latest_review, review_id: secondId, revision: 3 } })
+    const user = userEvent.setup()
+    mount(next)
+    await ready()
+    await user.click(reconcile())
+    await ready()
+    expect(readPendingDelivery(taskId)).toEqual(body())
+    expect(generate()).toBeDisabled()
+    expect(recover()).toBeEnabled()
+    expect(submitDelivery).not.toHaveBeenCalled()
+  })
+
   it.each([
     { review_id: secondId }, { review_revision: 2 }, { target_head: '0'.repeat(40) },
     ...Object.keys(evidence).map((key) => ({ evidence: { ...evidence, [key]: '0'.repeat(key === 'base_sha' ? 40 : 64) } })),

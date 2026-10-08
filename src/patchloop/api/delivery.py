@@ -66,11 +66,50 @@ def ref_exists(repo: Path, ref: str) -> bool:
     return direct.returncode != 1 or symbolic.returncode != 1
 
 
+def _safe_status(repo: Path) -> tuple[tuple[str, bytes], ...]:
+    """Return dirty worktrees without Git recursing with a parent's filter config."""
+    root = repo.resolve()
+    pending = [root]
+    seen = {root}
+    dirty = []
+    while pending:
+        current = pending.pop()
+        if current != root:
+            top = os.fsdecode(git(current, "rev-parse", "--show-toplevel").stdout.removesuffix(b"\n"))
+            if Path(top).resolve() != current:
+                raise DeliveryConflict("submodule worktree location changed")
+        # Keep gitlink/HEAD changes visible, but inspect each module's files
+        # separately so git() disables that module's own filters and fsmonitor.
+        status = git(current, "status", "--porcelain=v1", "-z", "--untracked-files=all",
+                     "--ignore-submodules=dirty").stdout
+        if status:
+            dirty.append((current.relative_to(root).as_posix(), status))
+        entries = git(current, "ls-files", "--stage", "-z").stdout
+        for entry in entries.split(b"\0"):
+            metadata, _, path = entry.partition(b"\t")
+            if not metadata.startswith(b"160000 "):
+                continue
+            module = current / os.fsdecode(path)
+            # An uninitialized gitlink is normal (including in new deliveries).
+            # Never let Git discover the parent repo from an empty directory.
+            if not (module / ".git").exists():
+                continue
+            if module.resolve() != module or not module.is_relative_to(current) or module == current:
+                raise DeliveryConflict("unsafe submodule worktree path")
+            if module in seen:
+                continue
+            if len(seen) >= 256:
+                raise DeliveryConflict("too many initialized submodules to inspect safely")
+            seen.add(module)
+            pending.append(module)
+    return tuple(dirty)
+
+
 def _source_state(repo: Path) -> tuple:
     index = Path(os.fsdecode(git(repo, "rev-parse", "--path-format=absolute", "--git-path", "index").stdout.removesuffix(b"\n")))
     return (oid(repo, "HEAD^{commit}"), git(repo, "symbolic-ref", "-q", "HEAD", check=False).stdout,
             hashlib.sha256(index.read_bytes()).hexdigest() if index.exists() else None,
-            git(repo, "status", "--porcelain=v1", "-z", "--untracked-files=all").stdout)
+            _safe_status(repo))
 
 
 def _identity(repo: Path) -> dict[str, str]:
@@ -157,7 +196,7 @@ class DeliveryService:
                     and oid(repo, f"refs/heads/{record.branch}") == record.commit_sha
                     and oid(worktree, "HEAD^{commit}") == record.commit_sha
                     and git(worktree, "symbolic-ref", "-q", "HEAD", check=False).stdout.decode().strip() == f"refs/heads/{record.branch}"
-                    and not git(worktree, "status", "--porcelain=v1", "--untracked-files=all").stdout)
+                    and not _safe_status(worktree))
 
     def inspect(self, task_id: UUID) -> DeliveryState:
         with self.store._connection() as connection:
@@ -331,7 +370,7 @@ class DeliveryService:
             git(destination, "read-tree", "--reset", "-u", record.commit_sha)
         if (not _owned_worktree(repo, destination) or oid(destination, "HEAD^{commit}") != record.commit_sha
                 or git(destination, "symbolic-ref", "-q", "HEAD", check=False).stdout.decode().strip() not in ("", f"refs/heads/{record.branch}")
-                or git(destination, "status", "--porcelain=v1", "--untracked-files=all").stdout
+                or _safe_status(destination)
                 or git(destination, "write-tree").stdout.decode().strip() != record.tree_sha):
             raise DeliveryConflict("delivery worktree is incomplete or changed; retained for inspection")
         if _source_state(repo) != source:

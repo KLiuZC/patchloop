@@ -45,21 +45,32 @@ function DeliverySession({ taskId, reviewState }) {
     } else if (terminal(incoming)) {
       terminalRecords.current.set(incoming.delivery_id, incoming)
     }
-    let saved = readPendingDelivery(taskId)
+    const saved = readPendingDelivery(taskId)
+    const matching = saved && matchesDelivery(state.delivery, saved, taskId)
+    let resolution = null
+    if (saved && terminal(state.delivery) && matching) {
+      clearPendingDelivery(taskId, saved.request_id)
+      resolution = 'resolved'
+    } else if (saved && state.task_id === taskId && state.review_revision > saved.review_revision && !matching) {
+      // Review revisions only increase. An unrecorded request for an older
+      // approval cannot subsequently publish, because the server checks the
+      // current approval before creating a record and before publishing.
+      // A matching preparing record is kept for explicit recovery instead.
+      clearPendingDelivery(taskId, saved.request_id)
+      resolution = 'superseded'
+    }
     // After a browser/process restart, the server's existing request can be
     // resumed explicitly. Merely adopting it never sends a POST.
-    if (!saved && state.delivery?.status === 'preparing') {
-      saved = recordedRequest(state.delivery)
-      savePendingDelivery(taskId, saved)
-    }
-    if (saved && terminal(state.delivery) && matchesDelivery(state.delivery, saved, taskId)) {
-      clearPendingDelivery(taskId, saved.request_id)
+    if (!readPendingDelivery(taskId) && state.delivery?.status === 'preparing') {
+      savePendingDelivery(taskId, recordedRequest(state.delivery))
     }
     if (mounted.current) {
       setPlan(state)
       setPending(readPendingDelivery(taskId))
       setReadError(null)
+      if (resolution === 'superseded') setFeedback('审查已更新，旧交付请求的待确认状态已解除。')
     }
+    return resolution
   }, [taskId])
 
   useEffect(() => {
@@ -116,9 +127,9 @@ function DeliverySession({ taskId, reviewState }) {
     try {
       const state = await getDelivery(taskId)
       if (!mounted.current) return
-      receive(state)
+      const resolution = receive(state)
       setConflict(false)
-      if (reconcile && pending && !matchesDelivery(state.delivery, pending, taskId)) {
+      if (reconcile && pending && !resolution && !matchesDelivery(state.delivery, pending, taskId)) {
         setFeedback('尚未确认这次交付。计划仍一致时，可重试原请求。')
       }
     } catch (cause) {

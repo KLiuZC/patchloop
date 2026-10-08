@@ -720,6 +720,138 @@ def test_delivery_never_executes_repository_hooks_filters_or_fsmonitor(client, m
     assert (candidate.repo / ".git/index").read_bytes() == before_index
 
 
+@pytest.fixture
+def submodules(repository, tmp_path):
+    origin = tmp_path / "module-origin"
+    origin.mkdir()
+    git(origin, "init", "-q", "--template=", "--initial-branch=main")
+    git(origin, "config", "user.name", "test")
+    git(origin, "config", "user.email", "test@example.com")
+    (origin / "payload.txt").write_bytes(b"old content\n")
+    git(origin, "add", ".")
+    git(origin, "commit", "-qm", "module base")
+
+    outer_path = "modules/outer space"
+    nested_path = "nested\tmodule"
+    outer_origin = tmp_path / "outer-origin"
+    shutil.copytree(origin, outer_origin)
+    git(outer_origin, "-c", "protocol.file.allow=always", "submodule", "add",
+        "--name", "nested", str(origin), nested_path)
+    git(outer_origin, "commit", "-qam", "nested module")
+    for name, path, remote in (("outer", outer_path, outer_origin),
+                               ("uninitialized", "modules/uninitialized", origin)):
+        git(repository, "-c", "protocol.file.allow=always", "submodule", "add",
+            "--name", name, str(remote), path)
+    outer = repository / outer_path
+    git(outer, "-c", "protocol.file.allow=always", "submodule", "update", "--init", "--recursive")
+    git(repository, "add", ".")
+    git(repository, "commit", "-qm", "modules")
+    git(repository, "submodule", "deinit", "-f", "--", "modules/uninitialized")
+    return Path(outer_path), Path(outer_path) / nested_path
+
+
+def arm_submodule_filter(module, tmp_path):
+    marker = tmp_path / "submodule-command-ran"
+    executable = tmp_path / "submodule-command"
+    executable.write_text(f"#!/bin/sh\ntouch {shlex.quote(str(marker))}\ncat\n", encoding="utf-8")
+    executable.chmod(0o755)
+    # This driver exists only in this module's config, not its parent's.
+    for operation in ("clean", "smudge"):
+        git(module, "config", f"filter.module_only.{operation}", shlex.quote(str(executable)))
+    git(module, "config", "filter.module_only.required", "true")
+    git(module, "config", "core.fsmonitor", str(executable))
+    attributes = Path(os.fsdecode(git(module, "rev-parse", "--path-format=absolute",
+                                     "--git-path", "info/attributes").removesuffix(b"\n")))
+    attributes.parent.mkdir(exist_ok=True)
+    attributes.write_text("payload.txt filter=module_only\n", encoding="utf-8")
+    payload = module / "payload.txt"
+    stat = payload.stat()
+    payload.write_bytes(b"new content\n")
+    assert payload.stat().st_size == stat.st_size
+    os.utime(payload, ns=(stat.st_atime_ns, stat.st_mtime_ns + 2_000_000_000))
+    return marker
+
+
+@pytest.mark.parametrize("nested", [False, True])
+def test_delivery_detects_dirty_submodules_without_filters_or_source_writes(
+    client, make_candidate, submodules, tmp_path, nested,
+):
+    candidate = make_candidate()
+    before = files(candidate.repo, include_git=True)
+    state = delivery_state(client, candidate)
+    assert state["can_deliver"] is True and state["dirty"] is False, state
+    assert files(candidate.repo, include_git=True) == before
+    assert not (candidate.repo / "modules/uninitialized/.git").exists()
+
+    module = candidate.repo / submodules[int(nested)]
+    marker = arm_submodule_filter(module, tmp_path)
+    before = files(candidate.repo, include_git=True)
+    # This root status must not visit even a nested module's working files.
+    assert delivery_module.git(candidate.repo, "status", "--porcelain=v1", "-z",
+                               "--ignore-submodules=dirty", "--untracked-files=all").stdout == b""
+    assert not marker.exists()
+    state = delivery_state(client, candidate)
+    assert not marker.exists(), "GET delivery ran a submodule's clean filter"
+    assert state["can_deliver"] is True and state["dirty"] is True, state
+    assert state["changed_paths"] == candidate.changed_paths
+    assert files(candidate.repo, include_git=True) == before
+
+    response = post_delivery(client, candidate, delivery_body(client, candidate))
+    assert_completed(client, candidate, response)
+    assert delivery_state(client, candidate)["dirty"] is True
+    assert not marker.exists(), "delivery ran a submodule command"
+    after = files(candidate.repo, include_git=True)
+    assert {name: after[name] for name in before} == before
+
+
+def test_delivery_integrity_checks_initialized_nested_submodules_safely(
+    client, make_candidate, submodules, tmp_path,
+):
+    candidate = make_candidate()
+    record = assert_completed(client, candidate, post_delivery(client, candidate, delivery_body(client, candidate)))
+    worktree = Path(record["worktree_path"])
+    git(worktree, "-c", "protocol.file.allow=always", "submodule", "update", "--init", "--recursive")
+    assert delivery_state(client, candidate)["delivery_intact"] is True
+    marker = arm_submodule_filter(worktree / submodules[1], tmp_path)
+    source_before = files(candidate.repo, include_git=True)
+    output_before = files(worktree, include_git=True)
+
+    state = delivery_state(client, candidate)
+
+    assert not marker.exists(), "integrity inspection ran a nested submodule filter"
+    assert state["delivery_intact"] is False and state["dirty"] is False, state
+    assert files(candidate.repo, include_git=True) == source_before
+    assert files(worktree, include_git=True) == output_before
+
+
+def test_delivery_final_check_rejects_dirty_nested_submodule_without_running_filter(
+    client, make_candidate, submodules, tmp_path, monkeypatch,
+):
+    candidate = make_candidate()
+    original_git = delivery_module.git
+    observed = {}
+    branches_before = branches(candidate.repo)
+
+    def initialize_dirty_module(repo, *args, **kwargs):
+        result = original_git(repo, *args, **kwargs)
+        if args[:2] == ("read-tree", "--reset"):
+            git(repo, "-c", "protocol.file.allow=always", "submodule", "update", "--init", "--recursive")
+            observed["marker"] = arm_submodule_filter(repo / submodules[1], tmp_path)
+            observed["source"] = files(candidate.repo, include_git=True)
+            observed["output"] = files(repo, include_git=True)
+        return result
+
+    monkeypatch.setattr(delivery_module, "git", initialize_dirty_module)
+    response = post_delivery(client, candidate, delivery_body(client, candidate))
+
+    assert not observed["marker"].exists(), "final worktree inspection ran a submodule filter"
+    record = response["delivery"]
+    assert record["status"] == "failed" and "incomplete or changed" in record["error"], record
+    assert branches(candidate.repo) == branches_before
+    assert files(candidate.repo, include_git=True) == observed["source"]
+    assert files(Path(record["worktree_path"]), include_git=True) == observed["output"]
+
+
 def test_client_cannot_override_server_managed_delivery_paths(client, make_candidate, tmp_path):
     candidate = make_candidate()
     body = delivery_body(client, candidate)

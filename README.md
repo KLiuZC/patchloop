@@ -181,9 +181,13 @@ POST 需要新的 `request_id`，以及刚查询到的 `review_id`、`review_rev
 
 成功生成 `patchloop/<task_id>/r<review_revision>` 分支、一个以验证基线为唯一父提交的 commit，以及数据库同级 `deliveries/<task_id>/r<review_revision>` 下的 [Git linked worktree](https://git-scm.com/docs/git-worktree)。目标位置由服务管理；若在原仓库内部，必须已经被 Git 忽略。提交使用用户配置的 Git 作者信息，禁用签名、hooks 和内容 filters。原仓库的 HEAD、索引、暂存、未暂存和未跟踪文件保持不变；不自动 stash、切分支、push、合并或创建 PR。
 
+状态检查对已初始化的子模块逐层使用各自的安全 Git 配置，避免执行子模块独有的 filters，同时保留对其未提交改动的识别。未初始化的子模块不因检查而初始化；单次最多检查 256 个工作区（含主仓库），越界路径或超限会停止检查。
+
 创建分支前再次检查审查与证据；使用 [Git update-ref](https://git-scm.com/docs/git-update-ref) 的不解引用更新及空旧值检查，已有普通 ref、symbolic ref 或目录都不会被覆盖。新 commit 的 tree 必须等于基线加批准补丁后的 tree。
 
 同一审查只保存一份交付记录，重复请求或换请求编号也返回同一结果。返回 201 表示新尝试，200 表示已有记录；真正结果以 `delivery.status` 的 `preparing/completed/failed` 为准。`delivery_intact` 另行表示当前分支与工作区是否仍保持交付时状态，用户之后的修改不会被重置。
+
+网页核对到更高审查版本时，如果旧待确认请求没有对应的进行中记录，会解除它对新交付的阻塞。已有终态按原结果核对，匹配的进行中记录保留供恢复；仅补丁哈希或 HEAD 变化不会直接清除未确认请求。
 
 进行中的记录可在网页点击“恢复交付”。进程仍在执行时不会启动第二份交付；如果中断发生在分支已经发布但数据库尚未回写之间，会核对并恢复同一提交。自身空工作区尚未填充的情况可继续完成；已有用户内容不会强制覆盖。改变输出根目录后不能把中断记录悄悄交付到新位置，需恢复原配置。
 
