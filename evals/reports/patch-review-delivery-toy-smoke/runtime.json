@@ -1,0 +1,11 @@
+{
+  "task_id": "b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+  "image": "patchloop-toy",
+  "image_id": "sha256:a332fc2b8bd3fdb081f36325f89e7a4617c3192bea9cc46eddad7cf3729bec85",
+  "platform": "linux/arm64",
+  "containers": [
+    "patchloop-d6912a73",
+    "patchloop-2c5f9f2a",
+    "patchloop-3fd69691"
+  ]
+}

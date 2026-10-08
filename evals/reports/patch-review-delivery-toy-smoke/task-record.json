@@ -1,0 +1,94 @@
+{
+  "task_id": "b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+  "repo_path": "/Users/jackliu/code/python/patchloop",
+  "workdir": "examples/toy_repo",
+  "base_sha": "1c885061356e30d2bb6f42188165293cde8d9edd",
+  "goal": "支持版本号字符串的单个小写 v 前缀，例如 v1.2.3。保持原有解析行为，不新增大写 V 支持。只修改 calc.py，不修改测试文件。",
+  "verification_command": "python -m pytest -q",
+  "status": "completed",
+  "created_at": "2026-10-08T02:32:57.578685Z",
+  "updated_at": "2026-10-08T02:33:56.071727Z",
+  "execution": {
+    "image": "patchloop-toy",
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "platform": null,
+    "memory_mb": 2048,
+    "max_model_calls": 10,
+    "command_timeout_seconds": 60,
+    "verification_timeout_seconds": 180,
+    "budget_reminders": true,
+    "explicit_finish": false
+  },
+  "validation_status": "passed",
+  "started_at": "2026-10-08T02:33:47.306036Z",
+  "finished_at": "2026-10-08T02:33:56.071727Z",
+  "artifacts_dir": "/Users/jackliu/code/python/patchloop/data/task-runs/b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+  "error": "",
+  "result": {
+    "task_id": "b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+    "execution_status": "completed",
+    "validation_status": "passed",
+    "review_status": "pending",
+    "stop_reason": "no_tool_calls",
+    "patch": "diff --git a/examples/toy_repo/calc.py b/examples/toy_repo/calc.py\nindex 4ae4b66..995f4c0 100644\n--- a/examples/toy_repo/calc.py\n+++ b/examples/toy_repo/calc.py\n@@ -1,3 +1,5 @@\n def parse_version(s: str) -> tuple[int, ...]:\n     \"\"\"Parse '1.2.3' or 'v1.2.3' into (1, 2, 3).\"\"\"\n+    if s.startswith(\"v\"):\n+        s = s[1:]\n     return tuple(int(part) for part in s.split(\".\"))\n",
+    "validation": {
+      "status": "passed",
+      "profile_id": "api",
+      "command": "python -m pytest -q",
+      "base_sha": "1c885061356e30d2bb6f42188165293cde8d9edd",
+      "patch_sha256": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+      "exit_code": 0,
+      "output": "..                                                                       [100%]\n2 passed in 0.01s\n",
+      "seconds": 1.1,
+      "error": "",
+      "candidate": {
+        "status": "passed",
+        "profile_id": "api",
+        "command": "python -m pytest -q",
+        "base_sha": "1c885061356e30d2bb6f42188165293cde8d9edd",
+        "patch_sha256": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+        "exit_code": 0,
+        "output": "..                                                                       [100%]\n2 passed in 0.01s\n",
+        "seconds": 1.1,
+        "error": ""
+      },
+      "baseline": {
+        "status": "failed",
+        "profile_id": "api",
+        "command": "python -m pytest -q",
+        "base_sha": "1c885061356e30d2bb6f42188165293cde8d9edd",
+        "exit_code": 1,
+        "output": ".F                                                                       [100%]\n=================================== FAILURES ===================================\n________________________________ test_v_prefix _________________________________\n\n    def test_v_prefix():\n>       assert parse_version(\"v1.2.3\") == (1, 2, 3)\n               ^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_calc.py:9: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ncalc.py:3: in parse_version\n    return tuple(int(part) for part in s.split(\".\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n.0 = <list_iterator object at 0xffffa4e08250>\n\n>   return tuple(int(part) for part in s.split(\".\"))\n                 ^^^^^^^^^\nE   ValueError: invalid literal for int() with base 10: 'v1'\n\ncalc.py:3: ValueError\n=========================== short test summary info ============================\nFAILED tests/test_calc.py::test_v_prefix - ValueError: invalid literal for in...\n1 failed, 1 passed in 0.01s\n\n[exit code 1]",
+        "seconds": 0.5,
+        "error": ""
+      }
+    },
+    "artifacts_dir": "/Users/jackliu/code/python/patchloop/data/task-runs/b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+    "error": "",
+    "prompt_tokens": 2431,
+    "cached_tokens": 1920,
+    "completion_tokens": 410,
+    "cost": 0.0021894,
+    "seconds": 8.6,
+    "turns": 3
+  },
+  "cleanup_pending": false,
+  "path_policy": {
+    "allowed_paths": [
+      "examples/toy_repo/calc.py"
+    ],
+    "protected_paths": [
+      "tests/**",
+      "**/tests/**",
+      "testing/**",
+      "**/testing/**",
+      "test_*.py",
+      "**/test_*.py",
+      "*_test.py",
+      "**/*_test.py",
+      "conftest.py",
+      "**/conftest.py"
+    ]
+  }
+}

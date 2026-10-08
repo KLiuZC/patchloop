@@ -1,0 +1,149 @@
+{
+  "task_id": "b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+  "checked_at": "2026-10-08T02:38:55.324138+00:00",
+  "scope": "M2 网页真实模型修复、人工审查与本地交付验收；不计入 SWE-bench 成绩",
+  "source_artifacts_dir": "/Users/jackliu/code/python/patchloop/data/task-runs/b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+  "implementation_commit": "1c885061356e30d2bb6f42188165293cde8d9edd",
+  "pre_run_clean_worktree_verified": true,
+  "source_clean_before_archiving": true,
+  "execution_status": "completed",
+  "validation_status": "passed",
+  "raw_result_review_status": "pending",
+  "current_review_status": "accepted",
+  "review_revision": 1,
+  "delivery_status": "completed",
+  "delivery_intact": true,
+  "delivery_record_count": 1,
+  "review_record_count": 1,
+  "patch_sha256": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+  "changed_paths": [
+    "examples/toy_repo/calc.py"
+  ],
+  "git": {
+    "source_branch": "feat/patch-review",
+    "base_sha": "1c885061356e30d2bb6f42188165293cde8d9edd",
+    "branch": "patchloop/b94d4679-27ab-4dc4-aeb9-28fa39d427fd/r1",
+    "commit_sha": "05f02c07b9c608a2f825e35a6f18fbb473c81c15",
+    "parent_sha": "1c885061356e30d2bb6f42188165293cde8d9edd",
+    "tree_sha": "9a210cca7e40ebe9bdd39bbf76d152ace5e311be",
+    "worktree_path": "/Users/jackliu/code/python/patchloop/data/deliveries/b94d4679-27ab-4dc4-aeb9-28fa39d427fd/r1",
+    "commit_time": "2026-10-08T02:35:24Z",
+    "delivered_diff_sha256": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+    "worktree_clean": true
+  },
+  "checks": {
+    "api_result_equals_database_and_summary": true,
+    "review_and_delivery_evidence_identical": true,
+    "evidence_hashes_match_original_files": true,
+    "approved_diff_equals_committed_diff": true,
+    "git_tree_equals_approved_patch_on_base": true,
+    "single_commit_parent_is_validated_base": true,
+    "original_calc_and_tests_unchanged": true,
+    "delivered_tests_unchanged": true,
+    "source_and_delivery_share_git_repository": true,
+    "path_policy_passes": true,
+    "trace_usage_matches_summary": true,
+    "artifact_downloads_match_disk": true
+  },
+  "usage": {
+    "turns": 3,
+    "prompt_tokens": 2431,
+    "cached_tokens": 1920,
+    "completion_tokens": 410,
+    "cost": 0.0021894
+  },
+  "budget_reminders_sent": 0,
+  "timing": {
+    "created_at": "2026-10-08T02:32:57.578685Z",
+    "started_at": "2026-10-08T02:33:47.306036Z",
+    "finished_at": "2026-10-08T02:33:56.071727Z",
+    "reviewed_at": "2026-10-08T02:35:19.609241Z",
+    "delivery_created_at": "2026-10-08T02:35:24.788457Z",
+    "delivery_updated_at": "2026-10-08T02:35:25.673784Z",
+    "queue_wait_seconds": 49.727351,
+    "worker_record_seconds": 8.765691,
+    "repair_seconds": 8.6,
+    "agent_loop_seconds": 5.2,
+    "delivery_record_seconds": 0.885327
+  },
+  "runtime": {
+    "task_id": "b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+    "image": "patchloop-toy",
+    "image_id": "sha256:a332fc2b8bd3fdb081f36325f89e7a4617c3192bea9cc46eddad7cf3729bec85",
+    "platform": "linux/arm64",
+    "containers": [
+      "patchloop-d6912a73",
+      "patchloop-2c5f9f2a",
+      "patchloop-3fd69691"
+    ]
+  },
+  "remaining_task_containers": [],
+  "database_counts_before_browser_checks": {
+    "tasks": 4,
+    "task_reviews": 2,
+    "task_deliveries": 1
+  },
+  "local_trace": {
+    "path": "/Users/jackliu/code/python/patchloop/data/task-runs/b94d4679-27ab-4dc4-aeb9-28fa39d427fd/trajectory/b94d4679-27ab-4dc4-aeb9-28fa39d427fd.jsonl",
+    "sha256": "8dc2ca29384417599afc6f6425c09868dbe150d4bc6062bfd6ad6510a422f65b",
+    "archived": false,
+    "turns": [
+      {
+        "turn": 1,
+        "tool_count": 1,
+        "usage": {
+          "prompt_tokens": 565,
+          "cached_tokens": 384,
+          "completion_tokens": 79
+        }
+      },
+      {
+        "turn": 2,
+        "tool_count": 1,
+        "usage": {
+          "prompt_tokens": 783,
+          "cached_tokens": 640,
+          "completion_tokens": 272
+        }
+      },
+      {
+        "turn": 3,
+        "tool_count": 0,
+        "usage": {
+          "prompt_tokens": 1083,
+          "cached_tokens": 896,
+          "completion_tokens": 59
+        }
+      }
+    ]
+  },
+  "browser_checks": {
+    "review_status": "accepted",
+    "delivery_status": "completed",
+    "history_count": 1,
+    "validation_outputs_match_api": true,
+    "delivery_button_disabled_after_completion": true,
+    "reload_recovers_result": true,
+    "mobile_viewport_width": 390,
+    "mobile_document_width": 390,
+    "browser_errors": [],
+    "read_only_checks": true,
+    "database_counts_after": {
+      "tasks": 4,
+      "task_reviews": 2,
+      "task_deliveries": 1
+    }
+  },
+  "archive_sha256": {
+    "summary.json": "97dc47b2d2657a23d220d2f2cc35f06a6803cc538fad65291e65f3157845f736",
+    "runtime.json": "1390706fbdee4dbce7830f2ad4d390a68aa478a26f9b71781d1a11784b737c47",
+    "review-state.json": "5db28da1048d7a49a908b2da005a8d9310b32cb877cdba0f7086908edeb43131",
+    "reviews.json": "0c9241a79a7fcded1cdd4b5f04031281dfc75f81aad3c070ea743a053ac32702",
+    "patch.diff": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+    "task.json": "1753bb521af98e5cc64956d00d4bd1cf8fca3eca0167cda194741eff7fe6e80b",
+    "task-record.json": "4842d567afdc7005c737740874ca0f3c993e6c35b6a3f03b1b8696579bc181bb",
+    "events.jsonl": "c7770ee491a993a8eeeeb786a252e4015917f9d292261521d41c70771d019b37",
+    "delivery-state.json": "cd0ecd7f84bcfecd63bbcebec83424103e05359e960dbd874cd312e98ae2ebb7",
+    "validation.json": "8e55de08e8f22105340fd4d79a02014f64ee9632d3ea54b1b3adb92709e1cafc"
+  }
+}

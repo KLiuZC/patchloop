@@ -1,0 +1,35 @@
+{
+  "task_id": "b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+  "repo_path": "/Users/jackliu/code/python/patchloop",
+  "base_sha": "1c885061356e30d2bb6f42188165293cde8d9edd",
+  "goal": "支持版本号字符串的单个小写 v 前缀，例如 v1.2.3。保持原有解析行为，不新增大写 V 支持。只修改 calc.py，不修改测试文件。",
+  "workdir": "examples/toy_repo",
+  "issue": null,
+  "allowed_paths": [
+    "examples/toy_repo/calc.py"
+  ],
+  "protected_paths": [
+    "tests/**",
+    "**/tests/**",
+    "testing/**",
+    "**/testing/**",
+    "test_*.py",
+    "**/test_*.py",
+    "*_test.py",
+    "**/*_test.py",
+    "conftest.py",
+    "**/conftest.py"
+  ],
+  "verification": {
+    "id": "api",
+    "command": "python -m pytest -q",
+    "timeout_seconds": 180
+  },
+  "limits": {
+    "max_model_calls": 10,
+    "command_timeout_seconds": 60,
+    "task_timeout_seconds": 600
+  },
+  "budget_reminders": true,
+  "explicit_finish": false
+}
