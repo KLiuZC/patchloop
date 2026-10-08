@@ -10,6 +10,7 @@ requires-python = ">=3.12"
 dependencies = [
     "datasets>=5.0.1",
     "fastapi>=0.142.2",
+    "httpx>=0.28.1",
     "openai>=3.19.2",
     "pydantic>=2.13.5",
     "python-dotenv>=1.2.3",
@@ -30,6 +31,5 @@ testpaths = ["tests"]
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "pytest>=9.1.1",
 ]

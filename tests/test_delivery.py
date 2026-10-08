@@ -960,7 +960,7 @@ def test_v5_accepted_review_migrates_without_changing_historical_evidence_or_old
     with TestClient(create_app(store.path, deliveries_root=tmp_path / "deliveries")) as restarted:
         migrated_store = restarted.app.state.task_store
         with migrated_store._connection() as connection:
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 7
             assert [row["name"] for row in connection.execute("PRAGMA table_info(tasks)")] == [
                 *old_columns, "path_policy_json",
             ]
