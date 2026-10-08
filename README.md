@@ -120,7 +120,7 @@ curl -sS "http://127.0.0.1:8000/tasks?status=completed&limit=20"
 
 ### 公开 GitHub Issue 来源
 
-M3 第一步支持读取公开 GitHub Issue，并保存独立的来源记录。它会记录仓库、Issue 编号与对象 ID、标题、正文、状态、来源更新时间、读取时间和 JSON 快照摘要。当前入口在 API 的 `/docs`，网页入口及来源与修复任务的关联尚未接入。
+M3 支持读取公开 GitHub Issue，并保存独立的来源记录。它会记录仓库、Issue 编号与对象 ID、标题、正文、状态、来源更新时间、读取时间和 JSON 快照摘要。随后可通过仓库准备接口下载固定版本代码。当前入口在 API 的 `/docs`，网页入口及来源与修复任务的关联尚未接入。
 
 | 接口 | 用途 |
 | --- | --- |
@@ -146,6 +146,47 @@ M3 第一步支持读取公开 GitHub Issue，并保存独立的来源记录。�
 读取使用未认证的公开 GET，不读取 `GITHUB_TOKEN`、`GH_TOKEN` 或模型密钥。GitHub 对未认证请求通常按来源 IP 限制为每小时 60 次；一次新导入需要两次请求，查看已保存来源或重放已完成请求不消耗这项额度。见 [GitHub 公开 Issue 接口](https://docs.github.com/en/rest/issues/issues#get-an-issue)与[速率限制说明](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)。
 
 不存在返回 404，链接或对象不支持返回 422，限流返回 429（已知等待时间时附带 `Retry-After`），超时返回 504，连接或上游响应异常返回 502，数据库暂不可用返回 503。失败不保存半条来源，也不自动重试。每个响应最多 2 MiB，仅接受未压缩数据；导入设有 25 秒接收预算，单次连接/读写等待也有上限并受剩余预算约束。同步 I/O 不保证在第 25 秒强制中断，接收或处理完发现超预算会拒绝入库。
+
+### 公开仓库准备
+
+导入 Issue 后，可根据来源编号准备对应仓库。服务重新核对 GitHub 仓库 ID 与公开状态，将指定分支、标签或完整 commit SHA 解析为固定版本，先保存 SHA，再下载该版本代码。默认分支取准备时的 GitHub 信息；Issue 发布时间不等于代码基线时间，需要旧版本时应明确指定 `ref`。
+
+| 接口 | 用途 |
+| --- | --- |
+| `POST /repositories/prepare` | 登记一次准备请求，解析版本并下载代码 |
+| `GET /repositories/{preparation_id}` | 查询记录及当前代码目录是否完整 |
+
+重启新版 API 后，在 `/docs` 的 POST 接口中填写以下内容。`source_id` 使用 Issue 导入响应中的来源编号，`request_id` 为新生成的 UUID：
+
+```json
+{
+  "request_id": "<新生成的 UUID>",
+  "source_id": "<已导入的 source_id>",
+  "ref": null
+}
+```
+
+`ref: null` 使用当前默认分支，也可填写分支名、标签名或完整的 40 位 commit SHA；不支持 `HEAD~1` 等 Git 版本表达式。首个请求同步等待解析与下载，返回 `preparation` 和 `replayed: false`；HTTP 201 表示记录已创建，是否下载成功以 `preparation.status` 为准：
+
+| 字段 | 含义 |
+| --- | --- |
+| `preparation_id` / `source_id` | 仓库准备编号及对应问题来源 |
+| `repository` / `clone_url` | 仓库身份及固定 GitHub 下载地址 |
+| `requested_ref` / `resolved_ref` | 用户选择及实际解析的分支、标签或 SHA |
+| `base_sha` / `resolved_at` | 固定的 commit SHA 及解析时间；解析前可为空 |
+| `repo_path` | 服务管理的独立代码目录 |
+| `status` | `preparing` 准备中、`ready` 准备成功、`failed` 失败 |
+| `error` / `error_status` | 失败原因及对应错误类别，例如上游限流为 429 |
+
+默认目录为数据库同级的 `repositories/<preparation_id>/repo`，默认数据库下即 `data/repositories/.../repo`。准备使用浅下载并检出固定 SHA，不跟随后续分支移动。每次新请求编号创建独立目录；同编号、同来源和同 `ref` 重试返回 200 与原记录，不重新解析或下载。同编号更改来源或 `ref` 返回 409；另一项准备正在运行时，新请求也返回 409，稍后保留原请求编号重试。重复提交已结束的失败请求只查询原失败，要重新尝试需新编号。
+
+从响应中复制 `preparation_id`，通过 GET 查询。成功记录之外还返回 `checkout_intact` 和 `reason`：前者为 `true` 表示当前路径、Git 配置、HEAD 和工作区检查通过；本地改动、目录缺失或配置变化会得到 `false` 及原因，不自动重置。`status: ready` 保留当时的准备结果，与当前完整性分开表示。准备中或失败时该字段为 `null`。
+
+记录支持服务重启后查询。服务启动或提交后续请求时，在确认没有其他进程持有准备锁后，将未完成记录标记为失败；不会继续执行半途留下的下载。失败目录保留供排查，不覆盖或自动删除，重新尝试使用新的独立目录。
+
+本阶段仅支持公开 GitHub 仓库，拒绝重定向和仓库身份变化。Git 禁用用户 Git 配置、凭证助手、交互提示、hooks 和自动子模块操作，不安装依赖、不执行仓库代码。含子模块的版本会明确失败；Git LFS 只保留指针文件，不下载其外部对象。浅下载减少历史数据，但不是磁盘配额，大仓库仍可能占用较多空间。版本解析有 25 秒接收预算，Git 准备步骤共用 180 秒超时，超时会终止该次 Git 进程组。
+
+此步骤无需 worker、Docker 或模型密钥，不创建修复任务。后续还需选择运行镜像、验证命令与修复范围，再关联固定来源和代码版本创建任务。版本解析使用 [GitHub commit 接口](https://docs.github.com/en/rest/commits/commits#get-a-commit)，浅下载行为见 [git fetch](https://git-scm.com/docs/git-fetch)。
 
 ### 人工审查接口
 
@@ -187,7 +228,7 @@ curl -sS "http://127.0.0.1:8000/tasks/<task_id>/review"
 
 在网页审查页核对补丁和修复前后测试，填写意见，再点击“接受补丁”或“拒绝补丁”。资料和版本在提交前再次核对，变化时保留意见并要求重新加载。网络异常后可核对结果或使用同一请求重试，不自动重复提交；较旧的请求响应不会覆盖已知的新版本。具体说明见 [前端说明](frontend/README.md)。
 
-启动新版 API 或 worker 时，数据库自动升级到 v7，新增独立 GitHub Issue 来源表；保留旧任务、运行结果、审查、交付与路径策略。升级后旧版程序不支持直接使用 v7 数据库。已有 API 和常驻 worker 需重启以加载新代码。
+启动新版 API 或 worker 时，数据库自动升级到 v8，新增仓库准备表，保留独立 Issue 来源、旧任务、运行结果、审查、交付与路径策略。升级后旧版程序不支持直接使用 v8 数据库。已有 API 和常驻 worker 需重启以加载新代码。
 
 ### 路径保护与本地交付
 

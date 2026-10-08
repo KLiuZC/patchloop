@@ -19,6 +19,10 @@ from .store import InvalidTaskCursor, TaskStore
 from .github import GitHubIssueClient, GitHubReadError
 from .source_models import GitHubIssueSnapshot, IssueImport, IssueImportResult, IssueSource
 from .source_store import IssueSourceStore, SourceConflict, SourceCorrupt
+from .repositories import PreparationNotFound, RepositoryPreparationService
+from .repository_models import (RepositoryPreparationResult, RepositoryPreparationState,
+                                RepositoryPreparationSubmission)
+from .repository_store import PreparationConflict, PreparationCorrupt
 
 
 logger = logging.getLogger(__name__)
@@ -55,17 +59,20 @@ def _repository_base(submission: TaskSubmission, server_directory: Path) -> tupl
 
 
 def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: Path | None = None,
-               github_transport: httpx.BaseTransport | None = None) -> FastAPI:
+               github_transport: httpx.BaseTransport | None = None,
+               repositories_root: Path | None = None) -> FastAPI:
     """Create the task API. No worker, model client or Docker container is started."""
     store = TaskStore(Path(db_path))
     delivery_service = DeliveryService(store, deliveries_root)
     source_store = IssueSourceStore(store)
     github = GitHubIssueClient(transport=github_transport)
+    repositories = RepositoryPreparationService(store, github, root=repositories_root)
     server_directory = Path.cwd().resolve()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         store.initialize()
+        repositories.recover_interrupted()
         yield
 
     app = FastAPI(
@@ -78,6 +85,7 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     app.state.delivery_service = delivery_service
     app.state.issue_source_store = source_store
     app.state.github_client = github
+    app.state.repository_service = repositories
 
     @app.exception_handler(sqlite3.Error)
     async def storage_error(request: Request, exc: sqlite3.Error):
@@ -96,6 +104,34 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     @app.exception_handler(SourceCorrupt)
     async def source_corrupt(request: Request, exc: SourceCorrupt):
         return JSONResponse(status_code=500, content={"detail": "Saved Issue source is inconsistent; existing snapshots were not changed"})
+
+    @app.exception_handler(PreparationConflict)
+    async def preparation_conflict(request: Request, exc: PreparationConflict):
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.exception_handler(PreparationCorrupt)
+    async def preparation_corrupt(request: Request, exc: PreparationCorrupt):
+        return JSONResponse(status_code=500, content={"detail": "Saved repository preparation is inconsistent"})
+
+    @app.exception_handler(PreparationNotFound)
+    async def preparation_missing(request: Request, exc: PreparationNotFound):
+        return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    @app.post("/repositories/prepare", response_model=RepositoryPreparationResult, status_code=201)
+    def prepare_repository(submission: RepositoryPreparationSubmission, response: Response) -> RepositoryPreparationResult:
+        """Pin and download a source's public repository. Does not create a repair task."""
+        try:
+            result = repositories.prepare(submission)
+        except OSError as exc:
+            raise HTTPException(status_code=503, detail="Repository storage is unavailable") from exc
+        if result.replayed:
+            response.status_code = 200
+        response.headers["Location"] = f"/repositories/{result.preparation.preparation_id}"
+        return result
+
+    @app.get("/repositories/{preparation_id}", response_model=RepositoryPreparationState)
+    def get_repository(preparation_id: UUID) -> RepositoryPreparationState:
+        return repositories.get(preparation_id)
 
     @app.post("/sources/github/issues", response_model=IssueImportResult, status_code=201)
     def import_issue(submission: IssueImport, response: Response) -> IssueImportResult:

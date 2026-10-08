@@ -1,6 +1,6 @@
 # patchloop 发展路线
 
-更新日期：2026-10-08。M1 网页真实验收实现版本：`07bbc8e`，合并提交：`303312a`；M2 审查、路径保护与本地交付在 `1c88506` 上完成真实模型验收，已合并为 `4e4f65d`。M3 已完成公开 Issue 读取与来源快照；其余 M3 和 M4 能力仍在计划中。
+更新日期：2026-10-08。M1 网页真实验收实现版本：`07bbc8e`，合并提交：`303312a`；M2 审查、路径保护与本地交付在 `1c88506` 上完成真实模型验收，已合并为 `4e4f65d`。M3 已实现公开 Issue 来源快照与仓库固定版本准备；任务衔接、网页入口和 M4 仍在计划中。
 
 ## 1. 目标与当前位置
 
@@ -19,9 +19,10 @@ DevFlow-AI 是研发协作与分析平台，参考价值主要在仓库上下文
 - 任务列表、提交和详情网页；[网页真实模型验收](evals/reports/task-ui-toy-smoke/README.md)：4 轮、9.6 秒，修复前 1 项失败、修复后 2 项通过，刷新恢复及结果读取一致性检查通过。
 - [M2 真实交付验收](evals/reports/patch-review-delivery-toy-smoke/README.md)：3 轮、8.6 秒，独立验证通过，网页人工接受后生成独立分支和提交 `05f02c0`；提交内容与批准补丁一致，原工作区代码保持不变。
 - 公开 GitHub Issue 读取接口、独立来源与 JSON 快照持久化；可按来源编号查询，重复请求复用原记录。
+- 对应公开仓库的准备接口：复核仓库身份，保存准确 commit SHA，再下载至独立目录；支持重复请求、失败留档与重启查询。
 - [两仓库修复集成验证](evals/reports/repair-real-task-smoke2/README.md)：RepairRunner 已在两个已有开发题上通过可见验证及官方判卷。这与上述 API/worker 的玩具任务验收分开记录。
 
-当前仍是本机单用户、单 worker 的系统。网页工作台、人工审查、路径保护及本地交付均已合并至 `main`。M3 在 `feat/github-tasks` 中先实现公开 Issue 读取和来源保存，尚未接入仓库准备、任务创建或网页入口。停止 worker 不等于已有单任务取消接口；原始 `result.review_status` 保留修复快照，网页中的最新审查与交付状态通过独立接口读取。
+当前仍是本机单用户、单 worker 的系统。网页工作台、人工审查、路径保护及本地交付均已合并至 `main`。M3 在 `feat/github-tasks` 中已实现公开 Issue 来源保存与仓库准备，尚未将这些记录接入修复任务或网页入口。停止 worker 不等于已有单任务取消接口；原始 `result.review_status` 保留修复快照，网页中的最新审查与交付状态通过独立接口读取。
 
 ## 2. 对照 DevFlow-AI，差距在哪里
 
@@ -31,7 +32,7 @@ DevFlow-AI 是研发协作与分析平台，参考价值主要在仓库上下文
 | --- | --- | --- | --- |
 | 代码修复与验证 | 主要通过只读工作区工具组织分析 | 能修改代码、生成补丁并独立验证 | 保留修复内核，持续用任务检验效果 |
 | 页面与可操作性 | 有对话、仓库、工作流、知识与动作草稿页面 | 已有任务工作台、人工审查和本地交付 | M3：增加 GitHub 来源与任务入口 |
-| GitHub 上下文 | 有 Issue、PR、CI 同步与分析入口 | 已有公开 Issue 读取和来源快照，执行仍使用本地任务 | M3：仓库准备、固定基线与来源关联 |
+| GitHub 上下文 | 有 Issue、PR、CI 同步与分析入口 | 已有公开 Issue 快照和固定版本仓库准备，执行仍使用本地任务 | M3：任务来源关联与网页入口 |
 | 人工确认与交付 | 有动作草稿及部分 GitHub 元数据写操作 | 已有网页审查及受路径、版本和证据约束的本地交付 | M4：PR 交付 |
 | 对话与知识 | 有 ChatAgent、RAG、记忆和 Skill 加载 | 单次修复目标与线性消息历史 | 按实际任务需要逐项加入 |
 | 多 Agent | Planner、专项分析、Observer、Synthesis 工作流 | 单 Agent 修复 | 先评估独立 reviewer 等具体收益 |
@@ -100,7 +101,7 @@ M1 与 M2 已能演示网页提交、修复、结果查看、人工审查和本�
 
 完成 M1、M2 后，可演示“提交问题 → 观察修复 → 查看测试 → 人工确认 → 获取修改分支”的本地产品流程。
 
-### M3：GitHub 问题输入（来源读取已实现）
+### M3：GitHub 问题输入（来源读取与仓库准备已实现）
 
 建议分支：`feat/github-tasks`。目标是将真实研发问题转成当前执行器能够处理的固定任务，先完成读取链路。
 
@@ -112,12 +113,19 @@ M1 与 M2 已能演示网页提交、修复、结果查看、人工审查和本�
 
 本步全量后端测试 597 项通过，其中新增来源存储测试 29 项、GitHub 读取与接口测试 80 项。复核补齐非有限 JSON 数字、接收结束时超预算、压缩响应和剩余 I/O 等待时间的边界检查。M2 验收档案、原始产物、轨迹哈希及交付分支保持一致，独立工作区仍干净。本步未改动前端，未重新运行真实模型或 Docker 修复。
 
+第二步已实现：`POST /repositories/prepare` 根据来源编号登记请求、重新核对公开仓库 ID，解析当前默认分支或用户指定 ref，保存准确 SHA 后进行浅下载并检出固定版本。`GET /repositories/{preparation_id}` 返回持久记录及当前目录完整性。来源快照与准备记录独立保存；数据库新增准备表并升级到 v8。
+
+同请求编号复用原记录，同编号换来源/ref 会冲突；同一数据库同时只允许一项下载。失败保留原因和部分目录，重试需新编号；重启后发现未完成且无人持锁的记录会标为失败，不覆盖或继续旧目录。Git 禁用用户配置、凭证助手和 hooks；不执行仓库代码、安装依赖、下载 LFS 外部对象或初始化子模块。含子模块版本暂不支持。准备不等于创建修复任务或验证通过。
+
+在临时数据库和目录中实际读取并下载 `pallets/flask`，默认分支 `main` 解析为 `d086db856be187255b8ec61ef409357393020f32`（2026-10-08T09:53:29Z）；核对固定 HEAD、工作区完整性、同请求重放及服务重启后查询均通过。该次仅新增 1 条来源和 1 条准备记录，0 条修复任务，未调用模型或 Docker，临时下载在验证后清理。真实 v7 数据库的副本升级到 v8 后，4 条任务、2 条审查、1 条交付和 1 条来源的原始行完全保留，原库未升级。
+
+第二步验证：全量后端回归 876 项通过；收尾另补充 1 项存储祖先目录被替换为符号链接的回归，接口专项最终 27 项均通过。本次新增测试还覆盖真实本地 Git 的固定 SHA 下载、后续分支移动、已有目录保护、Git 配置/索引标记变化、进程组超时终止、并发和中断恢复。M2 交付工作区仍干净；未改动前端。
+
 后续按以下顺序推进：
 
-1. 仓库准备：登记公开仓库，在独立目录准备代码并记录准确的 commit SHA。
-2. 任务衔接：由用户确认修复目标、范围、基线、镜像及验证命令，创建关联 `source_id` 的修复任务；来源读取本身不代表可执行或可修复。
-3. 网页入口：填写 Issue URL、预览来源和任务配置，从详情页回溯来源与固定基线。
-4. 小任务验收：选取适合的小型 Python 仓库问题，完成修复、独立验证和人工审查，记录实际证据。
+1. 任务衔接：由用户确认修复目标、范围、固定基线、镜像及验证命令，创建关联来源与仓库准备记录的修复任务；提交时重新检查准备状态和本地代码，不能仅凭历史 `ready` 执行。
+2. 网页入口：填写 Issue URL、预览来源和任务配置，从详情页回溯来源与固定基线。
+3. 小任务验收：选取适合的小型 Python 仓库问题，完成修复、独立验证和人工审查，记录实际证据。
 
 扩展工作按实际需要加入：
 
@@ -175,8 +183,8 @@ M4 的交付验收不要求自动合并到主分支。后续是否增加自动�
 5. 已用已有记录和模拟任务检查页面，完成脚本化模型 + Docker 联调及网页真实模型小任务验收。
 6. 已归档验证结果并完成合并前检查；`feat/task-ui` 已合并为 `303312a`。
 7. `feat/patch-review` 已实现后端/网页审查、路径保护及独立分支交付；隔离联调与真实模型验收均通过，已合并为 `4e4f65d`。
-8. 已从该提交创建 `feat/github-tasks`，完成 M3 第一步的公开 Issue 来源读取与快照保存。
-9. 下一步准备公开仓库代码与固定基线，再把来源关联到修复任务，随后接入网页和小任务验收。
+8. 已从该提交创建 `feat/github-tasks`，M3 第一步来源读取已提交为 `b7e5e6d`，第二步仓库准备已实现并完成实际下载验证。
+9. 下一步将来源与固定版本的仓库准备记录关联到修复任务，随后接入网页和小任务验收。
 
 每项独立功能使用单独分支；提交前检查工作区和上次提交状态，阶段完成后更新本文及必要的实验记录。已完成与未完成能力以源码和验收证据为准。
 
@@ -186,6 +194,7 @@ M4 的交付验收不要求自动合并到主分支。后续是否增加自动�
 - API 的任务、产物、独立审查与交付路由：[app.py](src/patchloop/api/app.py)；审查证据绑定：[review.py](src/patchloop/api/review.py)；本地交付：[delivery.py](src/patchloop/api/delivery.py)；路径检查：[patch_policy.py](src/patchloop/repair/patch_policy.py)。GitHub 发布路由尚未实现。
 - 领取、持久化与恢复：[store.py](src/patchloop/api/store.py)、[worker.py](src/patchloop/worker.py)。
 - GitHub 来源读取与保存：[github.py](src/patchloop/api/github.py)、[source_models.py](src/patchloop/api/source_models.py)、[source_store.py](src/patchloop/api/source_store.py)；接口测试：[test_github_issues.py](tests/test_github_issues.py)。
+- 仓库版本解析、下载与状态：[repository_github.py](src/patchloop/api/repository_github.py)、[repository_git.py](src/patchloop/api/repository_git.py)、[repositories.py](src/patchloop/api/repositories.py)、[repository_store.py](src/patchloop/api/repository_store.py)。
 - 独立官方判卷：[judge.py](src/patchloop/repair/judge.py)；历史实验入口：[EXPERIMENTS.md](EXPERIMENTS.md)。
 - 网页工作台：[frontend/README.md](frontend/README.md)；真实模型验收：[task-ui-toy-smoke](evals/reports/task-ui-toy-smoke/README.md)。
 - DevFlow 页面参考：其本地副本的 `frontend/app/chat/page.tsx`、`workflow-runs/page.tsx`、`action-drafts/page.tsx`。页面存在及源码调用关系不替代全栈验收。
