@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator, model_validator
 
 from ..llm import PROVIDERS
-from ..repair.contracts import ValidationStatus
+from ..repair.contracts import Limits, RepairTask, ReviewStatus, ValidationStatus, VerificationProfile
 
 
 TaskStatus = Literal["queued", "running", "completed", "interrupted", "error"]
@@ -46,6 +47,25 @@ class ExecutionConfig(BaseModel):
         return self
 
 
+class PathPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    allowed_paths: list[Annotated[str, StringConstraints(min_length=1, max_length=512)]] = Field(default_factory=list, max_length=100)
+    protected_paths: list[Annotated[str, StringConstraints(min_length=1, max_length=512)]] = Field(
+        default_factory=lambda: ["tests/**", "**/tests/**", "testing/**", "**/testing/**",
+                                 "test_*.py", "**/test_*.py", "*_test.py", "**/*_test.py",
+                                 "conftest.py", "**/conftest.py"], max_length=100,
+    )
+
+    @field_validator("allowed_paths", "protected_paths")
+    @classmethod
+    def validate_patterns(cls, patterns: list[str]) -> list[str]:
+        for pattern in patterns:
+            if not pattern.strip() or "\x00" in pattern or pattern.startswith("/") or any(part in (".", "..") for part in pattern.split("/")):
+                raise ValueError("path patterns must be nonempty repository-relative globs without . or .. components")
+        return list(dict.fromkeys(pattern + "**" if pattern.endswith("/") else pattern for pattern in patterns))
+
+
 class TaskSubmission(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -54,6 +74,7 @@ class TaskSubmission(BaseModel):
     verification_command: NonEmptyText
     base_sha: Annotated[str, StringConstraints(min_length=1, max_length=256)] | None = None
     execution: ExecutionConfig | None = None
+    path_policy: PathPolicy = Field(default_factory=PathPolicy)
 
     @field_validator("repo_path", "goal", "verification_command", "base_sha")
     @classmethod
@@ -86,6 +107,23 @@ class TaskRecord(BaseModel):
     error: str = ""
     result: dict | None = None
     cleanup_pending: bool = False
+    path_policy: PathPolicy | None = None
+
+    def to_repair_task(self) -> RepairTask:
+        """Use the same frozen verification and limits for execution and review."""
+        config = self.execution
+        if config is None:
+            raise ValueError("task has no execution configuration")
+        return RepairTask(
+            task_id=str(self.task_id), repo_path=Path(self.repo_path), workdir=self.workdir,
+            base_sha=self.base_sha, goal=self.goal,
+            verification=VerificationProfile(id="api", command=self.verification_command,
+                                             timeout_seconds=config.verification_timeout_seconds),
+            limits=Limits(max_model_calls=config.max_model_calls, command_timeout_seconds=config.command_timeout_seconds),
+            budget_reminders=config.budget_reminders, explicit_finish=config.explicit_finish,
+            allowed_paths=tuple(self.path_policy.allowed_paths) if self.path_policy else (),
+            protected_paths=tuple(self.path_policy.protected_paths) if self.path_policy else (),
+        )
 
 
 class TaskSummary(BaseModel):
@@ -125,3 +163,116 @@ class TaskCursor(BaseModel):
         if parsed.utcoffset() is None or parsed.utcoffset().total_seconds() != 0:
             raise ValueError("cursor timestamp must be UTC")
         return utc_timestamp(parsed)
+
+
+Sha256 = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
+
+
+class ReviewEvidence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    base_sha: Annotated[str, StringConstraints(pattern=r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")]
+    patch_sha256: Sha256
+    validation_sha256: Sha256
+    task_sha256: Sha256
+    summary_sha256: Sha256
+    record_sha256: Sha256
+
+
+class ReviewSubmission(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: UUID
+    expected_revision: int = Field(ge=0, strict=True)
+    decision: Literal["accepted", "rejected"]
+    comment: Annotated[str, StringConstraints(max_length=4000)] = ""
+    evidence: ReviewEvidence
+
+    @field_validator("comment")
+    @classmethod
+    def validate_comment(cls, value: str) -> str:
+        if "\x00" in value:
+            raise ValueError("null bytes are not allowed")
+        return value
+
+
+class ReviewRecord(BaseModel):
+    review_id: UUID
+    task_id: UUID
+    revision: int
+    request_id: UUID
+    decision: Literal["accepted", "rejected"]
+    comment: str
+    evidence: ReviewEvidence
+    created_at: datetime
+
+
+class ReviewState(BaseModel):
+    task_id: UUID
+    status: ReviewStatus = "pending"
+    revision: int = 0
+    evidence: ReviewEvidence | None = None
+    can_accept: bool = False
+    can_reject: bool = False
+    reason: str = ""
+    latest_review: ReviewRecord | None = None
+
+
+class ReviewHistory(BaseModel):
+    task_id: UUID
+    items: list[ReviewRecord]
+
+
+class ReviewResponse(BaseModel):
+    review: ReviewRecord
+    current: ReviewState
+    replayed: bool
+
+
+class DeliverySubmission(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: UUID
+    review_id: UUID
+    review_revision: int = Field(ge=1, strict=True)
+    evidence: ReviewEvidence
+    target_head: Annotated[str, StringConstraints(pattern=r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")]
+
+
+class DeliveryRecord(BaseModel):
+    delivery_id: UUID
+    task_id: UUID
+    request_id: UUID
+    review_id: UUID
+    review_revision: int
+    evidence: ReviewEvidence
+    target_head: str
+    branch: str
+    worktree_path: str
+    status: Literal["preparing", "completed", "failed"]
+    commit_sha: str | None = None
+    tree_sha: str | None = None
+    error: str = ""
+    created_at: datetime
+    updated_at: datetime
+
+
+class DeliveryState(BaseModel):
+    task_id: UUID
+    can_deliver: bool = False
+    reason: str = ""
+    review_id: UUID | None = None
+    review_revision: int = 0
+    evidence: ReviewEvidence | None = None
+    target_head: str | None = None
+    branch: str | None = None
+    worktree_path: str | None = None
+    dirty: bool = False
+    changed_paths: list[str] = Field(default_factory=list)
+    policy: PathPolicy = Field(default_factory=PathPolicy)
+    delivery: DeliveryRecord | None = None
+    delivery_intact: bool | None = None
+
+
+class DeliveryResponse(BaseModel):
+    delivery: DeliveryRecord
+    replayed: bool

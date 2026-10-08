@@ -1,0 +1,64 @@
+{
+  "task_id": "b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+  "can_deliver": false,
+  "reason": "delivery already completed",
+  "review_id": "ec69990f-9ed1-4e06-8647-1262c9717acd",
+  "review_revision": 1,
+  "evidence": {
+    "base_sha": "1c885061356e30d2bb6f42188165293cde8d9edd",
+    "patch_sha256": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+    "validation_sha256": "8e55de08e8f22105340fd4d79a02014f64ee9632d3ea54b1b3adb92709e1cafc",
+    "task_sha256": "1753bb521af98e5cc64956d00d4bd1cf8fca3eca0167cda194741eff7fe6e80b",
+    "summary_sha256": "97dc47b2d2657a23d220d2f2cc35f06a6803cc538fad65291e65f3157845f736",
+    "record_sha256": "7cc9dbc23e8ad6b3f25485d1b6aee95a757f019612483bb7639942b869f95a1e"
+  },
+  "target_head": "1c885061356e30d2bb6f42188165293cde8d9edd",
+  "branch": "patchloop/b94d4679-27ab-4dc4-aeb9-28fa39d427fd/r1",
+  "worktree_path": "/Users/jackliu/code/python/patchloop/data/deliveries/b94d4679-27ab-4dc4-aeb9-28fa39d427fd/r1",
+  "dirty": false,
+  "changed_paths": [
+    "examples/toy_repo/calc.py"
+  ],
+  "policy": {
+    "allowed_paths": [
+      "examples/toy_repo/calc.py"
+    ],
+    "protected_paths": [
+      "tests/**",
+      "**/tests/**",
+      "testing/**",
+      "**/testing/**",
+      "test_*.py",
+      "**/test_*.py",
+      "*_test.py",
+      "**/*_test.py",
+      "conftest.py",
+      "**/conftest.py"
+    ]
+  },
+  "delivery": {
+    "delivery_id": "5558a8cc-6c29-4869-b7b7-ad606a978250",
+    "task_id": "b94d4679-27ab-4dc4-aeb9-28fa39d427fd",
+    "request_id": "4a97220c-a0ff-4682-aa3e-be95a42e208b",
+    "review_id": "ec69990f-9ed1-4e06-8647-1262c9717acd",
+    "review_revision": 1,
+    "evidence": {
+      "base_sha": "1c885061356e30d2bb6f42188165293cde8d9edd",
+      "patch_sha256": "4710326746ac68ce7ed02987e4c06256d9ac865192b2ad2abe6091f1c2a42516",
+      "validation_sha256": "8e55de08e8f22105340fd4d79a02014f64ee9632d3ea54b1b3adb92709e1cafc",
+      "task_sha256": "1753bb521af98e5cc64956d00d4bd1cf8fca3eca0167cda194741eff7fe6e80b",
+      "summary_sha256": "97dc47b2d2657a23d220d2f2cc35f06a6803cc538fad65291e65f3157845f736",
+      "record_sha256": "7cc9dbc23e8ad6b3f25485d1b6aee95a757f019612483bb7639942b869f95a1e"
+    },
+    "target_head": "1c885061356e30d2bb6f42188165293cde8d9edd",
+    "branch": "patchloop/b94d4679-27ab-4dc4-aeb9-28fa39d427fd/r1",
+    "worktree_path": "/Users/jackliu/code/python/patchloop/data/deliveries/b94d4679-27ab-4dc4-aeb9-28fa39d427fd/r1",
+    "status": "completed",
+    "commit_sha": "05f02c07b9c608a2f825e35a6f18fbb473c81c15",
+    "tree_sha": "9a210cca7e40ebe9bdd39bbf76d152ace5e311be",
+    "error": "",
+    "created_at": "2026-10-08T02:35:24.788457Z",
+    "updated_at": "2026-10-08T02:35:25.673784Z"
+  },
+  "delivery_intact": true
+}

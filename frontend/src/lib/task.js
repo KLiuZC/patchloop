@@ -43,7 +43,11 @@ export const defaultForm = {
   provider: 'deepseek', model: 'deepseek-flash', image: 'patchloop-toy',
   max_model_calls: '30', command_timeout_seconds: '60', verification_timeout_seconds: '180',
   memory_mb: '2048', platform: '', budget_reminders: true, explicit_finish: false,
+  allowed_paths: '',
+  protected_paths: 'tests/**\n**/tests/**\ntesting/**\n**/testing/**\ntest_*.py\n**/test_*.py\n*_test.py\n**/*_test.py\nconftest.py\n**/conftest.py',
 }
+
+const pathPatterns = (value = '') => value.split(/\r?\n/).filter((line) => line.length > 0)
 
 export const modelPresets = { deepseek: 'deepseek-flash', glm: 'glm-5.3-flash' }
 
@@ -55,6 +59,13 @@ export function validateTaskForm(form) {
   }
   for (const key of ['image', 'model']) {
     if (form[key] && /\s/.test(form[key])) errors[key] = '名称中不能包含空格或换行'
+  }
+  for (const key of ['allowed_paths', 'protected_paths']) {
+    const patterns = pathPatterns(form[key])
+    if (patterns.length > 100 || patterns.some((pattern) => !pattern.trim() || pattern.length > 512
+      || pattern.includes('\0') || pattern.startsWith('/') || pattern.split('/').some((part) => part === '.' || part === '..'))) {
+      errors[key] = '每行填写一个仓库相对路径模式，最多 100 行；不能使用绝对路径或 ..。'
+    }
   }
   for (const [key, [min, max]] of Object.entries({
     max_model_calls: [1, 200], command_timeout_seconds: [1, 3600],
@@ -70,6 +81,7 @@ export function buildTaskPayload(form) {
   // Preserve path and command whitespace: it may be significant to the repository or shell.
   return {
     repo_path: form.repo_path, goal: form.goal, verification_command: form.verification_command,
+    path_policy: { allowed_paths: pathPatterns(form.allowed_paths), protected_paths: pathPatterns(form.protected_paths ?? defaultForm.protected_paths) },
     execution: {
       provider: form.provider, model: form.model || null, image: form.image,
       platform: form.platform || null, memory_mb: Number(form.memory_mb),
