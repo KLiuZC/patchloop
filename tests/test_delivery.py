@@ -149,7 +149,7 @@ def decide(client, candidate, decision="accepted"):
 
 @pytest.fixture
 def make_candidate(client, repository, tmp_path):
-    def make(*, decision="accepted", protected=False, legacy=False):
+    def make(*, decision="accepted", protected=False, legacy=False, source=None):
         store: TaskStore = client.app.state.task_store
         task_id = uuid4()
         builder = tmp_path / f"builder-{task_id}"
@@ -176,6 +176,7 @@ def make_candidate(client, repository, tmp_path):
             status="queued", created_at=now, updated_at=now,
             execution=ExecutionConfig(image="offline-delivery-fixture", model="offline-fixture"),
             path_policy=None if legacy else PathPolicy(),
+            source=source,
         )
         store.create(queued)
         claimed = store.claim(tmp_path / "artifacts", task_id)

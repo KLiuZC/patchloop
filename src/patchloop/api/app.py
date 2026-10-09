@@ -8,6 +8,8 @@ from uuid import UUID, uuid4
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 
 from .models import (ReviewHistory, ReviewResponse, ReviewState, ReviewSubmission,
@@ -15,6 +17,8 @@ from .models import (ReviewHistory, ReviewResponse, ReviewState, ReviewSubmissio
                      TaskPage, TaskRecord, TaskStatus, TaskSubmission, IssueTaskSubmission, IssueTaskResult)
 from .issue_tasks import IssueTaskConflict, IssueTaskService
 from .delivery import DeliveryService
+from .github_delivery import GitHubDeliveryService
+from .github_delivery_models import GitHubDeliveryPreview, GitHubDeliveryPreviewRequest
 from .review import ReviewConflict, ReviewNotFound
 from .store import InvalidTaskCursor, TaskStore
 from .github import GitHubIssueClient, GitHubReadError
@@ -65,6 +69,7 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     """Create the task API. No worker, model client or Docker container is started."""
     store = TaskStore(Path(db_path))
     delivery_service = DeliveryService(store, deliveries_root)
+    github_delivery = GitHubDeliveryService(store, delivery_service)
     source_store = IssueSourceStore(store)
     github = GitHubIssueClient(transport=github_transport)
     repositories = RepositoryPreparationService(store, github, root=repositories_root)
@@ -85,10 +90,20 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     )
     app.state.task_store = store
     app.state.delivery_service = delivery_service
+    app.state.github_delivery_service = github_delivery
     app.state.issue_source_store = source_store
     app.state.github_client = github
     app.state.repository_service = repositories
     app.state.issue_task_service = issue_tasks
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(request: Request, exc: RequestValidationError):
+        try:
+            return await request_validation_exception_handler(request, exc)
+        except UnicodeEncodeError:
+            # Invalid Unicode must remain a client error even when echoing the
+            # rejected input would break the framework's JSON error response.
+            return JSONResponse(status_code=422, content={"detail": "Request text must be valid Unicode"})
 
     @app.exception_handler(IssueTaskConflict)
     async def issue_task_conflict(request: Request, exc: IssueTaskConflict):
@@ -251,6 +266,11 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
         if result.replayed:
             response.status_code = 200
         return result
+
+    @app.post("/tasks/{task_id}/github-delivery/preview", response_model=GitHubDeliveryPreview)
+    def preview_github_delivery(task_id: UUID, submission: GitHubDeliveryPreviewRequest) -> GitHubDeliveryPreview:
+        """Preview a PR offline. Does not save a publication, push a branch or contact GitHub."""
+        return github_delivery.preview(task_id, submission)
 
     @app.get("/tasks/{task_id}/artifacts/{name}", response_class=FileResponse)
     def get_artifact(task_id: UUID, name: str):
