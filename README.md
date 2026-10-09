@@ -167,5 +167,6 @@ API 负责受理、查询、审查和交付；worker 独立领取修复任务。
 | [架构与运行机制](docs/architecture.md) | 模块职责、状态、产物和数据目录 |
 | [评测与验收](docs/evaluation.md) | 完整对照结果、评测命令和验收索引 |
 | [前端开发](frontend/README.md) | 前端启动、交互约定、测试与构建 |
+| [前端交互约定](docs/frontend-behavior.md) | 请求恢复、会话存储、审查证据与内容展示 |
 | [实验记录](EXPERIMENTS.md) | 实验配置、结果及阶段性结论 |
 | [发展路线](ROADMAP.md) | 已完成阶段、当前边界及后续工作 |
