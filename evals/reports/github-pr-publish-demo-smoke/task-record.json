@@ -1,0 +1,128 @@
+{
+  "task_id": "3659f4fc-1eea-48cf-a744-b2bbebee4654",
+  "repo_path": "/Users/jackliu/code/python/patchloop/data/repositories/c376ffd9-c1f2-4024-afaf-50757b64f2f9/repo",
+  "workdir": ".",
+  "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+  "goal": "修复 calc.py 中的 parse_version，使 v1.2.3 返回 (1, 2, 3)，只支持开头单个小写 v。保留普通版本号的原有行为；V1.2.3、vv1.2.3、v、1..2、1.a 和空字符串仍应抛出 ValueError。只修改 calc.py，不修改测试、配置或依赖文件，不安装依赖，不访问网络。运行 python -m pytest -q 核对结果。",
+  "verification_command": "python -m pytest -q",
+  "status": "completed",
+  "created_at": "2026-10-09T14:01:04.792308Z",
+  "updated_at": "2026-10-09T14:01:42.360026Z",
+  "execution": {
+    "image": "patchloop-toy",
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "platform": null,
+    "memory_mb": 2048,
+    "max_model_calls": 10,
+    "command_timeout_seconds": 60,
+    "verification_timeout_seconds": 180,
+    "budget_reminders": true,
+    "explicit_finish": false
+  },
+  "validation_status": "passed",
+  "started_at": "2026-10-09T14:01:33.799816Z",
+  "finished_at": "2026-10-09T14:01:42.360026Z",
+  "artifacts_dir": "/Users/jackliu/code/python/patchloop/data/task-runs/3659f4fc-1eea-48cf-a744-b2bbebee4654",
+  "error": "",
+  "result": {
+    "task_id": "3659f4fc-1eea-48cf-a744-b2bbebee4654",
+    "execution_status": "completed",
+    "validation_status": "passed",
+    "review_status": "pending",
+    "stop_reason": "no_tool_calls",
+    "patch": "diff --git a/calc.py b/calc.py\nindex bec5f98..0da2772 100644\n--- a/calc.py\n+++ b/calc.py\n@@ -1,3 +1,5 @@\n def parse_version(s: str) -> tuple[int, ...]:\n     \"\"\"Parse a dotted version, optionally prefixed by one lowercase v.\"\"\"\n+    if s.startswith(\"v\"):\n+        s = s[1:]\n     return tuple(int(part) for part in s.split(\".\"))\n",
+    "validation": {
+      "status": "passed",
+      "profile_id": "api",
+      "command": "python -m pytest -q",
+      "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+      "patch_sha256": "7e8d26ad8a3e25282720b78ea2b64b30e24f7a8ba7e6d9f21ffa29285d284d3f",
+      "exit_code": 0,
+      "output": "...........                                                              [100%]\n11 passed in 0.01s\n",
+      "seconds": 0.8,
+      "error": "",
+      "candidate": {
+        "status": "passed",
+        "profile_id": "api",
+        "command": "python -m pytest -q",
+        "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+        "patch_sha256": "7e8d26ad8a3e25282720b78ea2b64b30e24f7a8ba7e6d9f21ffa29285d284d3f",
+        "exit_code": 0,
+        "output": "...........                                                              [100%]\n11 passed in 0.01s\n",
+        "seconds": 0.8,
+        "error": ""
+      },
+      "baseline": {
+        "status": "failed",
+        "profile_id": "api",
+        "command": "python -m pytest -q",
+        "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+        "exit_code": 1,
+        "output": "....F......                                                              [100%]\n=================================== FAILURES ===================================\n________________________ test_single_lowercase_v_prefix ________________________\n\n    def test_single_lowercase_v_prefix():\n>       assert parse_version(\"v1.2.3\") == (1, 2, 3)\n               ^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_calc.py:15: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ncalc.py:3: in parse_version\n    return tuple(int(part) for part in s.split(\".\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n.0 = <list_iterator object at 0xffff92aaa500>\n\n>   return tuple(int(part) for part in s.split(\".\"))\n                 ^^^^^^^^^\nE   ValueError: invalid literal for int() with base 10: 'v1'\n\ncalc.py:3: ValueError\n=========================== short test summary info ============================\nFAILED tests/test_calc.py::test_single_lowercase_v_prefix - ValueError: inval...\n1 failed, 10 passed in 0.02s\n\n[exit code 1]",
+        "seconds": 0.4,
+        "error": ""
+      }
+    },
+    "artifacts_dir": "/Users/jackliu/code/python/patchloop/data/task-runs/3659f4fc-1eea-48cf-a744-b2bbebee4654",
+    "error": "",
+    "prompt_tokens": 5205,
+    "cached_tokens": 3712,
+    "completion_tokens": 467,
+    "cost": 0.00343524,
+    "seconds": 8.4,
+    "turns": 3
+  },
+  "cleanup_pending": false,
+  "path_policy": {
+    "allowed_paths": [
+      "calc.py"
+    ],
+    "protected_paths": [
+      "tests/**",
+      "**/tests/**",
+      "testing/**",
+      "**/testing/**",
+      "test_*.py",
+      "**/test_*.py",
+      "*_test.py",
+      "**/*_test.py",
+      "conftest.py",
+      "**/conftest.py"
+    ]
+  },
+  "source": {
+    "kind": "github_issue",
+    "preparation_id": "c376ffd9-c1f2-4024-afaf-50757b64f2f9",
+    "issue": {
+      "source_id": "2db96bd2-9d4b-4281-aa1c-e90827fa82b6",
+      "request_id": "61cbc0ba-1bf4-4e2e-8a15-695ac7e5a72c",
+      "kind": "github_issue",
+      "requested_url": "https://github.com/kliuzc/patchloop-publish-demo/issues/1",
+      "url": "https://github.com/kliuzc/patchloop-publish-demo/issues/1",
+      "api_url": "https://api.github.com/repos/kliuzc/patchloop-publish-demo/issues/1",
+      "repository": {
+        "id": 1411788948,
+        "full_name": "KLiuZC/patchloop-publish-demo",
+        "html_url": "https://github.com/KLiuZC/patchloop-publish-demo",
+        "default_branch": "main",
+        "archived": false,
+        "visibility": "public"
+      },
+      "issue_id": 5779264114,
+      "issue_number": 1,
+      "title": "parse_version 无法解析带单个小写 v 前缀的版本号",
+      "body": "## 问题\n\n`parse_version(\"1.2.3\")` 可以正常返回 `(1, 2, 3)`，但 `parse_version(\"v1.2.3\")` 会抛出 `ValueError`。\n\n## 期望行为\n\n- 支持开头恰好一个小写 `v`：`v1.2.3` 应返回 `(1, 2, 3)`。\n- 普通版本号的行为保持不变，包括 `0`、`2.10` 和 `01.002`。\n- 大写 `V`、重复 `v`、仅有 `v`、空字符串、空版本段或非数字版本段仍应抛出 `ValueError`。\n\n## 修复与验证范围\n\n- 只修改 `calc.py`，不修改 `tests/`、`pytest.ini` 或依赖文件。\n- 运行 `python -m pytest -q`。初始结果应为 `1 failed, 10 passed`，修复后应为 `11 passed`。\n- 不新增依赖，不访问网络。\n\n这是专用测试仓库中的验收任务，最终修改通过草稿 PR 提交。\n",
+      "state": "open",
+      "issue_created_at": "2026-10-09T13:53:57Z",
+      "issue_updated_at": "2026-10-09T13:53:57Z",
+      "fetched_at": "2026-10-09T13:55:33.113830Z",
+      "api_version": "2026-03-10",
+      "snapshot_sha256": "2ed43d896b0eb37803d944a6f661e389440d7b349bac319d288d3264750e91c6"
+    },
+    "repo_path": "/Users/jackliu/code/python/patchloop/data/repositories/c376ffd9-c1f2-4024-afaf-50757b64f2f9/repo",
+    "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+    "resolved_ref": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+    "resolved_at": "2026-10-09T14:00:06.134097Z"
+  }
+}

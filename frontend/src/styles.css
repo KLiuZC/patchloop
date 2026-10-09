@@ -310,6 +310,40 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
 .model-message { padding-inline: calc(0.75rem + 1px); color: #637185; }
 .model-message-text { min-width: 0; flex: 1; white-space: pre-wrap; overflow-wrap: anywhere; }
 .log-footnote { text-align: center; color: #616c7c; font-size: 0.75rem; padding: 0 1.25rem 1.25rem; }
+.publication-repository, .publication-pr-link { display: inline-flex; align-items: center; gap: .5rem; color: var(--accent); font-size: .875rem; max-width: 100%; overflow-wrap: anywhere; }
+.publication-repository { display: flex; width: fit-content; gap: .75rem; margin-bottom: 1rem; }
+.publication-repository > .github-mark { width: 1.6875rem; height: 1rem; }
+.publication-repository + .notice { margin-top: 0; }
+.publication-form { margin-top: .25rem; }
+.publication-form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.publication-form textarea { min-height: 12rem; resize: vertical; line-height: 1.65; }
+.publication-form .field { margin-bottom: 1rem; }
+.publication-form .field-grid { margin-bottom: 0; }
+.publication-help, .publication-phase { font-size: .8125rem; color: #667082; line-height: 1.8; margin-bottom: 1rem; }
+.publication-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.publication-preview, .publication-confirm { border-top: 1px solid var(--line); padding-top: 1.25rem; margin-top: 1.25rem; }
+.publication-confirm .checkbox-label { align-items: flex-start; line-height: 1.65; margin-bottom: .75rem; }
+.publication-confirm input { flex-shrink: 0; margin-top: .25rem; }
+.publication-facts ul { list-style: none; margin: 0; padding: 0; }
+.publication-inline-note { margin-left: .75rem; color: #71798a; font-size: .75rem; }
+.publication-remote { display: flex; flex-direction: column; gap: .375rem; color: #377252; font-size: .8125rem; background: #f3f8f5; border: 1px solid #deebe3; border-radius: .5rem; padding: .875rem 1rem; margin-top: 1rem; }
+.publication-remote strong { font-weight: 600; }
+.publication-pending { display: block; }
+.publication-pending button { margin-left: 0; }
+.publication-progress { display: flex; align-items: center; gap: .5rem; margin-top: 1rem; font-size: .8125rem; color: #646f81; }
+.publication-record-heading { display: flex; align-items: center; flex-wrap: wrap; gap: .625rem; margin-bottom: .875rem; font-size: .75rem; color: #71798a; }
+.publication-status { border-radius: .3125rem; padding: .25rem .5rem; color: #5b6988; background: #f0f3fa; }
+.publication-status.is-completed { color: #377252; background: #eef6f0; }
+.publication-status.is-blocked, .publication-status.is-uncertain { color: #856c3d; background: #fff6e5; }
+.publication-record h3 { overflow-wrap: anywhere; line-height: 1.65; }
+.publication-record .publication-phase { margin: .375rem 0 .75rem; }
+.publication-pr-link { padding: .625rem .75rem; border: 1px solid #e1e5ee; border-radius: .5rem; }
+.publication-pr-link > span { font-size: .75rem; color: #71798a; }
+.publication-detail { margin-top: 1rem; color: #636d81; font-size: .8125rem; }
+.publication-body { margin-top: 1rem; color: #636d81; font-size: .8125rem; }
+.publication-detail pre { margin-top: .75rem; padding: 1rem; border: 1px solid var(--line); border-radius: .5rem; background: #fbfcfe; font-size: .8125rem; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.publication-history { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--line); color: #636d81; font-size: .8125rem; }
+.publication-history .publication-record { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
 .result-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.625rem; margin-top: 1.25rem; font-size: 0.6875rem; color: #67717e; }
 .result-footer > span:first-child { display: flex; align-items: center; gap: 0.3125rem; }
 
@@ -531,15 +565,55 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
 .issue-edit-hint { margin-bottom: 1rem; }
 .repository-prepare-button { margin-top: .5rem; }
 .issue-title-group { margin: 1.5rem 0 1.25rem; }
-.issue-body-group { padding: 1.25rem; border: 1px solid var(--line); border-radius: .625rem; background: #f8f9fc; }
+.issue-body-group { min-width: 0; }
 .issue-section-label { display: block; color: var(--muted); font-size: .75rem; font-weight: 500; }
 .issue-preview .issue-title-group h3 { margin: .5rem 0 0; font-size: 1.25rem; font-weight: 650; line-height: 1.5; color: #222637; }
-.issue-body-group .issue-body { margin: .625rem 0 0; }
+.issue-body-group .issue-body { margin: 0; }
 .issue-preview a > svg, .issue-source-panel > a > svg { flex-shrink: 0; }
 .github-mark { display: block; flex-shrink: 0; overflow: visible; }
-.issue-preview a, .issue-source-panel > a { display: inline-flex; align-items: center; gap: .375rem; color: var(--accent); font-size: .8125rem; overflow-wrap: anywhere; }
+.issue-preview > a, .issue-source-panel > a { display: inline-flex; align-items: center; gap: .375rem; color: var(--accent); font-size: .8125rem; overflow-wrap: anywhere; }
 .issue-preview h3, .issue-source-panel h3 { margin: 1rem 0 .75rem; font-size: 1rem; line-height: 1.5; overflow-wrap: anywhere; }
-.issue-body { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 24rem; overflow: auto; line-height: 1.7; font-size: .875rem; }
+.issue-body { min-width: 0; padding: 1rem 1.125rem; border: 1px solid #e3e7ef; border-radius: .625rem; background: #f8f9fc; color: #505b72; font-size: .875rem; line-height: 1.75; }
+.issue-body-view { position: relative; min-width: 0; }
+.issue-body-heading { display: flex; align-items: center; min-height: 1.9375rem; padding-right: 7.5rem; margin-bottom: .625rem; }
+.issue-body-view .issue-description { margin-top: 0; }
+.issue-body-view .issue-description > summary { min-height: 1.9375rem; padding: .25rem 7.5rem .25rem 0; line-height: 1.4375rem; }
+.issue-body-view .issue-description[open] > summary { margin-bottom: .75rem; }
+.issue-body-toolbar { position: absolute; top: 0; right: 0; display: flex; justify-content: flex-end; align-items: center; gap: .5rem; min-height: 1.9375rem; }
+.issue-description:not([open]) + .issue-body-toolbar { display: none; }
+.issue-body-toolbar .text-action { padding: .25rem 0; }
+.issue-body-content { max-height: 24rem; overflow: auto; overflow-wrap: anywhere; min-width: 0; padding: .1875rem; }
+.issue-body-empty { margin-top: .75rem; color: var(--muted); font-size: .875rem; }
+.issue-body .issue-raw-text { margin: 0; font-size: .8125rem; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.issue-markdown { font-size: .875rem; line-height: 1.75; white-space: normal; }
+.issue-markdown > :first-child { margin-top: 0; }
+.issue-markdown > :last-child { margin-bottom: 0; }
+.issue-body .issue-markdown-heading { margin: 1.5rem 0 .625rem; font-weight: 600; line-height: 1.5; letter-spacing: 0; color: #39465c; font-size: .9375rem; }
+.issue-body .issue-markdown-h1, .issue-body .issue-markdown-h2 { font-size: 1rem; }
+.issue-body .issue-markdown > .issue-markdown-heading:first-child { margin-top: 0; }
+.issue-markdown p { margin: 0 0 .75rem; }
+.issue-markdown ul, .issue-markdown ol { margin: .625rem 0 1rem; padding-left: 1.5rem; }
+.issue-markdown ul { list-style: disc; }
+.issue-markdown ol { list-style: decimal; }
+.issue-markdown li + li { margin-top: .3125rem; }
+.issue-markdown li > p { margin-bottom: .375rem; }
+.issue-markdown li > ul, .issue-markdown li > ol { margin-top: .375rem; margin-bottom: .375rem; }
+.issue-markdown strong { font-weight: 600; }
+.issue-markdown a { color: var(--accent); text-decoration: underline; text-underline-offset: .1875rem; overflow-wrap: anywhere; }
+.issue-markdown code { padding: .125rem .3125rem; border: 1px solid #e7eaf0; border-radius: .25rem; background: #f0f2f6; color: #47566e; font-size: .8125rem; white-space: break-spaces; }
+.issue-markdown pre { margin: .875rem 0 1rem; padding: .875rem 1rem; border: 1px solid #e2e6ef; border-radius: .5rem; background: #f6f8fc; overflow: auto; white-space: pre; font-size: .8125rem; line-height: 1.7; }
+.issue-markdown pre code { padding: 0; border: 0; border-radius: 0; background: transparent; white-space: pre; }
+.issue-markdown pre:has(> code.language-text), .issue-markdown pre > code.language-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.issue-markdown blockquote { margin: .875rem 0; padding: .375rem .875rem; border-left: .1875rem solid #cdd5e6; color: #647087; }
+.issue-markdown blockquote > :last-child { margin-bottom: 0; }
+.issue-markdown hr { margin: 1.25rem 0; border: 0; border-top: 1px solid var(--line); }
+.issue-markdown-table { max-width: 100%; overflow-x: auto; margin: .875rem 0 1rem; }
+.issue-markdown table { width: 100%; border-collapse: collapse; font-size: .8125rem; line-height: 1.65; }
+.issue-markdown th, .issue-markdown td { border: 1px solid #e1e5ed; padding: .5rem .75rem; min-width: 5rem; }
+.issue-markdown th { background: #f3f5fa; font-weight: 600; }
+.issue-markdown .contains-task-list { list-style: none; padding-left: .125rem; }
+.issue-markdown .task-list-item input { margin: 0 .5rem 0 0; vertical-align: middle; accent-color: var(--accent); }
+.issue-markdown .footnotes { margin-top: 1.25rem; padding-top: .75rem; border-top: 1px solid var(--line); font-size: .8125rem; }
 .source-caption { margin-top: .875rem; font-size: .75rem; color: var(--muted); }
 .preparation-summary { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
 .preparation-summary dl, .issue-source-panel dl { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: .625rem 1rem; font-size: .8125rem; }
@@ -552,6 +626,7 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
 .github-task-page .notice code { overflow-wrap: anywhere; }
 @media (max-width: 700px) {
   .github-workflow { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .issue-body { padding: .875rem; }
   .github-section, .issue-source-panel { padding: 1.1875rem; }
   .github-steps { gap: .75rem; justify-content: space-between; }
   .github-steps li { font-size: .75rem; gap: .375rem; }

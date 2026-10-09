@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "profile_id": "api",
+  "command": "python -m pytest -q",
+  "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+  "patch_sha256": "7e8d26ad8a3e25282720b78ea2b64b30e24f7a8ba7e6d9f21ffa29285d284d3f",
+  "exit_code": 0,
+  "output": "...........                                                              [100%]\n11 passed in 0.01s\n",
+  "seconds": 0.8,
+  "error": "",
+  "candidate": {
+    "status": "passed",
+    "profile_id": "api",
+    "command": "python -m pytest -q",
+    "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+    "patch_sha256": "7e8d26ad8a3e25282720b78ea2b64b30e24f7a8ba7e6d9f21ffa29285d284d3f",
+    "exit_code": 0,
+    "output": "...........                                                              [100%]\n11 passed in 0.01s\n",
+    "seconds": 0.8,
+    "error": ""
+  },
+  "baseline": {
+    "status": "failed",
+    "profile_id": "api",
+    "command": "python -m pytest -q",
+    "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+    "exit_code": 1,
+    "output": "....F......                                                              [100%]\n=================================== FAILURES ===================================\n________________________ test_single_lowercase_v_prefix ________________________\n\n    def test_single_lowercase_v_prefix():\n>       assert parse_version(\"v1.2.3\") == (1, 2, 3)\n               ^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_calc.py:15: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ncalc.py:3: in parse_version\n    return tuple(int(part) for part in s.split(\".\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n.0 = <list_iterator object at 0xffff92aaa500>\n\n>   return tuple(int(part) for part in s.split(\".\"))\n                 ^^^^^^^^^\nE   ValueError: invalid literal for int() with base 10: 'v1'\n\ncalc.py:3: ValueError\n=========================== short test summary info ============================\nFAILED tests/test_calc.py::test_single_lowercase_v_prefix - ValueError: inval...\n1 failed, 10 passed in 0.02s\n\n[exit code 1]",
+    "seconds": 0.4,
+    "error": ""
+  }
+}

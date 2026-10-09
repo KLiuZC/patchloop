@@ -149,7 +149,7 @@ def decide(client, candidate, decision="accepted"):
 
 @pytest.fixture
 def make_candidate(client, repository, tmp_path):
-    def make(*, decision="accepted", protected=False, legacy=False):
+    def make(*, decision="accepted", protected=False, legacy=False, source=None):
         store: TaskStore = client.app.state.task_store
         task_id = uuid4()
         builder = tmp_path / f"builder-{task_id}"
@@ -176,6 +176,7 @@ def make_candidate(client, repository, tmp_path):
             status="queued", created_at=now, updated_at=now,
             execution=ExecutionConfig(image="offline-delivery-fixture", model="offline-fixture"),
             path_policy=None if legacy else PathPolicy(),
+            source=source,
         )
         store.create(queued)
         claimed = store.claim(tmp_path / "artifacts", task_id)
@@ -961,7 +962,7 @@ def test_v5_accepted_review_migrates_without_changing_historical_evidence_or_old
     with TestClient(create_app(store.path, deliveries_root=tmp_path / "deliveries")) as restarted:
         migrated_store = restarted.app.state.task_store
         with migrated_store._connection() as connection:
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 9
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 10
             assert [row["name"] for row in connection.execute("PRAGMA table_info(tasks)")] == [
                 *old_columns, "path_policy_json",
             ]

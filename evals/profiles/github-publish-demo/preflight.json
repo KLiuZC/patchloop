@@ -1,0 +1,51 @@
+{
+  "checked_at": "2026-10-09T12:08:36.175150+00:00",
+  "kind": "publication_demo_preflight",
+  "model_calls": 0,
+  "implementation_reference": "14f02c66ebb8a7c7be7dc143380bebaf71dfa68b",
+  "implementation_note": "The application is committed; this new sample and profile are identified by the file hashes below and must be committed before the model acceptance run.",
+  "image": {
+    "tag": "patchloop-toy",
+    "id": "sha256:a332fc2b8bd3fdb081f36325f89e7a4617c3192bea9cc46eddad7cf3729bec85",
+    "platform": "linux/arm64"
+  },
+  "seed_files": {
+    ".gitignore": "dcb3c14ead1c9041d85611b2cb9ed5be303f7164e218b88248565426f9275a4d",
+    "README.md": "38ec11cf7267f4a470554f6d1f2f38fd36a952e91d5fd1c4aa3abc5d96a6c8f4",
+    "calc.py": "01aea2538b0d264ab9b0a643f136b0da4ddc54a28c4f55e49f8b618250dab91d",
+    "pytest.ini": "b160d82f7811555051f8966d8e02750a985227c1d022208c784e606946f2eada",
+    "requirements-dev.txt": "93c4ab5f175d24229e46ec70a8ecaeb6db8b36e3f54d8005808044c060acbc92",
+    "tests/test_calc.py": "9e773caa01b40c03545d4c35140d9375d887d557f2c7e3e04a7d467b27ce32ef"
+  },
+  "profile_files": {
+    "goal.txt": "fee9fb41c34cad05c141fceaa95a0d895585c112518890820d46812cacd4b12a",
+    "issue-body.md": "fc8bdb6665e871eed243e5e6bad6d09176bd7fe7c722bcfa389c8bf81e5751b5",
+    "issue-title.txt": "cfb9187693484734d8b254a4166fb4050dbf857bdf2268210125d3f402440470",
+    "verification_command.txt": "a9dc631567267262620ff085b7de630c75725118137fdbaf326cc0a8b95d0d7e"
+  },
+  "python": "3.12.14",
+  "pytest": "9.1.1",
+  "controls": {
+    "baseline": {
+      "exit_code": 1,
+      "output": "....F......                                                              [100%]\n=================================== FAILURES ===================================\n________________________ test_single_lowercase_v_prefix ________________________\n\n    def test_single_lowercase_v_prefix():\n>       assert parse_version(\"v1.2.3\") == (1, 2, 3)\n               ^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_calc.py:15: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ncalc.py:3: in parse_version\n    return tuple(int(part) for part in s.split(\".\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n.0 = <list_iterator object at 0xffff8c6b2200>\n\n>   return tuple(int(part) for part in s.split(\".\"))\n                 ^^^^^^^^^\nE   ValueError: invalid literal for int() with base 10: 'v1'\n\ncalc.py:3: ValueError\n=========================== short test summary info ============================\nFAILED tests/test_calc.py::test_single_lowercase_v_prefix - ValueError: inval...\n1 failed, 10 passed in 0.01s\n"
+    },
+    "single_lowercase_prefix": {
+      "exit_code": 0,
+      "output": "...........                                                              [100%]\n11 passed in 0.01s\n"
+    },
+    "incorrect_repeated_prefix": {
+      "exit_code": 1,
+      "output": "......F....                                                              [100%]\n=================================== FAILURES ===================================\n__________________ test_invalid_versions_still_raise[vv1.2.3] __________________\n\nvalue = 'vv1.2.3'\n\n    @pytest.mark.parametrize(\"value\", [\"V1.2.3\", \"vv1.2.3\", \"v\", \"1..2\", \"1.a\", \"\"])\n    def test_invalid_versions_still_raise(value):\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE ValueError\n\ntests/test_calc.py:20: Failed\n=========================== short test summary info ============================\nFAILED tests/test_calc.py::test_invalid_versions_still_raise[vv1.2.3] - Faile...\n1 failed, 10 passed in 0.01s\n"
+    },
+    "incorrect_uppercase_extension": {
+      "exit_code": 1,
+      "output": ".....F.....                                                              [100%]\n=================================== FAILURES ===================================\n__________________ test_invalid_versions_still_raise[V1.2.3] ___________________\n\nvalue = 'V1.2.3'\n\n    @pytest.mark.parametrize(\"value\", [\"V1.2.3\", \"vv1.2.3\", \"v\", \"1..2\", \"1.a\", \"\"])\n    def test_invalid_versions_still_raise(value):\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE ValueError\n\ntests/test_calc.py:20: Failed\n=========================== short test summary info ============================\nFAILED tests/test_calc.py::test_invalid_versions_still_raise[V1.2.3] - Failed...\n1 failed, 10 passed in 0.01s\n"
+    }
+  },
+  "source_unchanged": true,
+  "limitations": [
+    "Synthetic controls validate the checks; they are not agent repairs or new benchmark results.",
+    "No GitHub publication or model execution was performed during preflight."
+  ]
+}

@@ -342,9 +342,9 @@ def test_v6_migration_is_additive_and_reentrant_with_existing_rows(tmp_path):
     assert source_store.get(source.source_id) == source
     assert source_store.get_snapshot(source.source_id) == snapshot
     with sqlite3.connect(database) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 9
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 10
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
-        assert tables == {"tasks", "task_reviews", "task_deliveries", "github_issue_sources", "repository_preparations", "issue_task_requests"}
+        assert tables == {"tasks", "task_reviews", "task_deliveries", "github_issue_sources", "repository_preparations", "issue_task_requests", "github_publications"}
         assert [row[1] for row in connection.execute("PRAGMA table_info(github_issue_sources)")] == [
             "source_id", "request_id", "requested_url", "record_json", "snapshot_json",
         ]

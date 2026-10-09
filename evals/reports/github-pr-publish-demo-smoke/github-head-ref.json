@@ -1,0 +1,10 @@
+{
+  "ref": "refs/heads/patchloop/3659f4fc-1eea-48cf-a744-b2bbebee4654/r1",
+  "node_id": "REF_kwDOVCYwlNoAPHJlZnMvaGVhZHMvcGF0Y2hsb29wLzM2NTlmNGZjLTFlZWEtNDhjZi1hNzQ0LWIyYmJlYmVlNDY1NC9yMQ",
+  "url": "https://api.github.com/repos/KLiuZC/patchloop-publish-demo/git/refs/heads/patchloop/3659f4fc-1eea-48cf-a744-b2bbebee4654/r1",
+  "object": {
+    "sha": "2b03ef0ea97d05da438a6853a7403c60b5f8aeea",
+    "type": "commit",
+    "url": "https://api.github.com/repos/KLiuZC/patchloop-publish-demo/git/commits/2b03ef0ea97d05da438a6853a7403c60b5f8aeea"
+  }
+}

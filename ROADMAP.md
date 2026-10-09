@@ -1,6 +1,6 @@
 # patchloop 发展路线
 
-更新日期：2026-10-09。M1 网页真实验收实现版本：`07bbc8e`，合并提交：`303312a`；M2 审查、路径保护与本地交付在 `1c88506` 上完成真实模型验收，已合并为 `4e4f65d`。M3 已实现公开 Issue 来源快照、仓库固定版本准备、修复任务关联及网页入口；文档 Issue 的真实修复与本地交付已验收，M3 开发分支待合并，M4 待实现。
+更新日期：2026-10-09。M1 网页真实验收实现版本：`07bbc8e`，合并提交：`303312a`；M2 审查、路径保护与本地交付在 `1c88506` 上完成真实模型验收，已合并为 `4e4f65d`。M3 已完成公开 Issue 来源、固定版本准备、关联任务及网页入口，真实文档任务验收与前端收尾后合并为 `7b5b7bb`。M4 已完成自有测试仓库的真实草稿 PR 交付验收及归档，待合并前检查与分支合并。
 
 ## 1. 目标与当前位置
 
@@ -20,9 +20,10 @@ DevFlow-AI 是研发协作与分析平台，参考价值主要在仓库上下文
 - [M2 真实交付验收](evals/reports/patch-review-delivery-toy-smoke/README.md)：3 轮、8.6 秒，独立验证通过，网页人工接受后生成独立分支和提交 `05f02c0`；提交内容与批准补丁一致，原工作区代码保持不变。
 - 公开 GitHub Issue 读取接口、独立来源与 JSON 快照持久化；可按来源编号查询，重复请求复用原记录。
 - 对应公开仓库的准备接口：复核仓库身份，保存准确 commit SHA，再下载至独立目录；支持重复请求、失败留档与重启查询。
+- [M4 真实 PR 交付验收](evals/reports/github-pr-publish-demo-smoke/README.md)：自有仓库 Issue #1 以 3 轮完成修复，独立验证从 1 项失败变为 11 项全过；人工接受并交付后，用户恢复原发布请求，创建草稿 PR #2。远端提交与批准补丁一致，`main` 未改变。
 - [两仓库修复集成验证](evals/reports/repair-real-task-smoke2/README.md)：RepairRunner 已在两个已有开发题上通过可见验证及官方判卷。这与上述 API/worker 的玩具任务验收分开记录。
 
-当前仍是本机单用户、单 worker 的系统。网页工作台、人工审查、路径保护及本地交付均已合并至 `main`。M3 在 `feat/github-tasks` 中已实现公开 Issue 来源保存与仓库准备，已通过后端接口将这些记录接入修复任务，专门的 GitHub 网页入口与任务来源展示已接入，真实文档任务验收已完成，开发分支待合并。停止 worker 不等于已有单任务取消接口；原始 `result.review_status` 保留修复快照，网页中的最新审查与交付状态通过独立接口读取。
+当前仍是本机单用户、单 worker 的系统。M1 至 M3 均已合并至 `main`，可以从公开 Issue 创建固定版本修复任务，经人工审查后交付本地分支。M4 在 `feat/github-delivery` 中已完成真实草稿 PR 发布验收；首版支持用户有写权限的同一公开仓库，不自动 fork 或合并 PR，开发分支尚未合并。停止 worker 不等于已有单任务取消接口；原始 `result.review_status` 保留修复快照，网页中的最新审查与交付状态通过独立接口读取。
 
 ## 2. 对照 DevFlow-AI，差距在哪里
 
@@ -31,9 +32,9 @@ DevFlow-AI 是研发协作与分析平台，参考价值主要在仓库上下文
 | 维度 | DevFlow-AI 本地副本 | patchloop 当前状态 | 后续工作 |
 | --- | --- | --- | --- |
 | 代码修复与验证 | 主要通过只读工作区工具组织分析 | 能修改代码、生成补丁并独立验证 | 保留修复内核，持续用任务检验效果 |
-| 页面与可操作性 | 有对话、仓库、工作流、知识与动作草稿页面 | 已有任务工作台、GitHub Issue 入口、人工审查和本地交付 | M4：PR 发布预览与结果展示 |
+| 页面与可操作性 | 有对话、仓库、工作流、知识与动作草稿页面 | 已有任务工作台、Issue 入口、人工审查及 PR 发布预览/结果 | 完成 M4 分支合并，后续按实际使用改进 |
 | GitHub 上下文 | 有 Issue、PR、CI 同步与分析入口 | 已有公开 Issue 快照、固定版本仓库准备及来源关联任务 | 按实际需要补充 PR、CI 上下文 |
-| 人工确认与交付 | 有动作草稿及部分 GitHub 元数据写操作 | 已有网页审查及受路径、版本和证据约束的本地交付 | M4：PR 交付 |
+| 人工确认与交付 | 有动作草稿及部分 GitHub 元数据写操作 | 已有受路径、版本和证据约束的本地交付及明确确认的 PR 发布 | 按需求扩展交付场景，保留批准与证据约束 |
 | 对话与知识 | 有 ChatAgent、RAG、记忆和 Skill 加载 | 单次修复目标与线性消息历史 | 按实际任务需要逐项加入 |
 | 多 Agent | Planner、专项分析、Observer、Synthesis 工作流 | 单 Agent 修复 | 先评估独立 reviewer 等具体收益 |
 | 质量证据 | 代码中有分析与检索评测入口 | 有修复判卷、对照实验和运行证据 | 保留两类评测的指标差异 |
@@ -42,7 +43,7 @@ DevFlow 的分析工作流不等于已完成自动改码、测试和发布修复
 
 源码核对到的 GitHub 写操作包括普通评论、创建/关闭 Issue 和添加标签；PR 普通评论不等于行级 review 或批准 PR。对话注册的工作区工具是列文件、读文件和搜索源码；系统另有用于获取代码的 checkout 同步及 PR 快照操作，不能把“对话工作区工具只读”扩大为“系统完全没有本地写入”。
 
-M1 与 M2 已能演示网页提交、修复、结果查看、人工审查和本地交付；接入 GitHub 的修复交付流程还需 M3、M4。若目标是覆盖 DevFlow 的知识、聊天和多 Agent 等全部功能面，还需更长期的独立建设。各阶段工作量不同，不按功能数量计算完成百分比，也不把四个里程碑理解成四次简单修改。
+M1 至 M4 的当前实现已能演示 Issue 导入、网页提交、修复、结果查看、人工审查、本地交付和用户确认后的 GitHub 草稿 PR；M4 真实验收已归档，分支待合并。若目标是覆盖 DevFlow 的知识、聊天和多 Agent 等全部功能面，还需更长期的独立建设。各阶段工作量不同，不按功能数量计算完成百分比，也不把四个里程碑理解成四次简单修改。
 
 ## 3. 产品主线
 
@@ -101,7 +102,7 @@ M1 与 M2 已能演示网页提交、修复、结果查看、人工审查和本�
 
 完成 M1、M2 后，可演示“提交问题 → 观察修复 → 查看测试 → 人工确认 → 获取修改分支”的本地产品流程。
 
-### M3：GitHub 问题输入（真实文档任务已验收，待合并）
+### M3：GitHub 问题输入（已验收并合并）
 
 建议分支：`feat/github-tasks`。目标是将真实研发问题转成当前执行器能够处理的固定任务，先完成读取链路。
 
@@ -146,9 +147,41 @@ M1 与 M2 已能演示网页提交、修复、结果查看、人工审查和本�
 
 验收标准：选择一条适合的小型 Python 仓库 Issue，完成来源读取、任务创建、修复和独立验证；详情能回到准确的 GitHub 来源及基线，原 GitHub 对象保持不变。
 
-### M4：批准后的 GitHub PR 交付
+### M4：批准后的 GitHub PR 交付（真实验收已归档，待合并）
 
-建议分支：`feat/github-delivery`。依赖 M2 的审查与本地交付、M3 的仓库和来源管理。
+当前分支：`feat/github-delivery`，从 `7b5b7bb` 创建。依赖 M2 的审查与本地交付、M3 的仓库和来源管理。
+
+第一步已实现 `POST /tasks/{task_id}/github-delivery/preview`：明确输入目标分支，可调整标题、正文和草稿选项；仓库身份、修改分支和提交从冻结 Issue 与当前批准对应的已完成本地交付读取。返回完整方案、证据、修改路径、已保存验证摘要及稳定 `plan_sha256`。预览要求提交只有验证基线这一个父版本、文件树与批准补丁一致，Git 检查前后批准及交付都有效。接口不写数据库或原仓库、不访问 GitHub、不使用凭证，不调用模型或重新运行验证；第一步未新增数据库表，后续第二步为发布记录升级到 v10。
+
+预览明确返回 `publish_enabled=false`、`remote_checks=not_checked`；它不代表目标分支存在、账号有写权限或远端版本仍是验证基线。第一版发布计划仅支持来源对应的同一公开仓库；真实发布阶段须重新核对远端身份、目标 HEAD 和权限，并保存确认与恢复状态。接口、字段和使用方法见 [PR 预览说明](README.md#github-pr-发布预览)。
+
+第一步验证：全量后端 979 项测试通过，其中新增预览相关测试 61 项。覆盖真实临时 Git 仓库中的二进制补丁、准确父版本与文件树、原仓库及数据库不变、重复预览与重启、标题/正文调整、旧批准与检查期间变更、错误输入及无网络/模型执行约束。无效 Unicode 的参数校验响应补充了 422 兜底，避免回显非法字符时变成服务端异常。
+
+使用已有 Flask #6146 任务的临时数据库副本进行只读联调，接口返回 200，准确引用交付提交 `7598cdc` 和唯一修改文件 `docs/deploying/index.rst`；原数据库及修复产物哈希未变化。这是已有记录的预览集成检查，没有新模型运行、远端检查或 GitHub 发布，也没有新增真实修复成绩。
+
+第二步已实现只读远端检查、明确确认后的发布、持久化结果查询与原请求恢复。账号和仓库身份、目标基线、已有分支及 PR 与本地批准分别核对；采用临时裸仓库及仅允许创建的 Git ref lease 推送准确 SHA，再创建确认过内容的 PR。新增 v10 发布记录表，写请求前保存进度，凭证只在服务端读取，不进入方案、数据库或错误文本。
+
+恢复先核对已经发出的请求：推送响应丢失时采用匹配的已发布分支，PR 响应丢失时查询唯一匹配结果；查询为空但创建结果未知时保留待核对状态，不再次发起创建。已发布分支不因后续失败被自动删除。目标分支与本地批准无法跨网络原子锁定；创建响应中发现基线变化时保留 PR 链接并要求重新验证。第二步结束时尚未接入网页；后续网页与真实验收见下方记录。首版不自动 fork 或合并 PR。
+
+第二步验证：后端分组回归共 1020 项通过，包括 39 项发布专项与其余 981 项。GitHub 请求使用模拟 transport，真实 Git 推送只连接临时本地裸仓库，覆盖普通仓库及缺少历史父对象的浅仓库、同名分支拒绝覆盖、并发确认、推送/PR 响应丢失、明确拒绝后的重试、基线/批准/账号变化和凭证不落盘。API 启动只采用 `.env` 的 GitHub 凭证项，保留模型凭证由 worker 加载的边界。
+
+第二步的真实 v9 数据库临时副本连续升级到 v10 两次，6 张旧表的原始行全部保留（7 条任务、3 条审查、2 条交付、9 条来源、8 条准备、3 条 Issue 任务请求），新发布表为空；当时原库仍为 v9，既有验收产物哈希未变。该阶段未向真实 GitHub 推送、创建 PR 或调用模型，后续由用户启动新版服务并完成真实验收。
+
+第三步已接入任务网页的“人工审查 → 05 GitHub 发布”。页面支持编辑目标分支、PR 类型、标题和正文，核对本地预览与方案摘要、检查远端、明确勾选后发布，以及当前结果与折叠历史的查询/恢复。未确认写请求先持久保存到当前标签页，刷新只读取记录；内容变化清除旧检查与确认，离开页面不会在只读检查完成后继续发起写请求。已有完成记录和更晚检查点不会被迟到响应回退，PR 响应无法核对时仍按结果未知保留原请求。
+
+第三步验证：946 项前端测试、lint 和构建通过，包含新增的 46 项发布接口及页面交互回归；构建保留已有主包体积提示。浏览器使用被拦截的模拟发布接口，完成预览、远端检查、明确确认和结果展示，只发出一次模拟写请求；1280px 桌面与 390px 窄屏检查通过，标题与其他步骤统一，下拉选项位于触发框下方，无页面横向溢出。该次联调中原数据库记录及验收产物哈希未变化，没有模型调用、GitHub 写入或用户审查变更；随后另行进行了真实发布验收。
+
+真实验收准备：用户选择新建专用公开仓库，已初始化并上传 [KLiuZC/patchloop-publish-demo](https://github.com/KLiuZC/patchloop-publish-demo)，基线提交为 `05c8b8fd1a952b65a336976d0b3a42498899a718`。仓库仅含 6 个示例文件，保留单个小写版本号前缀问题；使用现有 `patchloop-toy` 断网预检，初始为 1 failed/10 passed，人工构造正确修复为 11 passed，重复前缀和大写扩展均被测试拒绝。原始样例未改动，未构建新镜像或调用模型。Issue 文案、验证命令、配置及预检证据见 [验收 profile](evals/profiles/github-publish-demo/README.md)。仓库初始化与预检单独记录，不算真实修复或发布成绩。
+
+真实验收推进：用户创建测试 Issue #1 并配置发布凭证。任务 `3659f4fc-1eea-48cf-a744-b2bbebee4654` 以 3 轮、8.4 秒完成修复，独立验证通过（候选 11 passed），人工接受后交付提交为 `2b03ef0ea97d05da438a6853a7403c60b5f8aeea`。首次发布记录停在推送阶段，未尝试创建 PR；当时只读核对远端仍只有 `main`，没有 PR。
+
+推送诊断发现实现中的 `credential.interactive=false` 在本机 Git 2.54.0 下阻止了程序的 askpass 调用，导致 Git 无法取得 Token。原代码的真实 Git 认证回归可复现失败；修复为仅在推送且已配置程序 askpass 时允许认证助手，保留终端输入禁用和用户 helper 隔离。使用原任务与原凭证的 `git push --dry-run` 通过，诊断中未写远端、未重跑模型、未改写原发布状态。此前普通与浅仓库的本地裸仓库测试未经过 HTTPS 认证，新增回归以相同推送配置调用真实 `git credential fill`，覆盖 GitHub 凭证读取、其他主机拒绝及临时助手清理。随后用户重启新版 API，恢复原请求完成实际发布。
+
+认证修复验证：发布专项 41 项全部通过，代码空白检查通过。修复完成时四份审查证据哈希仍匹配批准，本地交付完整，接口保留原来的 `uncertain/push` 记录且 `pr_attempted=false`；真正的恢复由用户在网页执行。
+
+2026-10-09 实际恢复与归档完成：同一发布编号 `bc40eddb-49f2-43de-b8e0-e425bd4bc23c`、请求编号 `f2dd120a-0e63-41df-a7ae-4b09353a674c` 最终为 `completed`，关联自有仓库的[草稿 PR #2](https://github.com/KLiuZC/patchloop-publish-demo/pull/2)。只有 `calc.py` 增加两行，修复前 1 failed/10 passed、修复后 11 passed；Prompt 5205、缓存 3712、Completion 467，估算 ¥0.00343524。PR 的 head、唯一父版本、tree、文件 blob 和标题/正文均与批准的本地交付一致；`main` 保持基线，PR 未合并。任务只有一条审查、一条交付和一条发布，远端仅一个匹配 PR。
+
+归档保存 23 份本地/API/GitHub 证据及其哈希，包含完整的小型运行轨迹。首次失败检查点由最终状态覆盖，故障经过明确标注为当时观察，不伪造原始失败日志或精确重试次数。运行参考版本 `14f02c6`、事后保存的认证修复/配置 `caf82d6`、归档参考 `486b437` 分开记录；无逐进程源码指纹。Markdown 展示提交 `486b437` 的前端测试为 960 项、lint/构建通过。此次归档未重跑模型或测试，完整证据见 [M4 真实验收归档](evals/reports/github-pr-publish-demo-smoke/README.md)。下一步另做合并前检查，分支尚未合并。
 
 工作内容：
 
@@ -194,14 +227,18 @@ M4 的交付验收不要求自动合并到主分支。后续是否增加自动�
 6. 已归档验证结果并完成合并前检查；`feat/task-ui` 已合并为 `303312a`。
 7. `feat/patch-review` 已实现后端/网页审查、路径保护及独立分支交付；隔离联调与真实模型验收均通过，已合并为 `4e4f65d`。
 8. 已从该提交创建 `feat/github-tasks`，M3 第一步来源读取已提交为 `b7e5e6d`，第二步仓库准备已实现并完成实际下载验证。
-9. 已实现来源与仓库准备关联任务，并以临时 Git 仓库和脚本化模型验证修复、独立测试及审查流程。网页入口、真实文档任务验收及合并前检查已完成；下一步提交前端收尾改动、合并 `feat/github-tasks`，再从更新后的 `main` 创建 `feat/github-delivery`，先实现 PR 发布预览。
+9. 已实现来源与仓库准备关联任务，并以临时 Git 仓库和脚本化模型验证修复、独立测试及审查流程。网页入口、真实文档任务验收及合并前检查已完成；前端收尾提交为 `435ee9a`，`feat/github-tasks` 已合并为 `7b5b7bb`。
+10. `feat/github-delivery` 已完成离线预览、确认发布后端、网页入口及自有仓库的真实草稿 PR 交付验收，认证修复保存于 `caf82d6`，Markdown 展示保存于 `486b437`。真实结果已归档，下一步提交归档资料，再单独进行合并前检查和分支合并。
 
 每项独立功能使用单独分支；提交前检查工作区和上次提交状态，阶段完成后更新本文及必要的实验记录。已完成与未完成能力以源码和验收证据为准。
 
 ## 7. 当前证据入口
 
 - 修复任务与状态：[contracts.py](src/patchloop/repair/contracts.py)、[runner.py](src/patchloop/repair/runner.py)、[verifier.py](src/patchloop/repair/verifier.py)。
-- API 的任务、产物、独立审查与交付路由：[app.py](src/patchloop/api/app.py)；审查证据绑定：[review.py](src/patchloop/api/review.py)；本地交付：[delivery.py](src/patchloop/api/delivery.py)；路径检查：[patch_policy.py](src/patchloop/repair/patch_policy.py)。GitHub 发布路由尚未实现。
+- API 的任务、产物、独立审查与交付路由：[app.py](src/patchloop/api/app.py)；审查证据绑定：[review.py](src/patchloop/api/review.py)；本地交付：[delivery.py](src/patchloop/api/delivery.py)；路径检查：[patch_policy.py](src/patchloop/repair/patch_policy.py)。
+- GitHub PR 离线预览：[github_delivery.py](src/patchloop/api/github_delivery.py)、[github_delivery_models.py](src/patchloop/api/github_delivery_models.py)、[test_github_delivery.py](tests/test_github_delivery.py)。
+- GitHub 确认发布与恢复：[github_publication.py](src/patchloop/api/github_publication.py)、[github_publication_store.py](src/patchloop/api/github_publication_store.py)、[github_publication_remote.py](src/patchloop/api/github_publication_remote.py)、[github_push.py](src/patchloop/api/github_push.py)、[test_github_publication.py](tests/test_github_publication.py)。
+- M4 真实交付证据：[自有仓库 Issue → 草稿 PR 验收归档](evals/reports/github-pr-publish-demo-smoke/README.md)。
 - 领取、持久化与恢复：[store.py](src/patchloop/api/store.py)、[worker.py](src/patchloop/worker.py)。
 - GitHub 来源读取与保存：[github.py](src/patchloop/api/github.py)、[source_models.py](src/patchloop/api/source_models.py)、[source_store.py](src/patchloop/api/source_store.py)；接口测试：[test_github_issues.py](tests/test_github_issues.py)。
 - 仓库版本解析、下载与状态：[repository_github.py](src/patchloop/api/repository_github.py)、[repository_git.py](src/patchloop/api/repository_git.py)、[repositories.py](src/patchloop/api/repositories.py)、[repository_store.py](src/patchloop/api/repository_store.py)。

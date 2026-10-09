@@ -7,7 +7,7 @@ from typing import List, Optional
 from uuid import UUID
 
 import typer
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 from rich.console import Console
 from rich.markup import escape
 from rich.table import Table
@@ -40,7 +40,11 @@ def serve_command(
 
     from .api import create_app
 
-    uvicorn.run(create_app(db), host="127.0.0.1", port=port)
+    token = os.environ.get("PATCHLOOP_GITHUB_TOKEN")
+    if token is None:
+        token = dotenv_values(".env").get("PATCHLOOP_GITHUB_TOKEN") or ""
+    # The API uses only its publication credential; provider keys stay with the worker.
+    uvicorn.run(create_app(db, github_token_provider=lambda: token), host="127.0.0.1", port=port)
 
 
 @app.command("worker")

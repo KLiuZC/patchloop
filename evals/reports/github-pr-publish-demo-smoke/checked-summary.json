@@ -1,0 +1,136 @@
+{
+  "checked_at": "2026-10-09T14:57:19.924339+00:00",
+  "kind": "github_pr_delivery_acceptance_archive",
+  "task_id": "3659f4fc-1eea-48cf-a744-b2bbebee4654",
+  "issue_url": "https://github.com/kliuzc/patchloop-publish-demo/issues/1",
+  "pull_request_url": "https://github.com/KLiuZC/patchloop-publish-demo/pull/2",
+  "implementation": {
+    "repair_reference": "14f02c66ebb8a7c7be7dc143380bebaf71dfa68b",
+    "publication_auth_fix_saved_after_run": "caf82d698240444470ae3e76bf0b1f326bbdd3d0",
+    "archive_reference": "486b437a419e7fd689304e75e38825b665b08803",
+    "runtime_source_fingerprint_available": false,
+    "note": "Source references reflect repository history and session observations, not a recorded per-process fingerprint. Profile and authentication fix were committed after the run; Markdown presentation changed afterward."
+  },
+  "git": {
+    "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+    "head_sha": "2b03ef0ea97d05da438a6853a7403c60b5f8aeea",
+    "tree_sha": "ff0f08b16f3217981d8ec30542900c04fd61927d",
+    "branch": "patchloop/3659f4fc-1eea-48cf-a744-b2bbebee4654/r1",
+    "changed_paths": [
+      "calc.py"
+    ],
+    "diff_matches_approved_patch": true,
+    "original_worktree_clean": true,
+    "delivery_worktree_clean": true,
+    "remote_main_unchanged": true,
+    "remote_commit_parent_tree_and_blob_match": true,
+    "tests_and_config_unchanged": true
+  },
+  "review": {
+    "review_id": "8bf76646-9598-4780-95d8-6e238e0fcb9b",
+    "revision": 1,
+    "status": "accepted"
+  },
+  "delivery_id": "26aa657c-b075-49e8-be65-52eece04ca71",
+  "publication": {
+    "publication_id": "bc40eddb-49f2-43de-b8e0-e425bd4bc23c",
+    "request_id": "f2dd120a-0e63-41df-a7ae-4b09353a674c",
+    "plan_sha256": "1e8eebd63b7f1fd89ea237920bf768ece8abc218b77fb4e4bf3abb9506d47cfa",
+    "status": "completed",
+    "phase": "completed",
+    "actor": {
+      "id": 78536318,
+      "login": "KLiuZC"
+    },
+    "draft": true,
+    "merged": false,
+    "state": "open",
+    "title_and_body_match_confirmation": true,
+    "request_matches_observed_failed_request": true,
+    "prior_failure_record_retained": false,
+    "http_attempt_count": null
+  },
+  "counts": {
+    "task_reviews": 1,
+    "task_deliveries": 1,
+    "github_publications": 1,
+    "matching_github_prs": 1,
+    "remaining_task_containers": 0
+  },
+  "usage": {
+    "turns": 3,
+    "seconds": 8.4,
+    "prompt_tokens": 5205,
+    "cached_tokens": 3712,
+    "completion_tokens": 467,
+    "cost": 0.00343524
+  },
+  "timing": {
+    "worker_wall_seconds": 8.56021,
+    "queue_wait_seconds": 29.007508,
+    "local_delivery_record_seconds": 0.769899,
+    "publication_lifecycle_seconds": 650.87125,
+    "publication_timing_note": "Includes failure diagnosis, code correction and human restart/retry; not publication execution latency."
+  },
+  "profile_sha256": {
+    "goal.txt": "fee9fb41c34cad05c141fceaa95a0d895585c112518890820d46812cacd4b12a",
+    "issue-body.md": "fc8bdb6665e871eed243e5e6bad6d09176bd7fe7c722bcfa389c8bf81e5751b5",
+    "issue-title.txt": "cfb9187693484734d8b254a4166fb4050dbf857bdf2268210125d3f402440470",
+    "verification_command.txt": "a9dc631567267262620ff085b7de630c75725118137fdbaf326cc0a8b95d0d7e"
+  },
+  "trajectory": {
+    "archived_file": "trajectory.jsonl",
+    "source_relative_path": "data/task-runs/3659f4fc-1eea-48cf-a744-b2bbebee4654/trajectory/3659f4fc-1eea-48cf-a744-b2bbebee4654.jsonl",
+    "sha256": "c41b52ff4d0057a1200cfc56db57799e945adeeacb2da1356b3585cff61dfda2",
+    "budget_reminders_sent": 0
+  },
+  "remote_get_endpoints": {
+    "github-repository.json": "repos/KLiuZC/patchloop-publish-demo",
+    "github-issue.json": "repos/KLiuZC/patchloop-publish-demo/issues/1",
+    "github-pr.json": "repos/KLiuZC/patchloop-publish-demo/pulls/2",
+    "github-pr-files.json": "repos/KLiuZC/patchloop-publish-demo/pulls/2/files?per_page=100",
+    "github-commit.json": "repos/KLiuZC/patchloop-publish-demo/git/commits/2b03ef0ea97d05da438a6853a7403c60b5f8aeea",
+    "github-main-ref.json": "repos/KLiuZC/patchloop-publish-demo/git/ref/heads/main",
+    "github-head-ref.json": "repos/KLiuZC/patchloop-publish-demo/git/ref/heads/patchloop%2F3659f4fc-1eea-48cf-a744-b2bbebee4654%2Fr1",
+    "github-pr-list.json": "repos/KLiuZC/patchloop-publish-demo/pulls?state=all&head=KLiuZC%3Apatchloop%2F3659f4fc-1eea-48cf-a744-b2bbebee4654%2Fr1&base=main&per_page=100"
+  },
+  "files": {
+    "review-state.json": "ff0746f71e4c06403bac257ba9fde9e1156c6a0df0acc8c01f6ab30b9d7bfe6f",
+    "reviews.json": "d8aa12920eaee2dac2723d4b889e7f309e3882c0e5bea0643f29b983b8165a6f",
+    "delivery-state.json": "429d905a2a6e87111fa265bbe4edd22851d3058243532a8b0c7ec10fd75315a0",
+    "publication-state.json": "9ad299c31128a940d38344b1738c24b3d96e958de76d234b54c4481830db0ef0",
+    "source-record.json": "2447870d4fe7fe2f3acc74f9269c0b3706fec478517770c818f6bdd7ed8eb538",
+    "source-snapshot.json": "7021ee0e4015ed2c10df44f3317aed9503d9ea9df6f4c041ba4f50494621de2f",
+    "preparation-state.json": "76f78c0af9088c304ad830a0f44c24375aeae0f25d337ab4fcfbea173c6f439e",
+    "task-record.json": "8bcab97d63be8074068cd729853f2747dcf6a68cc84d70879fa10005afaccc89",
+    "github-repository.json": "d9f672a914d4273742a6eb6261379102313b628282ac4ebf9744533190cceff3",
+    "github-issue.json": "fc60210635b2705f9b0efea81fe0477ac0a7f00411b04185bd52f95040db2470",
+    "github-pr.json": "8f51a3767d7d517189df46b466b34a450e3f710a98defb3f1c4b88586d0a9f41",
+    "github-pr-files.json": "d50655198982ac915abb33c617d8a4d62a8efc60eb77aae0aabb5eb2532cc4de",
+    "github-commit.json": "a01cb3365ae7679eec5b2cff1536e731253406b18a0c235bf8e2f7c786112449",
+    "github-main-ref.json": "f90134aa00ce1774d59c0affb33ed6208668597c7127fb50082c26ce81e0a4c3",
+    "github-head-ref.json": "b0c7b82bd04e36c32a0d964549c0c3ff2d747a51a1177a86e748f645aa6abf7a",
+    "github-pr-list.json": "0730aacfc3f94066f9e7c009e30e1ce08619e36e138cf957cde5a4290511a0fa",
+    "task.json": "211bedb1a18fa870323d6be3e3b809948c86c3a159e5142c19fd224cc1fccbe8",
+    "summary.json": "53944234111e1d91f1727faa5174de4910e2fe9c6dbb4927ac288324b2cd5438",
+    "validation.json": "3187e1b073e043299b30e553cfca8d38b586ef7fb75a293dc5a39d46a811a69c",
+    "patch.diff": "7e8d26ad8a3e25282720b78ea2b64b30e24f7a8ba7e6d9f21ffa29285d284d3f",
+    "events.jsonl": "79aa8cdae776a29fcff505ccd5f0d87878aeb49dd5495a0572366d1580610422",
+    "runtime.json": "2bda38e49515c9bf039682a29aa2a2be7bc8e302cb18621c921f8a8de36ba2f8",
+    "trajectory.jsonl": "c41b52ff4d0057a1200cfc56db57799e945adeeacb2da1356b3585cff61dfda2"
+  },
+  "archival_actions": {
+    "model_calls": 0,
+    "verification_executions": 0,
+    "github_writes": 0,
+    "api_posts": 0,
+    "database_rows_unchanged": true,
+    "original_artifacts_unchanged": true
+  },
+  "limitations": [
+    "Known toy task acceptance, not a new benchmark or evidence of general repair success.",
+    "The original failed publication checkpoint was observed in-session but overwritten by recovery; no per-attempt log is reconstructed.",
+    "PR remains open and draft. No merge or CI success is claimed.",
+    "Full merge-readiness tests are a separate next step; none were rerun while archiving."
+  ]
+}

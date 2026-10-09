@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-10-09T12:17:02.223026+00:00",
+  "repository_id": 1411788948,
+  "full_name": "KLiuZC/patchloop-publish-demo",
+  "url": "https://github.com/KLiuZC/patchloop-publish-demo",
+  "visibility": "public",
+  "issues_enabled": true,
+  "base_branch": "main",
+  "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+  "tree_sha": "f73b21991d0ea914d1ad98bf2e43484e4cf58eaa",
+  "local_repository": "/Users/jackliu/code/patchloop-publish-demo",
+  "seed_files": {
+    ".gitignore": "dcb3c14ead1c9041d85611b2cb9ed5be303f7164e218b88248565426f9275a4d",
+    "README.md": "38ec11cf7267f4a470554f6d1f2f38fd36a952e91d5fd1c4aa3abc5d96a6c8f4",
+    "calc.py": "01aea2538b0d264ab9b0a643f136b0da4ddc54a28c4f55e49f8b618250dab91d",
+    "pytest.ini": "b160d82f7811555051f8966d8e02750a985227c1d022208c784e606946f2eada",
+    "requirements-dev.txt": "93c4ab5f175d24229e46ec70a8ecaeb6db8b36e3f54d8005808044c060acbc92",
+    "tests/test_calc.py": "9e773caa01b40c03545d4c35140d9375d887d557f2c7e3e04a7d467b27ce32ef"
+  },
+  "remote_main_verified": true,
+  "issue_url": null,
+  "repair_task_id": null,
+  "pull_request_url": null,
+  "publication_acceptance_completed": false
+}
