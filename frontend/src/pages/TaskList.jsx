@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowDown, ArrowRight, CheckCheck, FolderGit2, Layers3, Plus, RefreshCw } from 'lucide-react'
+import { ArrowDown, ArrowRight, FolderGit2, Layers3, Plus, RefreshCw } from 'lucide-react'
 import { listTasks } from '../lib/api'
 import { executionStates, formatDate, shortPath } from '../lib/task'
 import { EmptyState, ErrorNotice, LoadingState, StatusBadge } from '../components/ui'
@@ -24,9 +24,8 @@ export default function TaskList() {
   }
 
   return <div className="page list-page">
-    <div className="page-heading"><div><span className="eyebrow">YOUR WORKSPACE</span><h1 id="page-title" tabIndex={-1}>修复任务</h1><p>跟踪每一步，查看每一次改动与验证。</p></div>
+    <div className="page-heading"><div><span className="eyebrow">YOUR WORKSPACE</span><h1 id="page-title" tabIndex={-1}>修复任务</h1><p>查看任务状态、代码改动和验证结果。</p></div>
       <Link to="/tasks/new" className="button button-primary"><Plus size={17} />新建任务</Link></div>
-    <div className="workspace-intro"><div className="intro-mark"><CheckCheck size={23} strokeWidth={1.6} /></div><div><strong>让结果有据可查</strong><p>模型完成执行后，补丁会在干净环境中再次验证。</p></div><span className="intro-label">独立验证</span></div>
     <section className="task-panel" aria-label="任务列表">
       <div className="list-toolbar"><div className="toolbar-title"><Layers3 size={17} /><strong>所有修复任务</strong><span className="count-chip">已加载 {tasks.length} 项</span></div>
         <div className="toolbar-actions"><Select aria-label="执行状态筛选" value={status || ''} onValueChange={changeFilter} options={statusOptions} size="compact" />
