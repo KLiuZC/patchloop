@@ -3,6 +3,8 @@
 import json
 import socket
 import sqlite3
+import subprocess
+import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from threading import Event
@@ -373,6 +375,54 @@ def test_real_pusher_uses_isolated_copy_and_create_only_lease(client, repository
     with pytest.raises(GitHubPublicationError):
         LocalPush().push(candidate.repo, plan, TOKEN, lambda: None)
     assert rev(target, "refs/heads/" + plan.head_branch) == plan.base_sha
+
+
+@pytest.mark.parametrize("host,allowed", [("github.com", True), ("other.invalid", False)])
+def test_push_authentication_uses_real_git_askpass_without_terminal_prompts(client, delivered, monkeypatch, host, allowed):
+    candidate, _ = delivered
+    plan = GitHubDeliveryPlan.model_validate(preview(client, candidate).json()["plan"])
+    original_popen = subprocess.Popen
+    probes = []
+    helpers = []
+    # Exercise Git's real credential acquisition with the exact push options
+    # and generated helper, without starting a network transport or publishing.
+    with tempfile.TemporaryFile() as credential_input, tempfile.TemporaryFile() as credential_output:
+        credential_input.write(f"protocol=https\nhost={host}\n\n".encode())
+        credential_input.seek(0)
+
+        def credential_probe(command, **kwargs):
+            assert "push" in command
+            assert kwargs["env"]["GIT_TERMINAL_PROMPT"] == "0"
+            helper = Path(kwargs["env"]["GIT_ASKPASS"])
+            helpers.append(helper)
+            assert TOKEN not in helper.read_text() and TOKEN not in " ".join(command)
+            probes.append(True)
+            # Retain all production -c flags, changing only the subcommand.
+            command = [*command[:command.index("push")], "credential", "fill"]
+            return original_popen(command, **{**kwargs, "stdin": credential_input, "stdout": credential_output})
+
+        class CredentialProbe(GitHubPusher):
+            def _run(self, args, **kwargs):
+                if args[0] != "push":
+                    return REAL_GIT_RUN(self, args, **kwargs)
+                with monkeypatch.context() as patch:
+                    patch.setattr(subprocess, "Popen", credential_probe)
+                    return REAL_GIT_RUN(self, args, **kwargs)
+
+        if allowed:
+            CredentialProbe().push(candidate.repo, plan, TOKEN, lambda: None)
+        else:
+            with pytest.raises(GitHubPublicationError):
+                CredentialProbe().push(candidate.repo, plan, TOKEN, lambda: None)
+        credential_output.seek(0)
+        credentials = credential_output.read()
+        if allowed:
+            assert b"username=x-access-token\n" in credentials
+            assert ("password=" + TOKEN + "\n").encode() in credentials
+        else:
+            assert TOKEN.encode() not in credentials
+        assert probes == [True]
+    assert all(not helper.exists() for helper in helpers)
 
 
 def test_v9_migration_preserves_all_existing_rows(client, delivered):

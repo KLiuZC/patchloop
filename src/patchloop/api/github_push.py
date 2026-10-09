@@ -13,9 +13,13 @@ from .github_publication_remote import GitHubPublicationError
 class GitHubPusher:
     def _run(self, args, *, env, cwd, timeout=120):
         # Discard Git diagnostics: authentication failures can quote credentials.
+        # credential.interactive=false also suppresses GIT_ASKPASS in recent
+        # Git. Permit our push-only helper; GIT_TERMINAL_PROMPT=0 still prevents
+        # terminal input and credential.helper= disables user-configured helpers.
+        interactive = "true" if args[0] == "push" and env.get("GIT_ASKPASS") else "false"
         try:
             process = subprocess.Popen(["git", "-c", f"core.hooksPath={os.devnull}", "-c", "core.fsmonitor=false",
-                "-c", "credential.helper=", "-c", "credential.interactive=false", "-c", "http.extraHeader=",
+                "-c", "credential.helper=", "-c", f"credential.interactive={interactive}", "-c", "http.extraHeader=",
                 "-c", "http.followRedirects=false", "-c", "http.sslVerify=true", "-c", "protocol.allow=never",
                 "-c", "protocol.https.allow=always", "-c", "gc.auto=0", "-c", "maintenance.auto=false",
                 *args], cwd=cwd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,

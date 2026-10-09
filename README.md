@@ -378,11 +378,15 @@ curl -sS -X POST "http://127.0.0.1:8000/tasks/<task_id>/github-delivery/preview"
 
 推送使用临时裸仓库副本和明确的提交 SHA。源仓库的 HEAD、索引、暂存内容、文件和 remote 配置不变，推送也不跟随调用者的 remote 配置。通过 [空期望值的 ref lease](https://git-scm.com/docs/git-push#Documentation/git-push.txt---force-with-leaserefnameexpect)原子地要求目标分支不存在；虽然 Git 选项名含 `force`，这里不允许覆盖或快进已有分支。临时凭证助手只在 GitHub 的 HTTPS 认证提示中提供 token，token 不写入 Git 配置、脚本内容、命令行、数据库或错误文本。
 
+认证推送允许调用程序生成的 `GIT_ASKPASS`，同时保留 `GIT_TERMINAL_PROMPT=0` 并清空用户 credential helper，避免终端输入或使用用户的其他凭证。[Git 的 `credential.interactive=false`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-credentialinteractive) 会连同 askpass 一起禁用，因此只在无认证助手的准备命令中使用；此区别由真实 `git credential fill` 的离线回归覆盖。
+
 推送响应丢失后，可核对同名远端分支是否已经指向记录的提交；匹配时继续 PR 阶段，不再次推送。创建 PR 的请求发出前先保存标记。若响应丢失，重试只查询同一仓库和分支的 PR，并核对账号、提交、标题、正文和草稿选项；找到唯一匹配项后补记结果。若仍找不到，保持 `uncertain`，不会因为一次查询为空就再次 POST。需要继续查询或人工检查 GitHub，不能把“未查到”当作“未创建”。明确的 4xx 拒绝可在处理原因后重试。
 
 推送后若批准或目标基线变化，会停止 PR 创建，保留已经发布的分支。GitHub 的目标分支可在独立网络请求之间变化，无法将本地批准与远端创建合为原子事务；如创建响应已显示基线变化，记录 PR 链接并标记 `blocked`，要求重新验证。远端已有的匹配 PR 可在恢复时补记，即使之后本地审查已更新；这只记录已发生的发布，不授权进一步写入。服务不删除分支、不改写现有 PR、不自动合并。
 
 新版 API 和 worker 启动时数据库升级到 v10，新增 `github_publications` 表，保留旧表及修复、审查、交付证据。应一并重启旧 API/worker 加载新代码；旧版本程序不支持 v10。启动和 GET 查询不会自动恢复发布，必须重试原确认请求。本阶段通过模拟 GitHub 和临时本地裸仓库验证，尚未在真实 GitHub 仓库发布验收。
+
+真实验收使用专用公开仓库 [KLiuZC/patchloop-publish-demo](https://github.com/KLiuZC/patchloop-publish-demo)，不向 Flask 等上游仓库投递演示 PR。样例、Issue 文案、凭证配置、固定基线及网页操作见 [M4 验收配置](evals/profiles/github-publish-demo/README.md)。已有镜像的预检结果是初始 1 项失败、10 项通过，正确修复后 11 项全过；实际模型修复和发布尚待用户执行。
 
 ### 后台执行任务
 
