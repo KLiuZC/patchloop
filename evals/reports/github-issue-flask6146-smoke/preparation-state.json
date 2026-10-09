@@ -1,0 +1,29 @@
+{
+  "preparation": {
+    "preparation_id": "da1c0bdb-9497-4903-83c1-788b3f6ed7c7",
+    "request_id": "81fc09fa-61ae-4625-8b01-bf800864ef14",
+    "source_id": "5284b730-136c-4ef1-a918-e38849e5b55b",
+    "repository": {
+      "id": 596892,
+      "full_name": "pallets/flask",
+      "html_url": "https://github.com/pallets/flask",
+      "default_branch": "main",
+      "archived": false,
+      "visibility": "public"
+    },
+    "requested_ref": "d086db856be187255b8ec61ef409357393020f32",
+    "resolved_ref": "d086db856be187255b8ec61ef409357393020f32",
+    "base_sha": "d086db856be187255b8ec61ef409357393020f32",
+    "resolved_at": "2026-10-09T05:19:28.425504Z",
+    "clone_url": "https://github.com/pallets/flask.git",
+    "repo_path": "/Users/jackliu/code/python/patchloop/data/repositories/da1c0bdb-9497-4903-83c1-788b3f6ed7c7/repo",
+    "status": "ready",
+    "created_at": "2026-10-09T05:19:27.049184Z",
+    "updated_at": "2026-10-09T05:19:31.464336Z",
+    "finished_at": "2026-10-09T05:19:31.464336Z",
+    "error": "",
+    "error_status": null
+  },
+  "checkout_intact": true,
+  "reason": ""
+}

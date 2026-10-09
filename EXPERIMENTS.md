@@ -2,6 +2,8 @@
 
 4B 已完成（2026-09-30）。权威汇总见 [基线结果表](evals/reports/4b-baseline/results.md)，逐题证据见 [基线归档](evals/reports/4b-baseline/README.md)。以下历史费用为项目估算；早期耗时为现场观察，不与 `summary.json.seconds` 的各题耗时总和混用。历史归因在文末作了证据更正。
 
+M3 的 [Flask #6146 文档 profile](evals/profiles/github-flask-6146/README.md) 已完成预检，后续真实模型修复及本地交付成功，见文末与[完整验收归档](evals/reports/github-issue-flask6146-smoke/README.md)。预检本身没有模型调用，不记作 Agent 修复成绩。
+
 | 日期 | 任务 | provider / model | 轮数 | tokens (prompt / completion) | 结果 | 备注 |
 |---|---|---|---|---|---|---|
 | 2026-09-26 | toy_repo 修 v 前缀 | deepseek / deepseek-flash | 4 | 4382 / 373 | 通过 | 先 ls+find 探索；heredoc 整文件重写；每条命令带 cd 绝对路径；每轮约 1.3s |
@@ -139,3 +141,11 @@
 - 原工作区代码与测试保持基线内容，交付工作区干净，`delivery_intact=true`，任务容器已清理。网页能在刷新后读取已接受与已交付结果，生成按钮禁用是防重复交付的正常状态。
 - worker 领取到结束 8.765691 秒；排队的 49.727351 秒不算修复时间。交付记录创建至完成 0.885327 秒，不含前置计划检查。本次为 M2 单任务工程验收，不计入 SWE-bench 分母；收尾没有重跑模型、pytest 或交付，也未改变用户的审查决定。
 - 配置、原始产物、审查/交付接口快照与核对摘要见 [M2 真实交付验收归档](evals/reports/patch-review-delivery-toy-smoke/README.md)。下一步提交归档并做当前分支的合并前检查。
+
+## M3：GitHub Issue 修复与本地交付完成（2026-10-09）
+
+- 用户在网页导入 Flask #6146 并固定 `d086db856be187255b8ec61ef409357393020f32`，创建任务 `57ff1f66-f127-4700-87db-4cb70af4f75f`；修复目标、Issue 快照和准备编号随任务保存。
+- DeepSeek flash，最多 10 轮、提醒开启、finish 关闭。实际 4 轮、9.9 秒，Prompt 8569（缓存 6528）、Completion 746，内置估算 ¥0.00515556。干净基线 1 项失败、2 项通过，候选 3 项全部通过。
+- 仅在 `docs/deploying/index.rst` 中加入一个 Cloudflare Workers 指南链接；验证命令与已预检 profile 一致。此次仅检查文档要求，不执行 Sphinx 构建、Flask 应用测试或实际部署验证，不纳入 SWE-bench 分数。
+- 用户接受补丁后生成分支 `patchloop/57ff1f66-f127-4700-87db-4cb70af4f75f/r1`，交付提交 `7598cdce1f252e1395a8d28020333913c31e1fa9`。父版本等于验证基线，diff 与批准补丁逐字节一致；原下载目录保持基线，交付工作区干净，只有 1 条审查和 1 条交付，无任务容器残留。
+- 实现参考提交为 `071124f`，验收配置和文档在运行时尚未提交，按记录的脚本/命令哈希核对；没有补造 worker 的运行时源码指纹。收尾未重新调用模型、运行测试或改变人工决定，未向 GitHub 发布修改。来源、配置、补丁、验证和交付证据见 [M3 验收归档](evals/reports/github-issue-flask6146-smoke/README.md)。

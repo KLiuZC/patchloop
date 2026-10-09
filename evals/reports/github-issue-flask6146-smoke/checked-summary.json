@@ -1,0 +1,56 @@
+{
+  "checked_at": "2026-10-09T05:25:41.677060+00:00",
+  "task_id": "57ff1f66-f127-4700-87db-4cb70af4f75f",
+  "implementation_reference": "071124ffc113a6026a25f5a5510dcd7eec0d6451",
+  "implementation_note": "Application code matches the committed implementation; profile and documentation are uncommitted at archival time. No per-process source fingerprint was recorded by the worker.",
+  "profile_sha256": "9e1d65d2e7838de4f119c59b27f336e3444feef2b5e03feebec82adee005e722",
+  "command_sha256": "a460a2e3043c5c1daa739676adc919fd791dad65c9beece0f5f58803f9182e08",
+  "source_sha256": "3530757040ad7249b6be28d543473946c0e59a5430cad292bb11c4775ea73dee",
+  "git": {
+    "base_sha": "d086db856be187255b8ec61ef409357393020f32",
+    "commit_sha": "7598cdce1f252e1395a8d28020333913c31e1fa9",
+    "tree_sha": "90509af716c5c2d1c10df04c489e60ef7d00fe55",
+    "branch": "patchloop/57ff1f66-f127-4700-87db-4cb70af4f75f/r1",
+    "changed_paths": [
+      "docs/deploying/index.rst"
+    ],
+    "diff_matches_patch": true,
+    "original_matches_base": true,
+    "original_clean": true,
+    "delivery_clean": true
+  },
+  "counts": {
+    "task_reviews": 1,
+    "task_deliveries": 1,
+    "remaining_task_containers": 0
+  },
+  "usage": {
+    "turns": 4,
+    "seconds": 9.9,
+    "prompt_tokens": 8569,
+    "cached_tokens": 6528,
+    "completion_tokens": 746,
+    "cost": 0.005155559999999999
+  },
+  "worker_wall_seconds": 10.141091,
+  "delivery_record_seconds": 1.04363,
+  "model_calls_during_archival": 0,
+  "files": {
+    "summary.json": "cb44e34590ddb1593178350ab18d6c7ec9a4756e89896d67ad2be2c3e59c7a55",
+    "runtime.json": "3c294d972cb1d4efd32e21376afc77704f42d6945fe3bcf2dab1f1d78407f624",
+    "review-state.json": "8c6e29e218dd8229efd2fa0f0fffff0fa5aec48c540a2837bdba425e05f4d19b",
+    "reviews.json": "f5ca948d09b1c24984a96bcc0bb1978edc21e3a90573f24fb61794c92a93309b",
+    "patch.diff": "bf133868c1bf8e6a0d2bd36b8d6821019099949ba6bbb9d813cc4c0c416bfb30",
+    "task.json": "bb046f35046496d88a82f183a09bcd51dcb5089f1295c7cd17af0fab830060c5",
+    "preparation-state.json": "becd785d7f9200a727216589233d3c95532657c26f51c8a7e6d434df3e0c000c",
+    "task-record.json": "f1b1fe66cf5315b33b82d42784b625b82d19a459834bf6cd69cb780dbf60341c",
+    "events.jsonl": "1ea431dd62293b6de334ce6ae9c8e61e79cb3207dd4cdcd8f0a58f55c4b0af64",
+    "delivery-state.json": "f1767a5728045bd7a8db3c17b472a9bdd13890e6e710fd6b2fa1f36d152d8b4b",
+    "validation.json": "f3fcefaead883e3abb715a7c8b805eead42511453313e859f04a07f02489f288",
+    "source-snapshot.json": "e4786fcd9916b3f27ef177184361b03d91fc5dcd0fb37fb33bb8b7cfa3868c67"
+  },
+  "local_trajectory": {
+    "relative_path": "data/task-runs/57ff1f66-f127-4700-87db-4cb70af4f75f/trajectory/57ff1f66-f127-4700-87db-4cb70af4f75f.jsonl",
+    "sha256": "b6013d741bfce27b7a14b39ca2dbba02d3507ad2ccf376dbf2095cbb7ed82252"
+  }
+}
