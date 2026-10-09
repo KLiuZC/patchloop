@@ -169,10 +169,10 @@ def test_invalid_or_retargeted_inputs_are_rejected_before_lookup(client, payload
     assert response.status_code == 422, response.text
 
 
-def test_unknown_task_returns_404_and_no_publish_endpoint_exists(client):
+def test_unknown_task_returns_404_and_publication_requires_confirmation(client):
     url = f"/tasks/{uuid4()}/github-delivery"
     assert client.post(url + "/preview", json={"base_branch": "main"}).status_code == 404
-    assert client.post(url, json={}).status_code == 404
+    assert client.post(url, json={}).status_code == 422
 
 
 @pytest.mark.parametrize("decision", [None, "rejected", "accepted"])

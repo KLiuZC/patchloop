@@ -1,6 +1,6 @@
 # patchloop 发展路线
 
-更新日期：2026-10-09。M1 网页真实验收实现版本：`07bbc8e`，合并提交：`303312a`；M2 审查、路径保护与本地交付在 `1c88506` 上完成真实模型验收，已合并为 `4e4f65d`。M3 已完成公开 Issue 来源、固定版本准备、关联任务及网页入口，真实文档任务验收与前端收尾后合并为 `7b5b7bb`。M4 已实现第一步离线发布预览，远端发布待实现。
+更新日期：2026-10-09。M1 网页真实验收实现版本：`07bbc8e`，合并提交：`303312a`；M2 审查、路径保护与本地交付在 `1c88506` 上完成真实模型验收，已合并为 `4e4f65d`。M3 已完成公开 Issue 来源、固定版本准备、关联任务及网页入口，真实文档任务验收与前端收尾后合并为 `7b5b7bb`。M4 已实现离线预览、远端检查及确认发布后端，网页入口与真实 GitHub 发布验收待完成。
 
 ## 1. 目标与当前位置
 
@@ -22,7 +22,7 @@ DevFlow-AI 是研发协作与分析平台，参考价值主要在仓库上下文
 - 对应公开仓库的准备接口：复核仓库身份，保存准确 commit SHA，再下载至独立目录；支持重复请求、失败留档与重启查询。
 - [两仓库修复集成验证](evals/reports/repair-real-task-smoke2/README.md)：RepairRunner 已在两个已有开发题上通过可见验证及官方判卷。这与上述 API/worker 的玩具任务验收分开记录。
 
-当前仍是本机单用户、单 worker 的系统。M1 至 M3 均已合并至 `main`，可以从公开 Issue 创建固定版本修复任务，经人工审查后交付本地分支。当前在 `feat/github-delivery` 建设 M4，第一步只生成本地发布预览，尚不向 GitHub 发布。停止 worker 不等于已有单任务取消接口；原始 `result.review_status` 保留修复快照，网页中的最新审查与交付状态通过独立接口读取。
+当前仍是本机单用户、单 worker 的系统。M1 至 M3 均已合并至 `main`，可以从公开 Issue 创建固定版本修复任务，经人工审查后交付本地分支。当前在 `feat/github-delivery` 建设 M4，确认发布后端已接入，开发验证只使用模拟 GitHub 和临时仓库，尚未真实发布。停止 worker 不等于已有单任务取消接口；原始 `result.review_status` 保留修复快照，网页中的最新审查与交付状态通过独立接口读取。
 
 ## 2. 对照 DevFlow-AI，差距在哪里
 
@@ -146,17 +146,25 @@ M1 至 M3 已能演示 Issue 导入、网页提交、修复、结果查看、人
 
 验收标准：选择一条适合的小型 Python 仓库 Issue，完成来源读取、任务创建、修复和独立验证；详情能回到准确的 GitHub 来源及基线，原 GitHub 对象保持不变。
 
-### M4：批准后的 GitHub PR 交付（离线预览已实现）
+### M4：批准后的 GitHub PR 交付（发布后端已实现，待网页接入与真实验收）
 
 当前分支：`feat/github-delivery`，从 `7b5b7bb` 创建。依赖 M2 的审查与本地交付、M3 的仓库和来源管理。
 
-第一步已实现 `POST /tasks/{task_id}/github-delivery/preview`：明确输入目标分支，可调整标题、正文和草稿选项；仓库身份、修改分支和提交从冻结 Issue 与当前批准对应的已完成本地交付读取。返回完整方案、证据、修改路径、已保存验证摘要及稳定 `plan_sha256`。预览要求提交只有验证基线这一个父版本、文件树与批准补丁一致，Git 检查前后批准及交付都有效。接口不写数据库或原仓库、不访问 GitHub、不使用凭证，不调用模型或重新运行验证，数据库版本保持 v9。
+第一步已实现 `POST /tasks/{task_id}/github-delivery/preview`：明确输入目标分支，可调整标题、正文和草稿选项；仓库身份、修改分支和提交从冻结 Issue 与当前批准对应的已完成本地交付读取。返回完整方案、证据、修改路径、已保存验证摘要及稳定 `plan_sha256`。预览要求提交只有验证基线这一个父版本、文件树与批准补丁一致，Git 检查前后批准及交付都有效。接口不写数据库或原仓库、不访问 GitHub、不使用凭证，不调用模型或重新运行验证；第一步未新增数据库表，后续第二步为发布记录升级到 v10。
 
 预览明确返回 `publish_enabled=false`、`remote_checks=not_checked`；它不代表目标分支存在、账号有写权限或远端版本仍是验证基线。第一版发布计划仅支持来源对应的同一公开仓库；真实发布阶段须重新核对远端身份、目标 HEAD 和权限，并保存确认与恢复状态。接口、字段和使用方法见 [PR 预览说明](README.md#github-pr-发布预览)。
 
 第一步验证：全量后端 979 项测试通过，其中新增预览相关测试 61 项。覆盖真实临时 Git 仓库中的二进制补丁、准确父版本与文件树、原仓库及数据库不变、重复预览与重启、标题/正文调整、旧批准与检查期间变更、错误输入及无网络/模型执行约束。无效 Unicode 的参数校验响应补充了 422 兜底，避免回显非法字符时变成服务端异常。
 
 使用已有 Flask #6146 任务的临时数据库副本进行只读联调，接口返回 200，准确引用交付提交 `7598cdc` 和唯一修改文件 `docs/deploying/index.rst`；原数据库及修复产物哈希未变化。这是已有记录的预览集成检查，没有新模型运行、远端检查或 GitHub 发布，也没有新增真实修复成绩。
+
+第二步已实现只读远端检查、明确确认后的发布、持久化结果查询与原请求恢复。账号和仓库身份、目标基线、已有分支及 PR 与本地批准分别核对；采用临时裸仓库及仅允许创建的 Git ref lease 推送准确 SHA，再创建确认过内容的 PR。新增 v10 发布记录表，写请求前保存进度，凭证只在服务端读取，不进入方案、数据库或错误文本。
+
+恢复先核对已经发出的请求：推送响应丢失时采用匹配的已发布分支，PR 响应丢失时查询唯一匹配结果；查询为空但创建结果未知时保留待核对状态，不再次发起创建。已发布分支不因后续失败被自动删除。目标分支与本地批准无法跨网络原子锁定；创建响应中发现基线变化时保留 PR 链接并要求重新验证。本阶段尚未接入网页，不自动 fork 或合并 PR，真实验收将使用自有可写仓库。
+
+第二步验证：后端分组回归共 1020 项通过，包括 39 项发布专项与其余 981 项。GitHub 请求使用模拟 transport，真实 Git 推送只连接临时本地裸仓库，覆盖普通仓库及缺少历史父对象的浅仓库、同名分支拒绝覆盖、并发确认、推送/PR 响应丢失、明确拒绝后的重试、基线/批准/账号变化和凭证不落盘。API 启动只采用 `.env` 的 GitHub 凭证项，保留模型凭证由 worker 加载的边界。
+
+真实 v9 数据库的临时副本连续升级到 v10 两次，6 张旧表的原始行全部保留（7 条任务、3 条审查、2 条交付、9 条来源、8 条准备、3 条 Issue 任务请求），新发布表为空；原库仍为 v9，既有验收产物哈希未变。此阶段没有向真实 GitHub 推送、创建 PR 或调用模型，真实发布验收尚未完成。
 
 工作内容：
 
@@ -203,7 +211,7 @@ M4 的交付验收不要求自动合并到主分支。后续是否增加自动�
 7. `feat/patch-review` 已实现后端/网页审查、路径保护及独立分支交付；隔离联调与真实模型验收均通过，已合并为 `4e4f65d`。
 8. 已从该提交创建 `feat/github-tasks`，M3 第一步来源读取已提交为 `b7e5e6d`，第二步仓库准备已实现并完成实际下载验证。
 9. 已实现来源与仓库准备关联任务，并以临时 Git 仓库和脚本化模型验证修复、独立测试及审查流程。网页入口、真实文档任务验收及合并前检查已完成；前端收尾提交为 `435ee9a`，`feat/github-tasks` 已合并为 `7b5b7bb`。
-10. 已创建 `feat/github-delivery` 并实现发布方案、离线预览接口与测试。下一步接入远端检查、明确确认后的分支推送与 PR 创建、发布记录及恢复，再接入网页并在自有测试仓库验收。
+10. 已创建 `feat/github-delivery`，离线预览提交为 `7c114e8`；远端检查、明确确认后的分支推送与 PR 创建、发布记录及恢复已实现。下一步接入网页，再在自有测试仓库进行真实发布验收。
 
 每项独立功能使用单独分支；提交前检查工作区和上次提交状态，阶段完成后更新本文及必要的实验记录。已完成与未完成能力以源码和验收证据为准。
 
@@ -211,7 +219,8 @@ M4 的交付验收不要求自动合并到主分支。后续是否增加自动�
 
 - 修复任务与状态：[contracts.py](src/patchloop/repair/contracts.py)、[runner.py](src/patchloop/repair/runner.py)、[verifier.py](src/patchloop/repair/verifier.py)。
 - API 的任务、产物、独立审查与交付路由：[app.py](src/patchloop/api/app.py)；审查证据绑定：[review.py](src/patchloop/api/review.py)；本地交付：[delivery.py](src/patchloop/api/delivery.py)；路径检查：[patch_policy.py](src/patchloop/repair/patch_policy.py)。
-- GitHub PR 离线预览：[github_delivery.py](src/patchloop/api/github_delivery.py)、[github_delivery_models.py](src/patchloop/api/github_delivery_models.py)、[test_github_delivery.py](tests/test_github_delivery.py)。远端发布路由尚未实现。
+- GitHub PR 离线预览：[github_delivery.py](src/patchloop/api/github_delivery.py)、[github_delivery_models.py](src/patchloop/api/github_delivery_models.py)、[test_github_delivery.py](tests/test_github_delivery.py)。
+- GitHub 确认发布与恢复：[github_publication.py](src/patchloop/api/github_publication.py)、[github_publication_store.py](src/patchloop/api/github_publication_store.py)、[github_publication_remote.py](src/patchloop/api/github_publication_remote.py)、[github_push.py](src/patchloop/api/github_push.py)、[test_github_publication.py](tests/test_github_publication.py)。
 - 领取、持久化与恢复：[store.py](src/patchloop/api/store.py)、[worker.py](src/patchloop/worker.py)。
 - GitHub 来源读取与保存：[github.py](src/patchloop/api/github.py)、[source_models.py](src/patchloop/api/source_models.py)、[source_store.py](src/patchloop/api/source_store.py)；接口测试：[test_github_issues.py](tests/test_github_issues.py)。
 - 仓库版本解析、下载与状态：[repository_github.py](src/patchloop/api/repository_github.py)、[repository_git.py](src/patchloop/api/repository_git.py)、[repositories.py](src/patchloop/api/repositories.py)、[repository_store.py](src/patchloop/api/repository_store.py)。

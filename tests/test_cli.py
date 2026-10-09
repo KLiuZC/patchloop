@@ -56,12 +56,34 @@ def test_serve_uses_local_address_and_selected_database(monkeypatch, tmp_path):
     monkeypatch.setattr(uvicorn, "run", lambda app, **kwargs: calls.append((app, kwargs)))
     monkeypatch.setattr(cli, "LLM", lambda *a: pytest.fail("serving tasks must not create a model client"))
     monkeypatch.setattr(cli, "load_dotenv", lambda: pytest.fail("task API does not need provider credentials"))
+    monkeypatch.setattr(cli, "dotenv_values", lambda path: {})
     database = tmp_path / "records.sqlite3"
     result = CliRunner().invoke(cli.app, ["serve", "--db", str(database), "--port", "8123"])
     assert result.exit_code == 0, result.output
     app, options = calls[0]
     assert options == {"host": "127.0.0.1", "port": 8123}
     assert app.state.task_store.path == database
+
+
+@pytest.mark.parametrize("environment_token", [None, "environment-publication-token"])
+def test_serve_loads_only_publication_configuration(monkeypatch, tmp_path, environment_token):
+    import uvicorn
+    calls = []
+    monkeypatch.setattr(uvicorn, "run", lambda app, **kwargs: calls.append(app))
+    monkeypatch.setattr(cli, "load_dotenv", lambda: pytest.fail("must not load provider keys into the API environment"))
+    monkeypatch.setattr(cli, "dotenv_values", lambda path: {
+        "PATCHLOOP_GITHUB_TOKEN": "file-publication-token", "DEEPSEEK_API_KEY": "provider-placeholder",
+    })
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    if environment_token is None:
+        monkeypatch.delenv("PATCHLOOP_GITHUB_TOKEN", raising=False)
+    else:
+        monkeypatch.setenv("PATCHLOOP_GITHUB_TOKEN", environment_token)
+    result = CliRunner().invoke(cli.app, ["serve", "--db", str(tmp_path / "records.sqlite3")])
+    assert result.exit_code == 0, result.output
+    assert calls[0].state.github_publication_service.token_provider() == (environment_token or "file-publication-token")
+    assert "DEEPSEEK_API_KEY" not in cli.os.environ
+    assert "publication-token" not in result.output
 
 
 def test_serve_rejects_invalid_port():

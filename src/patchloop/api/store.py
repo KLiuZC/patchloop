@@ -39,7 +39,7 @@ class TaskStore:
             connection.execute("PRAGMA journal_mode=WAL")
             connection.execute("BEGIN IMMEDIATE")
             version = connection.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9):
+            if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10):
                 raise RuntimeError(f"unsupported task database schema version: {version}")
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS tasks (
@@ -135,7 +135,17 @@ class TaskStore:
                     submission_json TEXT NOT NULL
                 )
             """)
-            connection.execute("PRAGMA user_version=9")
+            connection.execute("""
+                CREATE TABLE IF NOT EXISTS github_publications (
+                    publication_id TEXT PRIMARY KEY,
+                    task_id TEXT NOT NULL REFERENCES tasks(task_id),
+                    request_id TEXT NOT NULL,
+                    delivery_id TEXT NOT NULL UNIQUE REFERENCES task_deliveries(delivery_id),
+                    record_json TEXT NOT NULL,
+                    UNIQUE(task_id, request_id)
+                )
+            """)
+            connection.execute("PRAGMA user_version=10")
 
     def create(self, record: TaskRecord) -> None:
         with self._connection() as connection:

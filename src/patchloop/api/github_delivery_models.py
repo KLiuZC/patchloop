@@ -76,3 +76,71 @@ class GitHubDeliveryPreview(BaseModel):
     checked_at: AwareDatetime
     plan_sha256: Sha256
     plan: GitHubDeliveryPlan
+
+
+class GitHubPublicationSubmission(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: UUID
+    preview: GitHubDeliveryPreviewRequest
+    plan_sha256: Sha256
+    confirmed: bool = Field(strict=True)
+
+    @field_validator("confirmed")
+    @classmethod
+    def require_confirmation(cls, value: bool) -> bool:
+        if not value:
+            raise ValueError("explicit publication confirmation is required")
+        return value
+
+
+class GitHubActor(BaseModel):
+    id: int = Field(gt=0, strict=True)
+    login: str
+
+
+class GitHubPullRequest(BaseModel):
+    number: int = Field(gt=0, strict=True)
+    url: str
+    state: Literal["open", "closed"]
+    base_sha: CommitSHA
+    head_sha: CommitSHA
+
+
+class GitHubPublicationRecord(BaseModel):
+    publication_id: UUID
+    task_id: UUID
+    request_id: UUID
+    submission: GitHubPublicationSubmission
+    plan_sha256: Sha256
+    plan: GitHubDeliveryPlan
+    status: Literal["pending", "blocked", "uncertain", "completed"] = "pending"
+    phase: Literal["check", "push", "pull_request", "completed"] = "check"
+    actor: GitHubActor | None = None
+    push_attempted: bool = False
+    branch_pushed: bool = False
+    pr_attempted: bool = False
+    pull_request: GitHubPullRequest | None = None
+    error: str = ""
+    created_at: AwareDatetime
+    updated_at: AwareDatetime
+
+
+class GitHubPublicationResponse(BaseModel):
+    publication: GitHubPublicationRecord
+    replayed: bool
+
+
+class GitHubPublicationState(BaseModel):
+    task_id: UUID
+    configured: bool
+    items: list[GitHubPublicationRecord]
+
+
+class GitHubPublicationCheck(BaseModel):
+    preview: GitHubDeliveryPreview
+    actor: GitHubActor
+    remote_base_sha: CommitSHA
+    remote_head_sha: CommitSHA | None
+    can_publish: bool
+    reason: str = ""

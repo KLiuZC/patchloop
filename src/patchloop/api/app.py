@@ -19,6 +19,10 @@ from .issue_tasks import IssueTaskConflict, IssueTaskService
 from .delivery import DeliveryService
 from .github_delivery import GitHubDeliveryService
 from .github_delivery_models import GitHubDeliveryPreview, GitHubDeliveryPreviewRequest
+from .github_delivery_models import (GitHubPublicationCheck, GitHubPublicationState,
+                                     GitHubPublicationSubmission, GitHubPublicationResponse)
+from .github_publication import GitHubPublicationService
+from .github_publication_remote import GitHubPublicationError
 from .review import ReviewConflict, ReviewNotFound
 from .store import InvalidTaskCursor, TaskStore
 from .github import GitHubIssueClient, GitHubReadError
@@ -65,11 +69,14 @@ def _repository_base(submission: TaskSubmission, server_directory: Path) -> tupl
 
 def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: Path | None = None,
                github_transport: httpx.BaseTransport | None = None,
-               repositories_root: Path | None = None) -> FastAPI:
+               repositories_root: Path | None = None, github_publish_transport=None,
+               github_token_provider=None, github_pusher=None) -> FastAPI:
     """Create the task API. No worker, model client or Docker container is started."""
     store = TaskStore(Path(db_path))
     delivery_service = DeliveryService(store, deliveries_root)
     github_delivery = GitHubDeliveryService(store, delivery_service)
+    publications = GitHubPublicationService(store, github_delivery, token_provider=github_token_provider,
+                                            transport=github_publish_transport, pusher=github_pusher)
     source_store = IssueSourceStore(store)
     github = GitHubIssueClient(transport=github_transport)
     repositories = RepositoryPreparationService(store, github, root=repositories_root)
@@ -91,6 +98,7 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     app.state.task_store = store
     app.state.delivery_service = delivery_service
     app.state.github_delivery_service = github_delivery
+    app.state.github_publication_service = publications
     app.state.issue_source_store = source_store
     app.state.github_client = github
     app.state.repository_service = repositories
@@ -118,6 +126,10 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     async def github_error(request: Request, exc: GitHubReadError):
         headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after is not None else {}
         return JSONResponse(status_code=exc.status_code, content={"detail": str(exc)}, headers=headers)
+
+    @app.exception_handler(GitHubPublicationError)
+    async def publication_error(request: Request, exc: GitHubPublicationError):
+        return JSONResponse(status_code=exc.status_code, content={"detail": str(exc)})
 
     @app.exception_handler(SourceConflict)
     async def source_conflict(request: Request, exc: SourceConflict):
@@ -271,6 +283,25 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     def preview_github_delivery(task_id: UUID, submission: GitHubDeliveryPreviewRequest) -> GitHubDeliveryPreview:
         """Preview a PR offline. Does not save a publication, push a branch or contact GitHub."""
         return github_delivery.preview(task_id, submission)
+
+    @app.post("/tasks/{task_id}/github-delivery/check", response_model=GitHubPublicationCheck)
+    def check_github_delivery(task_id: UUID, submission: GitHubDeliveryPreviewRequest) -> GitHubPublicationCheck:
+        """Read remote identity, permission, branches and PRs without publishing."""
+        return publications.check(task_id, submission)
+
+    @app.get("/tasks/{task_id}/github-delivery", response_model=GitHubPublicationState)
+    def get_github_delivery(task_id: UUID) -> GitHubPublicationState:
+        """Read saved publication history without contacting GitHub or resuming writes."""
+        return publications.get(task_id)
+
+    @app.post("/tasks/{task_id}/github-delivery", response_model=GitHubPublicationResponse, status_code=201)
+    def publish_github_delivery(task_id: UUID, submission: GitHubPublicationSubmission,
+                               response: Response) -> GitHubPublicationResponse:
+        """Publish only the explicitly confirmed plan, or reconcile the same request."""
+        result = publications.publish(task_id, submission)
+        if result.replayed:
+            response.status_code = 200
+        return result
 
     @app.get("/tasks/{task_id}/artifacts/{name}", response_class=FileResponse)
     def get_artifact(task_id: UUID, name: str):

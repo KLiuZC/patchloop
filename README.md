@@ -307,7 +307,7 @@ POST 需要新的 `request_id`，以及刚查询到的 `review_id`、`review_rev
 
 ### GitHub PR 发布预览
 
-`POST /tasks/{task_id}/github-delivery/preview` 从当前有效批准和已经完成的本地交付生成 PR 方案。此接口只做本地检查，不访问 GitHub、不使用凭证、不调用模型、不重新运行验证，也不推送分支或创建 PR。数据库保持 v9；预览不写入数据库，刷新后可重新生成。
+`POST /tasks/{task_id}/github-delivery/preview` 从当前有效批准和已经完成的本地交付生成 PR 方案。此接口只做本地检查，不访问 GitHub、不使用凭证、不调用模型、不重新运行验证，也不推送分支或创建 PR。预览不写入数据库，刷新后可重新生成；独立发布接口的记录保存在 v10 数据库中。
 
 重启 API 加载新代码后，可以在 `http://127.0.0.1:8000/docs` 调用该接口，或将下面的 `<task_id>` 替换为已完成交付的 GitHub 任务编号：
 
@@ -321,7 +321,7 @@ curl -sS -X POST "http://127.0.0.1:8000/tasks/<task_id>/github-delivery/preview"
 
 | 返回字段 | 含义 |
 | --- | --- |
-| `status: preview` / `publish_enabled: false` | 已生成预览，当前阶段不提供发布操作 |
+| `status: preview` / `publish_enabled: false` | 已生成离线预览，此接口不提供发布操作 |
 | `remote_checks: not_checked` | 未检查远端分支、写权限、仓库现状或 PR 是否已存在 |
 | `plan.repository` / `issue_url` | 任务保存的仓库身份及问题来源，不是实时 GitHub 查询结果 |
 | `plan.base_branch` / `base_sha` | 用户选择的目标分支、已经验证的本地基线；两者在远端是否对应尚未核对 |
@@ -331,13 +331,58 @@ curl -sS -X POST "http://127.0.0.1:8000/tasks/<task_id>/github-delivery/preview"
 | `plan.title` / `body` / `draft` | 可供用户检查和调整的 PR 内容 |
 | `plan_sha256` / `checked_at` | 完整方案的稳定摘要和本次核对时间；时间不参与摘要 |
 
-默认正文列出原始修复要求、Issue 链接、修改文件及已保存的验证依据，不包含原 Issue 长正文、本机仓库路径或完整运行日志。文件超过 50 个时，正文只列前 50 个，`changed_paths` 仍保留完整列表。命令、要求和文件名使用不会被内容中反引号提前结束的 Markdown 代码块；复制或展示不会执行这些内容。默认标题由 Issue 编号和标题生成，超长时截断；自定义文本超限返回 422。
+默认正文列出原始修复要求、Issue 链接、修改文件及已保存的验证依据，不额外拼入原 Issue 长正文、本机仓库路径或完整运行日志；要求和验证命令中的原有文本仍会保留，发布前应核对预览。文件超过 50 个时，正文只列前 50 个，`changed_paths` 仍保留完整列表。命令、要求和文件名使用不会被内容中反引号提前结束的 Markdown 代码块；复制或展示不会执行这些内容。默认标题由 Issue 编号和标题生成，超长时截断；自定义文本超限返回 422。
 
 预览要求来源与仓库身份一致、最新审查有效且已接受、验证通过、对应本地交付完成。再次检查交付分支和工作区、提交的唯一父版本，以及“基线加批准补丁”产生的准确文件树，同时重新核对路径策略。Git 检查结束后再检查批准和交付状态；旧批准、已变更的产物或工作区不会被自动修复或重新交付。缺失任务返回 404，无法满足上述条件返回 409，请求格式错误返回 422。
 
 重复请求在内容与证据不变时返回相同 `plan_sha256`，仅核对时间更新；修改目标分支、PR 文本、草稿选项或批准证据都会产生不同摘要。该摘要不是授权令牌。后续发布必须单独保存用户确认，并重新查询远端仓库身份、权限和目标分支 SHA；如与验证基线不符，应停止并重新验证，不能凭旧预览直接推送。
 
-分支名称通过 [Git 分支名检查](https://git-scm.com/docs/git-check-ref-format)；目标、来源分支、标题、正文和草稿选项对应后续 [GitHub 创建 PR 接口](https://docs.github.com/en/rest/pulls/pulls#create-a-pull-request)的输入。当前尚未实现发布接口、远端重试记录或网页发布区域。
+分支名称通过 [Git 分支名检查](https://git-scm.com/docs/git-check-ref-format)；目标、来源分支、标题、正文和草稿选项对应 [GitHub 创建 PR 接口](https://docs.github.com/en/rest/pulls/pulls#create-a-pull-request)的输入。远端检查与发布使用下方独立接口；网页发布区域尚待接入。
+
+### GitHub 分支与 PR 发布
+
+首版支持来源对应的同一个公开仓库，需要当前账号对该仓库有写权限；不自动 fork、不换仓库、不合并 PR。离线预览和已保存结果的查询无需 GitHub 凭证。实际远端检查及发布使用服务端的 `PATCHLOOP_GITHUB_TOKEN`；`uv run agent serve` 优先读取环境变量，未设置时只采用当前项目 `.env` 中这一项，不将模型密钥加载到 API 的进程环境。请求体不接受 token，修改凭证后需重启 API。
+
+真实验收应使用自己可写的测试仓库。可配置仅针对该仓库的 fine-grained personal access token，授予 Contents 与 Pull requests 的读写权限；修改 workflow 文件还涉及 Workflows 权限。权限依据见 [Git 引用写入](https://docs.github.com/en/rest/git/refs#create-a-reference)和 [PR 创建](https://docs.github.com/en/rest/pulls/pulls#create-a-pull-request)。仓库返回的 `permissions.push` 表示账号仓库权限，不能提前证明 token 已拥有所有写权限；实际操作仍可能被 token 范围或仓库规则拒绝。当前账号身份通过 `/user` 核对，本版不支持 GitHub App installation token。
+
+| 接口 | 用途及副作用 |
+| --- | --- |
+| `POST /tasks/{task_id}/github-delivery/preview` | 离线检查并生成方案，不保存发布记录 |
+| `POST /tasks/{task_id}/github-delivery/check` | 相同预览参数，只读查询 GitHub 账号、仓库、分支及已有 PR，不推送或创建 PR |
+| `POST /tasks/{task_id}/github-delivery` | 明确确认后登记发布意图、推送准确提交并创建 PR；同请求用于显式恢复 |
+| `GET /tasks/{task_id}/github-delivery` | 读取持久化历史及凭证是否配置，不访问 GitHub，也不触发恢复 |
+
+远端检查要求仓库 ID 和名称匹配冻结来源，仍为可写且未归档的公开仓库，目标分支 SHA 与验证基线一致。返回 `preview`、`actor`、`remote_base_sha`、`remote_head_sha`、`can_publish` 和 `reason`。首次发布须没有同名远端分支、相关 PR 或已有发布记录；已有记录应按原请求恢复。检查不会预留远端分支，正式发布时必须再核对。
+
+发布请求格式如下，`preview` 保留刚核对的参数，`plan_sha256` 使用预览返回值，`request_id` 生成一次后保留：
+
+```json
+{
+  "request_id": "<新的 UUID>",
+  "preview": {"base_branch": "main", "draft": true},
+  "plan_sha256": "<已核对预览的 SHA-256>",
+  "confirmed": true
+}
+```
+
+此 POST 会产生实际 GitHub 写操作。首次受理返回 201，同一请求或同一方案的已有记录返回 200；这两个状态只表示记录已创建或被复用，不能代替 `publication.status`。缺少明确布尔确认、参数格式错误为 422，旧预览、并发发布或请求冲突为 409。服务对每个数据库串行执行发布，同一请求编号不能改变内容，同一本地交付绑定一份不可改写的已确认方案。复用已有方案时返回首次确认的请求编号，后续恢复使用该记录中的 `submission`。
+
+| `publication.status` | 含义 |
+| --- | --- |
+| `pending` | 意图或执行阶段已保存，可查询进度；中断后仍保留 |
+| `blocked` | 凭证、权限、版本或已有内容不满足条件，保留已发生的操作 |
+| `uncertain` | 写请求的结果尚不能确认，恢复时先查询远端 |
+| `completed` | 已记录匹配方案的 PR，链接在 `pull_request.url`；不表示已合并或批准仍然有效 |
+
+`phase` 区分 `check`、`push`、`pull_request`、`completed`；`push_attempted`、`branch_pushed`、`pr_attempted` 记录请求是否可能发出及是否核对到分支，`actor` 绑定实际发布账号。重试不能悄悄换账号或方案。`GET` 返回历史记录快照，不代表重新查询过远端 PR 的最新状态。
+
+推送使用临时裸仓库副本和明确的提交 SHA。源仓库的 HEAD、索引、暂存内容、文件和 remote 配置不变，推送也不跟随调用者的 remote 配置。通过 [空期望值的 ref lease](https://git-scm.com/docs/git-push#Documentation/git-push.txt---force-with-leaserefnameexpect)原子地要求目标分支不存在；虽然 Git 选项名含 `force`，这里不允许覆盖或快进已有分支。临时凭证助手只在 GitHub 的 HTTPS 认证提示中提供 token，token 不写入 Git 配置、脚本内容、命令行、数据库或错误文本。
+
+推送响应丢失后，可核对同名远端分支是否已经指向记录的提交；匹配时继续 PR 阶段，不再次推送。创建 PR 的请求发出前先保存标记。若响应丢失，重试只查询同一仓库和分支的 PR，并核对账号、提交、标题、正文和草稿选项；找到唯一匹配项后补记结果。若仍找不到，保持 `uncertain`，不会因为一次查询为空就再次 POST。需要继续查询或人工检查 GitHub，不能把“未查到”当作“未创建”。明确的 4xx 拒绝可在处理原因后重试。
+
+推送后若批准或目标基线变化，会停止 PR 创建，保留已经发布的分支。GitHub 的目标分支可在独立网络请求之间变化，无法将本地批准与远端创建合为原子事务；如创建响应已显示基线变化，记录 PR 链接并标记 `blocked`，要求重新验证。远端已有的匹配 PR 可在恢复时补记，即使之后本地审查已更新；这只记录已发生的发布，不授权进一步写入。服务不删除分支、不改写现有 PR、不自动合并。
+
+新版 API 和 worker 启动时数据库升级到 v10，新增 `github_publications` 表，保留旧表及修复、审查、交付证据。应一并重启旧 API/worker 加载新代码；旧版本程序不支持 v10。启动和 GET 查询不会自动恢复发布，必须重试原确认请求。本阶段通过模拟 GitHub 和临时本地裸仓库验证，尚未在真实 GitHub 仓库发布验收。
 
 ### 后台执行任务
 
@@ -618,7 +663,8 @@ frontend/            React + JavaScript 工作台、接口与页面测试
 - [x] M2：准确补丁的人工审查、路径保护与本地分支交付（真实模型验收通过）
 - [x] M3：公开 GitHub Issue 读取、固定版本准备与任务创建（真实文档任务验收通过）
 - [x] PR 发布方案、离线预览接口及批准证据核对
-- [ ] M4：批准后的分支推送与修复 PR 交付
+- [x] 确认发布后端、远端检查、分支推送与 PR 状态恢复（隔离验证）
+- [ ] M4：网页发布入口及自有 GitHub 仓库的真实 PR 交付验收
 - [ ] PR / CI 上下文读取（按实际需要扩展）
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
 - [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录
