@@ -6,6 +6,7 @@ import {
   readPendingDelivery, sameDeliveryPlan, savePendingDelivery, submitDelivery,
 } from '../lib/delivery'
 import { CopyButton, ErrorNotice, LoadingState } from './ui'
+import ReviewStepHeading from './ReviewStepHeading'
 
 const changedMessage = '审查、依据或交付计划已变化，请刷新交付计划后重新核对。'
 const terminal = (record) => record && record.status !== 'preparing'
@@ -14,11 +15,11 @@ const recordedRequest = (record) => ({
   evidence: { ...record.evidence }, target_head: record.target_head,
 })
 
-export default function DeliveryPanel({ taskId, reviewState }) {
-  return <DeliverySession key={taskId} taskId={taskId} reviewState={reviewState} />
+export default function DeliveryPanel({ taskId, reviewState, variant = 'default' }) {
+  return <DeliverySession key={taskId} taskId={taskId} reviewState={reviewState} variant={variant} />
 }
 
-function DeliverySession({ taskId, reviewState }) {
+function DeliverySession({ taskId, reviewState, variant }) {
   const [plan, setPlan] = useState(null)
   const [pending, setPending] = useState(() => readPendingDelivery(taskId))
   const [loading, setLoading] = useState(true)
@@ -116,6 +117,7 @@ function DeliverySession({ taskId, reviewState }) {
   const blocked = loading || busy || Boolean(readError) || conflict || !accepted || !plan?.can_deliver
   const canRetry = pending && matchesDelivery(plan, pending, taskId) && !ownsRecord && !preparing
   const reason = deliveryReason(plan?.reason)
+  const summaryOnly = variant === 'review' && ownsRecord && record.status === 'completed'
 
   async function refresh(reconcile = false) {
     if (working.current) return
@@ -209,13 +211,7 @@ function DeliverySession({ taskId, reviewState }) {
     }
   }
 
-  return <section className="panel delivery-panel" aria-label="本地交付">
-    <div className="panel-heading"><h2><GitBranch size={18} aria-hidden="true" />本地交付</h2>
-      <button type="button" className="button button-quiet button-small" disabled={busy || loading} onClick={() => refresh()}><RefreshCw size={14} aria-hidden="true" />刷新交付计划</button></div>
-    <p className="muted">接受补丁后，点击下方按钮在本地生成修改分支和独立工作区。</p>
-    {loading && <LoadingState label="正在读取交付计划…" />}
-    {readError && <ErrorNotice error={readError} />}
-    {plan && <>
+  const planFields = plan && (
       <dl className="delivery-fields">
         <dt>补丁基线</dt><dd><code>{plan.evidence?.base_sha || '暂不可用'}</code></dd>
         <dt>目标 HEAD</dt><dd><code>{plan.target_head || (ownsRecord && record.target_head) || '暂不可用'}</code></dd>
@@ -225,23 +221,36 @@ function DeliverySession({ taskId, reviewState }) {
         <dt>受保护路径</dt><dd>{plan.policy.protected_paths.length ? plan.policy.protected_paths.join('、') : '未配置'}</dd>
         <dt>修改文件</dt><dd>{plan.changed_paths.length ? <ul>{plan.changed_paths.map((path, index) => <li key={`${index}:${path}`}><code>{path}</code></li>)}</ul> : '暂无'}</dd>
       </dl>
+  )
+
+  return <section className={`panel delivery-panel${variant === 'review' ? ' review-step' : ''}`} aria-label="本地交付">
+    {variant === 'review' ? <ReviewStepHeading number="04" title="本地交付"><button type="button" className="button button-quiet button-small" disabled={busy || loading} onClick={() => refresh()}><RefreshCw size={14} aria-hidden="true" />刷新交付计划</button></ReviewStepHeading>
+      : <div className="panel-heading"><h2><GitBranch size={18} aria-hidden="true" />本地交付</h2><button type="button" className="button button-quiet button-small" disabled={busy || loading} onClick={() => refresh()}><RefreshCw size={14} aria-hidden="true" />刷新交付计划</button></div>}
+    {!summaryOnly && <p className="muted">接受补丁后，可生成独立修改分支。</p>}
+    {loading && <LoadingState label="正在读取交付计划…" />}
+    {readError && <ErrorNotice error={readError} />}
+    {summaryOnly && !accepted && <p className="notice notice-warning">当前审查与交付记录不一致，请刷新交付计划核对。已有交付结果保留。</p>}
+    {summaryOnly && plan.reason && plan.reason !== 'delivery already completed' && <div className="notice notice-warning" role="alert"><p>{reason || plan.reason}</p></div>}
+    {plan && !summaryOnly && <>
+      {planFields}
       <p className={plan.dirty ? 'notice notice-warning' : 'muted'}>{plan.dirty ? '原工作区有未提交改动；交付会保留原改动，在独立工作区生成提交。' : plan.target_head ? '原工作区干净；交付将在独立工作区生成提交。' : '本地交付使用独立工作区，原工作区改动会保留。'}</p>
       {!accepted && <p className="notice notice-warning">仅最新且依据一致的已接受审查可交付。审查更新后，请刷新交付计划。</p>}
       {!plan.can_deliver && plan.reason && <div className="notice notice-warning"><div><p>{reason || '当前暂不可交付。'}</p>
         {!reason && <details><summary>查看原因</summary><p>{plan.reason}</p></details>}</div></div>}
     </>}
     {record && <div>
-      <p role="status">{record.status === 'preparing' ? '本地交付进行中，正在核对结果…' : record.status === 'completed' ? '本地交付已完成。' : '本地交付失败。'}</p>
+      <p role="status" className={summaryOnly ? 'delivery-complete-status' : undefined}>{record.status === 'preparing' ? '本地交付进行中，正在核对结果…' : record.status === 'completed' ? '本地交付已完成。' : '本地交付失败。'}</p>
       <dl className="delivery-fields">
         <dt>交付审查</dt><dd>第 {record.review_revision} 次审查{!ownsRecord && '（历史交付）'}</dd>
         <dt>交付分支</dt><dd><code>{record.branch}</code></dd>
-        <dt>交付工作区</dt><dd><code>{record.worktree_path}</code>{record.status === 'completed' && <CopyButton value={record.worktree_path} label="复制工作区路径" />}</dd>
-        {record.status === 'completed' && <><dt>提交 SHA</dt><dd><code>{record.commit_sha || '尚无提交编号'}</code>{record.commit_sha && <CopyButton value={record.commit_sha} label="复制提交 SHA" />}</dd></>}
+        <dt>交付工作区</dt><dd className="delivery-copy-value"><code>{record.worktree_path}</code>{record.status === 'completed' && <CopyButton value={record.worktree_path} label="复制工作区路径" />}</dd>
+        {record.status === 'completed' && <><dt>提交 SHA</dt><dd className="delivery-copy-value"><code>{record.commit_sha || '尚无提交编号'}</code>{record.commit_sha && <CopyButton value={record.commit_sha} label="复制提交 SHA" />}</dd></>}
       </dl>
       {record.status === 'failed' && <ErrorNotice error={{ message: record.error || '交付失败，请核查本地工作区后重新审查。' }} />}
       {record.status === 'completed' && plan.delivery_intact === false && <p className="notice notice-warning" role="alert">交付分支或工作区已变化，请核查本地文件。</p>}
       {record.status === 'completed' && plan.delivery_intact === null && <p className="muted">可刷新交付计划，核对分支和工作区是否完整。</p>}
     </div>}
+    {summaryOnly && <details className="delivery-plan-details"><summary>交付详细记录</summary>{planFields}</details>}
     {pending && <div className="notice notice-warning">
       <div><strong>{preparing ? '交付请求已保留' : '有一条交付请求尚未确认'}</strong><p>{preparing ? '正在定期核对结果。若交付进程已中断，可手动恢复交付。' : '原请求已保留。核对结果或手动重试后，再发起新的交付。'}</p>
         <div className="delivery-actions"><button type="button" className="button button-quiet button-small" disabled={busy || loading} onClick={() => refresh(true)}>核对交付结果</button>
@@ -250,8 +259,8 @@ function DeliverySession({ taskId, reviewState }) {
     </div>}
     {error && <ErrorNotice error={error} />}
     {feedback && <p role="status">{feedback}</p>}
-    <div className="delivery-actions"><button type="button" className="button button-primary" disabled={blocked || Boolean(pending) || Boolean(ownsRecord) || preparing} onClick={() => send()}><GitBranch size={16} aria-hidden="true" />生成修改分支</button>
+    {!summaryOnly && <div className="delivery-actions"><button type="button" className="button button-primary" disabled={blocked || Boolean(pending) || Boolean(ownsRecord) || preparing} onClick={() => send()}><GitBranch size={16} aria-hidden="true" />生成修改分支</button>
       {preparing && <button type="button" className="button button-quiet" disabled={recoveryBlocked} onClick={() => send('recover')}>恢复交付</button>}
-      {busy && <span className="muted" role="status">正在核对交付…</span>}</div>
+      {busy && <span className="muted" role="status">正在核对交付…</span>}</div>}
   </section>
 }

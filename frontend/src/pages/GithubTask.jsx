@@ -168,13 +168,18 @@ export default function GithubTask() {
     requestAnimationFrame(() => document.getElementById('issue-url')?.focus())
   }
 
+  function retryPending() {
+    if (!flow.pending) return
+    send(flow.pending.stage, flow.pending.body)
+  }
+
   function stageFeedback(stage) {
     const pending = flow.pending?.stage === stage
     const stageError = errorStage === stage ? error : null
     const labels = { issue: '正在读取 Issue…', repository: '正在准备代码…', task: '正在创建任务…' }
     return <>
       {stageError && <ErrorNotice error={stageError} />}
-      {pending && <div className="notice notice-info stage-feedback" role="status"><LoaderCircle size={18} className={busy ? 'spin' : ''} /><div><strong>{busy ? labels[stage] : '上次请求结果尚未确认'}</strong><p>请求编号：<code>{flow.pending.body.request_id}</code>。{busy ? '离开或刷新页面后可继续核对。' : '重试使用原编号，不会重复创建记录。'}</p>{!busy && <div className="stage-feedback-actions"><button type="button" className="button button-small button-quiet" onClick={() => send(stage, flow.pending.body)}>用原请求重试</button>{[404, 409, 422].includes(stageError?.status) && <button type="button" className="button button-small button-quiet" onClick={() => { update({ pending: null }); setError(null) }}>返回修改配置</button>}</div>}</div></div>}
+      {pending && <div className="notice notice-info stage-feedback" role="status"><LoaderCircle size={18} className={busy ? 'spin' : ''} /><div><strong>{busy ? labels[stage] : '上次请求结果尚未确认'}</strong><p>请求编号：<code>{flow.pending.body.request_id}</code>。{busy ? '离开或刷新页面后可继续核对。' : '重试使用原编号，不会重复创建记录。'}</p>{!busy && <div className="stage-feedback-actions"><button type="button" className="button button-small button-quiet" onClick={retryPending}>用原请求重试</button>{[404, 409, 422].includes(stageError?.status) && <button type="button" className="button button-small button-quiet" onClick={() => { update({ pending: null }); setError(null) }}>返回修改配置</button>}</div>}</div></div>}
     </>
   }
 

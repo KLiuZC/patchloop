@@ -30,8 +30,8 @@ export default function TaskLogs({ task }) {
     {log.malformedLines > 0 && <div className="notice notice-warning">有 {log.malformedLines} 条日志无法解析，可下载原始文件查看。</div>}
     {!log.turns.length && <EmptyState icon={Terminal} title="尚无完整的模型轮次">{isActive(task) ? '等待模型返回。已经保存的内容可以通过原始日志查看。' : '本次运行没有可展示的完整轮次，请下载原始日志核对。'}</EmptyState>}
     <div className="turn-list">{log.turns.map((turn, index) => <article className="turn" key={`${turn.turn}-${index}`}><div className="turn-marker">{turn.turn}</div><div className="turn-body"><div className="turn-heading"><strong>第 {turn.turn} 轮</strong><span><Timer size={12} />{formatDuration(turn.seconds)}</span></div>
-      {turn.content && <p className="model-message"><MessageSquareText size={14} />{turn.content}</p>}
-      {turn.tools.map((tool, toolIndex) => <details className="tool-output" key={`${tool.id}-${toolIndex}`} open={index === log.turns.length - 1}><summary><Terminal size={14} /><code>{String(toolCommand(tool))}</code><span className="tool-name">{tool.name}</span></summary><pre>{tool.output || '未记录输出'}</pre></details>)}
+      {turn.content && <p className="model-message"><MessageSquareText size={14} aria-hidden="true" /><span className="model-message-text">{turn.content}</span></p>}
+      {turn.tools.map((tool, toolIndex) => <details className="tool-output" key={`${tool.id}-${toolIndex}`} open={index === log.turns.length - 1}><summary><Terminal size={14} aria-hidden="true" /><code>{String(toolCommand(tool))}</code><span className="tool-name">{tool.name}</span></summary><pre>{tool.output || '未记录输出'}</pre></details>)}
       {!turn.tools.length && !turn.content && <p className="muted">本轮没有工具调用。</p>}
     </div></article>)}</div>
     {log.hasPartialLine && <p className="log-footnote">{isActive(task) ? '日志仍在写入，稍后会自动补全。' : '最后一条日志不完整，已显示可解析内容。可下载原始文件核对。'}</p>}

@@ -144,6 +144,7 @@ describe('GitHub Issue 创建流程', () => {
     await user.dblClick(screen.getByRole('button', { name: '确认并创建任务' }))
     await waitFor(() => expect(screen.getByRole('heading', { name: '问题来源' })).toBeVisible())
     expect(screen.getByRole('link', { name: 'example/repair-demo #42' })).toHaveAttribute('href', issueUrl)
+    await user.click(screen.getByText('查看 Issue 正文'))
     expect(screen.getByText(/输入 v1.2.3 会报错/)).toBeVisible()
     const posts = fetch.mock.calls.filter(([, options]) => options?.method === 'POST')
     expect(posts).toHaveLength(3)
