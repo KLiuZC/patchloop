@@ -134,7 +134,7 @@ function validExecution(record) {
 }
 
 // TaskSummary / TaskRecord from api/models.py. Never infer validation from completion or model text.
-function validTask(task, detail = false) {
+export function validTask(task, detail = false) {
   if (!isObject(task) || !isString(task.task_id) || !task.task_id.trim()) return false
   if (!taskStatuses.has(task.status) || !validationStatuses.has(task.validation_status)) return false
   if (!['repo_path', 'workdir', 'goal', 'error'].every((key) => isString(task[key]))) return false

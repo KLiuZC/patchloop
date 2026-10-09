@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { ArrowUpRight, CircleHelp, Layers3, PanelLeft, Plus } from 'lucide-react'
+import { ArrowUpRight, CircleHelp, FolderGit2, Layers3, PanelLeft, Plus } from 'lucide-react'
 
 export default function Layout() {
   const location = useLocation()
-  const section = location.pathname === '/tasks/new' ? '新建任务' : location.pathname === '/tasks' ? '任务列表' : '任务详情'
-  const inTasks = location.pathname !== '/tasks/new'
+  const section = location.pathname === '/tasks/github' ? 'GitHub Issue' : location.pathname === '/tasks/new' ? '新建任务' : location.pathname === '/tasks' ? '任务列表' : '任务详情'
+  const inTasks = !['/tasks/new', '/tasks/github'].includes(location.pathname)
   useEffect(() => {
     document.title = `${section} · patchloop`
     document.getElementById('page-title')?.focus()
@@ -21,6 +21,7 @@ export default function Layout() {
       <nav aria-label="主要导航">
         <Link to="/tasks" className={`nav-item ${inTasks ? 'active' : ''}`} aria-current={inTasks ? 'location' : undefined}><Layers3 size={18} /><span>修复任务</span></Link>
         <NavLink to="/tasks/new" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}><Plus size={18} /><span>新建任务</span></NavLink>
+        <NavLink to="/tasks/github" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}><FolderGit2 size={18} /><span>GitHub Issue</span></NavLink>
       </nav>
       <div className="sidebar-bottom">
         <details className="help-popover"><summary><CircleHelp size={17} /><span>如何开始</span></summary><p>提交修复要求后，由独立 worker 处理。选择一条任务，就能查看补丁与测试结果。</p><p>刷新或关闭网页不会终止后台任务。</p></details>

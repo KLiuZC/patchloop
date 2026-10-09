@@ -9,6 +9,7 @@ import { CopyButton, ErrorNotice, LoadingState, ReviewBadge, StatusBadge } from 
 import DiffViewer from '../components/DiffViewer'
 import TaskLogs from '../components/TaskLogs'
 import ValidationPanel from '../components/ValidationPanel'
+import IssueSourcePanel from '../components/IssueSourcePanel'
 import ReviewPanel from '../components/ReviewPanel'
 import { getReview } from '../lib/reviews'
 import { keepLatestReview } from '../lib/review-draft'
@@ -17,7 +18,7 @@ const tabs = [{ id: 'overview', label: '概览', icon: FolderGit2 }, { id: 'diff
 
 function Overview({ task, reviewQuery, onReview }) {
   const result = task.result
-  return <div className="overview-grid"><div className="overview-main"><section className="panel goal-panel"><div className="panel-heading"><h2>修复要求</h2><Code2 size={18} /></div><p>{task.goal}</p><div className="verification-command"><span>验证命令</span><code>{task.verification_command}</code></div></section><ValidationPanel validation={result?.validation} compact /></div>
+  return <div className="overview-grid"><div className="overview-main"><section className="panel goal-panel"><div className="panel-heading"><h2>修复要求</h2><Code2 size={18} /></div><p>{task.goal}</p><div className="verification-command"><span>验证命令</span><code>{task.verification_command}</code></div></section><IssueSourcePanel source={task.source} baseSha={task.base_sha} repoPath={task.repo_path} /><ValidationPanel validation={result?.validation} compact /></div>
     <aside className="task-facts panel"><h2>任务信息</h2><dl><dt>任务编号</dt><dd className="mono">{task.task_id}</dd><dt>仓库</dt><dd title={task.repo_path}>{task.repo_path}</dd><dt>工作目录</dt><dd>{task.workdir}</dd><dt>基线提交</dt><dd className="mono fact-sha"><code className="fact-value">{task.base_sha}</code><CopyButton value={task.base_sha} label="复制基线提交" /></dd><dt>模型</dt><dd>{task.execution?.model || '未配置执行'}</dd><dt>执行镜像</dt><dd>{task.execution?.image || '—'}</dd><dt>创建时间</dt><dd>{formatDate(task.created_at)}</dd><dt>开始 / 结束</dt><dd>{formatDate(task.started_at)} / {formatDate(task.finished_at)}</dd><dt>人工审查</dt><dd><div className="review-fact">{reviewQuery.isError ? <span>暂无法读取</span> : reviewQuery.data ? <ReviewBadge value={reviewQuery.data.status} /> : <span>正在读取…</span>}<button type="button" className="text-action" onClick={onReview}>查看审查</button></div></dd><dt>停止原因</dt><dd>{({ no_tool_calls: '模型自然结束', finish: '模型主动交卷', max_turns: '达到轮数上限', interrupted: '运行被中断', error: '执行异常' })[result?.stop_reason] || result?.stop_reason || '—'}</dd></dl></aside>
   </div>
 }
