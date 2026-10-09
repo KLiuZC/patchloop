@@ -4,6 +4,8 @@
 
 M3 的 [Flask #6146 文档 profile](evals/profiles/github-flask-6146/README.md) 已完成预检，后续真实模型修复及本地交付成功，见文末与[完整验收归档](evals/reports/github-issue-flask6146-smoke/README.md)。预检本身没有模型调用，不记作 Agent 修复成绩。
 
+M4 的自有测试仓库验收已完成：Issue #1 修复后通过独立测试，人工接受并交付到 GitHub 草稿 PR #2。认证推送的实现缺陷修复后沿用原请求恢复，证据与版本限制见 [M4 真实 PR 交付归档](evals/reports/github-pr-publish-demo-smoke/README.md)。
+
 | 日期 | 任务 | provider / model | 轮数 | tokens (prompt / completion) | 结果 | 备注 |
 |---|---|---|---|---|---|---|
 | 2026-09-26 | toy_repo 修 v 前缀 | deepseek / deepseek-flash | 4 | 4382 / 373 | 通过 | 先 ls+find 探索；heredoc 整文件重写；每条命令带 cd 绝对路径；每轮约 1.3s |
@@ -149,3 +151,13 @@ M3 的 [Flask #6146 文档 profile](evals/profiles/github-flask-6146/README.md) 
 - 仅在 `docs/deploying/index.rst` 中加入一个 Cloudflare Workers 指南链接；验证命令与已预检 profile 一致。此次仅检查文档要求，不执行 Sphinx 构建、Flask 应用测试或实际部署验证，不纳入 SWE-bench 分数。
 - 用户接受补丁后生成分支 `patchloop/57ff1f66-f127-4700-87db-4cb70af4f75f/r1`，交付提交 `7598cdce1f252e1395a8d28020333913c31e1fa9`。父版本等于验证基线，diff 与批准补丁逐字节一致；原下载目录保持基线，交付工作区干净，只有 1 条审查和 1 条交付，无任务容器残留。
 - 实现参考提交为 `071124f`，验收配置和文档在运行时尚未提交，按记录的脚本/命令哈希核对；没有补造 worker 的运行时源码指纹。收尾未重新调用模型、运行测试或改变人工决定，未向 GitHub 发布修改。来源、配置、补丁、验证和交付证据见 [M3 验收归档](evals/reports/github-issue-flask6146-smoke/README.md)。
+
+## M4：自有 GitHub 仓库的真实 PR 交付完成（2026-10-09）
+
+- 用户从网页导入 `KLiuZC/patchloop-publish-demo#1`，固定基线 `05c8b8fd1a952b65a336976d0b3a42498899a718`，创建任务 `3659f4fc-1eea-48cf-a744-b2bbebee4654`。DeepSeek flash，最多 10 轮、2GB 内存，预算提醒开启、finish 关闭；只允许修改 `calc.py`，镜像为已有 `patchloop-toy` / `linux/arm64`。
+- 实际 3 轮、8.4 秒结束，Prompt 5205（缓存 3712）、Completion 467，内置估算 ¥0.00343524，非平台账单。独立验证从 `1 failed, 10 passed` 变为 `11 passed`，最终 `completed/passed`，没有触发预算提醒。
+- 补丁只增加小写单前缀处理，测试和配置保持不变。第 1 次人工接受后，生成提交 `2b03ef0ea97d05da438a6853a7403c60b5f8aeea`，唯一父节点是验证基线；独立工作区、批准补丁和提交 tree 一致。
+- 首次发布在推送阶段遇到程序认证配置缺陷：`credential.interactive=false` 同时禁用了 askpass。修复后原凭证的 dry-run 通过，用户重启 API 并沿用原发布请求恢复，成功创建[草稿 PR #2](https://github.com/KLiuZC/patchloop-publish-demo/pull/2)。未重跑模型、替换补丁或重复审查。初次失败检查点已由最终状态覆盖，故障经过按当时观察记录，不补造原始日志或精确重试次数。
+- 本次只有 1 条审查、1 条交付、1 条发布记录和 1 个匹配 PR；远端 head、父提交、tree、文件 blob 及 PR 标题/正文均与确认方案一致。`main` 仍停在基线，PR 开放且为草稿、未合并。原仓库和交付工作区均干净，无任务容器残留。
+- 运行参考应用提交为 `14f02c6`；验收 profile 和认证修复随后保存于 `caf82d6`，归档参考 `486b437`。没有逐进程源码指纹，不将事后提交当作运行前冻结版本。worker 领取至结束 8.560210 秒；发布记录跨越的 650.871250 秒包含诊断、修复及人工恢复等待，不是发布执行延迟。
+- 本次是已知小问题的工程验收，不加入 SWE-bench 成绩，不声称覆盖复杂仓库、fork 或全部网络故障。收尾只读核对并保存 23 份本地/API/GitHub 证据，原数据未变，未调用模型或运行测试；下一步另做合并前检查。完整记录见 [M4 验收归档](evals/reports/github-pr-publish-demo-smoke/README.md)。

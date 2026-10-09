@@ -1,0 +1,33 @@
+{
+  "task_id": "3659f4fc-1eea-48cf-a744-b2bbebee4654",
+  "status": "accepted",
+  "revision": 1,
+  "evidence": {
+    "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+    "patch_sha256": "7e8d26ad8a3e25282720b78ea2b64b30e24f7a8ba7e6d9f21ffa29285d284d3f",
+    "validation_sha256": "3187e1b073e043299b30e553cfca8d38b586ef7fb75a293dc5a39d46a811a69c",
+    "task_sha256": "211bedb1a18fa870323d6be3e3b809948c86c3a159e5142c19fd224cc1fccbe8",
+    "summary_sha256": "53944234111e1d91f1727faa5174de4910e2fe9c6dbb4927ac288324b2cd5438",
+    "record_sha256": "5c987bb695ff0652187dd09ac036385f095d3eab748faf140d5081495163c3c4"
+  },
+  "can_accept": true,
+  "can_reject": true,
+  "reason": "",
+  "latest_review": {
+    "review_id": "8bf76646-9598-4780-95d8-6e238e0fcb9b",
+    "task_id": "3659f4fc-1eea-48cf-a744-b2bbebee4654",
+    "revision": 1,
+    "request_id": "4c1523b2-b932-4abf-9e16-9597b3ba95d7",
+    "decision": "accepted",
+    "comment": "",
+    "evidence": {
+      "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+      "patch_sha256": "7e8d26ad8a3e25282720b78ea2b64b30e24f7a8ba7e6d9f21ffa29285d284d3f",
+      "validation_sha256": "3187e1b073e043299b30e553cfca8d38b586ef7fb75a293dc5a39d46a811a69c",
+      "task_sha256": "211bedb1a18fa870323d6be3e3b809948c86c3a159e5142c19fd224cc1fccbe8",
+      "summary_sha256": "53944234111e1d91f1727faa5174de4910e2fe9c6dbb4927ac288324b2cd5438",
+      "record_sha256": "5c987bb695ff0652187dd09ac036385f095d3eab748faf140d5081495163c3c4"
+    },
+    "created_at": "2026-10-09T14:02:05.253130Z"
+  }
+}

@@ -68,6 +68,8 @@ npm --prefix frontend run dev
 
 已在 `1c88506` 上完成 M2 真实模型交付验收：DeepSeek flash 用 3 轮、8.6 秒生成只处理单个小写 `v` 的补丁，独立验证通过，用户在网页接受后生成提交 `05f02c0` 和独立分支。交付内容与批准补丁一致，原工作区代码及测试保持不变。配置、审查、交付与核对证据见 [M2 真实交付验收归档](evals/reports/patch-review-delivery-toy-smoke/README.md)。
 
+M4 已在自有公开测试仓库完成真实 PR 交付：从 Issue #1 创建修复任务，DeepSeek flash 用 3 轮、8.4 秒生成补丁，独立测试从 1 项失败变为 11 项全过；用户接受、本地交付并恢复原发布请求后，创建[草稿 PR #2](https://github.com/KLiuZC/patchloop-publish-demo/pull/2)。远端提交与批准补丁一致，目标 `main` 未改动。认证故障修复、版本记录限制及完整证据见 [M4 真实验收归档](evals/reports/github-pr-publish-demo-smoke/README.md)。
+
 ### 本地任务接口
 
 任务接口使用 FastAPI 和 SQLite，支持提交修复请求、按编号查询和服务重启后读取历史记录。API 进程只接收请求；独立的 worker 进程在 Docker 中串行调用 RepairRunner。仅启动 API 不需要 Docker 或 API key，启动 worker 执行任务时才需要。
@@ -384,9 +386,9 @@ curl -sS -X POST "http://127.0.0.1:8000/tasks/<task_id>/github-delivery/preview"
 
 推送后若批准或目标基线变化，会停止 PR 创建，保留已经发布的分支。GitHub 的目标分支可在独立网络请求之间变化，无法将本地批准与远端创建合为原子事务；如创建响应已显示基线变化，记录 PR 链接并标记 `blocked`，要求重新验证。远端已有的匹配 PR 可在恢复时补记，即使之后本地审查已更新；这只记录已发生的发布，不授权进一步写入。服务不删除分支、不改写现有 PR、不自动合并。
 
-新版 API 和 worker 启动时数据库升级到 v10，新增 `github_publications` 表，保留旧表及修复、审查、交付证据。应一并重启旧 API/worker 加载新代码；旧版本程序不支持 v10。启动和 GET 查询不会自动恢复发布，必须重试原确认请求。本阶段通过模拟 GitHub 和临时本地裸仓库验证，尚未在真实 GitHub 仓库发布验收。
+新版 API 和 worker 启动时数据库升级到 v10，新增 `github_publications` 表，保留旧表及修复、审查、交付证据。应一并重启旧 API/worker 加载新代码；旧版本程序不支持 v10。启动和 GET 查询不会自动恢复发布，必须重试原确认请求。实现阶段使用模拟 GitHub 和临时裸仓库验证，之后已完成下方自有仓库的真实发布验收。
 
-真实验收使用专用公开仓库 [KLiuZC/patchloop-publish-demo](https://github.com/KLiuZC/patchloop-publish-demo)，不向 Flask 等上游仓库投递演示 PR。样例、Issue 文案、凭证配置、固定基线及网页操作见 [M4 验收配置](evals/profiles/github-publish-demo/README.md)。已有镜像的预检结果是初始 1 项失败、10 项通过，正确修复后 11 项全过；实际模型修复和发布尚待用户执行。
+真实验收使用专用公开仓库 [KLiuZC/patchloop-publish-demo](https://github.com/KLiuZC/patchloop-publish-demo)，未向 Flask 等上游仓库投递演示 PR。样例、Issue 文案、凭证配置、固定基线及网页操作见 [M4 验收配置](evals/profiles/github-publish-demo/README.md)。用户已完成真实修复、审查和草稿 PR 发布，原始证据及逐项核对见 [验收归档](evals/reports/github-pr-publish-demo-smoke/README.md)。这是专用小任务的工程验收，不作为新的 benchmark 分数。
 
 ### 后台执行任务
 
@@ -669,7 +671,7 @@ frontend/            React + JavaScript 工作台、接口与页面测试
 - [x] PR 发布方案、离线预览接口及批准证据核对
 - [x] 确认发布后端、远端检查、分支推送与 PR 状态恢复（隔离验证）
 - [x] 网页 PR 预览、确认发布及结果恢复（模拟接口验收）
-- [ ] M4：自有 GitHub 仓库的真实 PR 交付验收
+- [x] M4：自有 GitHub 仓库的真实草稿 PR 交付验收（已归档，开发分支待合并）
 - [ ] PR / CI 上下文读取（按实际需要扩展）
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
 - [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录

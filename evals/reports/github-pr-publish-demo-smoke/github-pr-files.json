@@ -1,0 +1,14 @@
+[
+  {
+    "sha": "0da2772103d28044027f26afe2263290d83dd452",
+    "filename": "calc.py",
+    "status": "modified",
+    "additions": 2,
+    "deletions": 0,
+    "changes": 2,
+    "blob_url": "https://github.com/KLiuZC/patchloop-publish-demo/blob/2b03ef0ea97d05da438a6853a7403c60b5f8aeea/calc.py",
+    "raw_url": "https://github.com/KLiuZC/patchloop-publish-demo/raw/2b03ef0ea97d05da438a6853a7403c60b5f8aeea/calc.py",
+    "contents_url": "https://api.github.com/repos/KLiuZC/patchloop-publish-demo/contents/calc.py?ref=2b03ef0ea97d05da438a6853a7403c60b5f8aeea",
+    "patch": "@@ -1,3 +1,5 @@\n def parse_version(s: str) -> tuple[int, ...]:\n     \"\"\"Parse a dotted version, optionally prefixed by one lowercase v.\"\"\"\n+    if s.startswith(\"v\"):\n+        s = s[1:]\n     return tuple(int(part) for part in s.split(\".\"))"
+  }
+]

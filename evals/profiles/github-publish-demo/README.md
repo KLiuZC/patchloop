@@ -2,6 +2,8 @@
 
 目标是完整验证“GitHub Issue → 固定版本修复 → 独立测试 → 人工接受 → 本地交付 → 草稿 PR”。这是一个已知小问题的工程验收，不作为 SWE-bench 或泛化成功率统计。
 
+本配置已于 2026-10-09 完成真实验收：实际来源为 [Issue #1](https://github.com/KLiuZC/patchloop-publish-demo/issues/1)，任务为 `3659f4fc-1eea-48cf-a744-b2bbebee4654`，结果为[草稿 PR #2](https://github.com/KLiuZC/patchloop-publish-demo/pull/2)。完整证据、认证恢复经过及实现版本限制见 [M4 归档](../../reports/github-pr-publish-demo-smoke/README.md)。下文保留运行前的配置与操作步骤供复现；`preflight.json` 和 `repository.json` 保持准备时的快照，后者的待验收字段不代表当前状态。
+
 ## 仓库与基线
 
 - 公开测试仓库：[KLiuZC/patchloop-publish-demo](https://github.com/KLiuZC/patchloop-publish-demo)。仅上传了示例目录的 6 个文件，Issues 已启用。

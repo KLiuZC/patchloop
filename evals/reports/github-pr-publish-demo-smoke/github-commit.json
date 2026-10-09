@@ -1,0 +1,35 @@
+{
+  "sha": "2b03ef0ea97d05da438a6853a7403c60b5f8aeea",
+  "node_id": "C_kwDOVCYwlNoAKDJiMDNlZjBlYTk3ZDA1ZGE0MzhhNjg1M2E3NDAzYzYwYjVmOGFlZWE",
+  "url": "https://api.github.com/repos/KLiuZC/patchloop-publish-demo/git/commits/2b03ef0ea97d05da438a6853a7403c60b5f8aeea",
+  "html_url": "https://github.com/KLiuZC/patchloop-publish-demo/commit/2b03ef0ea97d05da438a6853a7403c60b5f8aeea",
+  "author": {
+    "name": "Zhicheng Liu",
+    "email": "zhicheng.liu1@student.unsw.edu.au",
+    "date": "2026-10-09T14:02:21Z"
+  },
+  "committer": {
+    "name": "Zhicheng Liu",
+    "email": "zhicheng.liu1@student.unsw.edu.au",
+    "date": "2026-10-09T14:02:21Z"
+  },
+  "tree": {
+    "sha": "ff0f08b16f3217981d8ec30542900c04fd61927d",
+    "url": "https://api.github.com/repos/KLiuZC/patchloop-publish-demo/git/trees/ff0f08b16f3217981d8ec30542900c04fd61927d"
+  },
+  "message": "修复：修复 calc.py 中的 parse_version，使 v1.2.3 返回 (1, 2, 3)，只支持开头单个小写 v。保留普通版本号的原有行为；V1.2.3、vv1.2.3、v、1..2、1.a\n\nTask: 3659f4fc-1eea-48cf-a744-b2bbebee4654\nReview: 8bf76646-9598-4780-95d8-6e238e0fcb9b\nPatch-SHA256: 7e8d26ad8a3e25282720b78ea2b64b30e24f7a8ba7e6d9f21ffa29285d284d3f",
+  "parents": [
+    {
+      "sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+      "url": "https://api.github.com/repos/KLiuZC/patchloop-publish-demo/git/commits/05c8b8fd1a952b65a336976d0b3a42498899a718",
+      "html_url": "https://github.com/KLiuZC/patchloop-publish-demo/commit/05c8b8fd1a952b65a336976d0b3a42498899a718"
+    }
+  ],
+  "verification": {
+    "verified": false,
+    "reason": "unsigned",
+    "signature": null,
+    "payload": null,
+    "verified_at": null
+  }
+}

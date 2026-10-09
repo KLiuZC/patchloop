@@ -1,0 +1,86 @@
+{
+  "task_id": "3659f4fc-1eea-48cf-a744-b2bbebee4654",
+  "configured": true,
+  "items": [
+    {
+      "publication_id": "bc40eddb-49f2-43de-b8e0-e425bd4bc23c",
+      "task_id": "3659f4fc-1eea-48cf-a744-b2bbebee4654",
+      "request_id": "f2dd120a-0e63-41df-a7ae-4b09353a674c",
+      "submission": {
+        "request_id": "f2dd120a-0e63-41df-a7ae-4b09353a674c",
+        "preview": {
+          "base_branch": "main",
+          "title": "修复 #1：parse_version 无法解析带单个小写 v 前缀的版本号",
+          "body": "## 修复要求\n\n```text\n修复 calc.py 中的 parse_version，使 v1.2.3 返回 (1, 2, 3)，只支持开头单个小写 v。保留普通版本号的原有行为；V1.2.3、vv1.2.3、v、1..2、1.a 和空字符串仍应抛出 ValueError。只修改 calc.py，不修改测试、配置或依赖文件，不安装依赖，不访问网络。运行 python -m pytest -q 核对结果。\n```\n\n## 问题来源\n\nhttps://github.com/kliuzc/patchloop-publish-demo/issues/1\n\n## 修改文件\n\n```text\n\"calc.py\"\n```\n\n## 验证\n\n```shell\npython -m pytest -q\n```\n\n- 修复前：失败，退出码 1。\n- 修复后：通过，退出码 0。\n\n验证基线：`05c8b8fd1a952b65a336976d0b3a42498899a718`。验证范围为上述命令覆盖的检查。\n",
+          "draft": true
+        },
+        "plan_sha256": "1e8eebd63b7f1fd89ea237920bf768ece8abc218b77fb4e4bf3abb9506d47cfa",
+        "confirmed": true
+      },
+      "plan_sha256": "1e8eebd63b7f1fd89ea237920bf768ece8abc218b77fb4e4bf3abb9506d47cfa",
+      "plan": {
+        "version": 1,
+        "task_id": "3659f4fc-1eea-48cf-a744-b2bbebee4654",
+        "source_id": "2db96bd2-9d4b-4281-aa1c-e90827fa82b6",
+        "preparation_id": "c376ffd9-c1f2-4024-afaf-50757b64f2f9",
+        "issue_url": "https://github.com/kliuzc/patchloop-publish-demo/issues/1",
+        "repository": {
+          "id": 1411788948,
+          "full_name": "KLiuZC/patchloop-publish-demo",
+          "html_url": "https://github.com/KLiuZC/patchloop-publish-demo",
+          "default_branch": "main",
+          "archived": false,
+          "visibility": "public"
+        },
+        "base_branch": "main",
+        "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+        "head_branch": "patchloop/3659f4fc-1eea-48cf-a744-b2bbebee4654/r1",
+        "head_sha": "2b03ef0ea97d05da438a6853a7403c60b5f8aeea",
+        "tree_sha": "ff0f08b16f3217981d8ec30542900c04fd61927d",
+        "delivery_id": "26aa657c-b075-49e8-be65-52eece04ca71",
+        "review_id": "8bf76646-9598-4780-95d8-6e238e0fcb9b",
+        "review_revision": 1,
+        "evidence": {
+          "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+          "patch_sha256": "7e8d26ad8a3e25282720b78ea2b64b30e24f7a8ba7e6d9f21ffa29285d284d3f",
+          "validation_sha256": "3187e1b073e043299b30e553cfca8d38b586ef7fb75a293dc5a39d46a811a69c",
+          "task_sha256": "211bedb1a18fa870323d6be3e3b809948c86c3a159e5142c19fd224cc1fccbe8",
+          "summary_sha256": "53944234111e1d91f1727faa5174de4910e2fe9c6dbb4927ac288324b2cd5438",
+          "record_sha256": "5c987bb695ff0652187dd09ac036385f095d3eab748faf140d5081495163c3c4"
+        },
+        "changed_paths": [
+          "calc.py"
+        ],
+        "verification": {
+          "command": "python -m pytest -q",
+          "baseline_status": "failed",
+          "baseline_exit_code": 1,
+          "candidate_status": "passed",
+          "candidate_exit_code": 0
+        },
+        "title": "修复 #1：parse_version 无法解析带单个小写 v 前缀的版本号",
+        "body": "## 修复要求\n\n```text\n修复 calc.py 中的 parse_version，使 v1.2.3 返回 (1, 2, 3)，只支持开头单个小写 v。保留普通版本号的原有行为；V1.2.3、vv1.2.3、v、1..2、1.a 和空字符串仍应抛出 ValueError。只修改 calc.py，不修改测试、配置或依赖文件，不安装依赖，不访问网络。运行 python -m pytest -q 核对结果。\n```\n\n## 问题来源\n\nhttps://github.com/kliuzc/patchloop-publish-demo/issues/1\n\n## 修改文件\n\n```text\n\"calc.py\"\n```\n\n## 验证\n\n```shell\npython -m pytest -q\n```\n\n- 修复前：失败，退出码 1。\n- 修复后：通过，退出码 0。\n\n验证基线：`05c8b8fd1a952b65a336976d0b3a42498899a718`。验证范围为上述命令覆盖的检查。\n",
+        "draft": true
+      },
+      "status": "completed",
+      "phase": "completed",
+      "actor": {
+        "id": 78536318,
+        "login": "KLiuZC"
+      },
+      "push_attempted": true,
+      "branch_pushed": true,
+      "pr_attempted": true,
+      "pull_request": {
+        "number": 2,
+        "url": "https://github.com/KLiuZC/patchloop-publish-demo/pull/2",
+        "state": "open",
+        "base_sha": "05c8b8fd1a952b65a336976d0b3a42498899a718",
+        "head_sha": "2b03ef0ea97d05da438a6853a7403c60b5f8aeea"
+      },
+      "error": "",
+      "created_at": "2026-10-09T14:03:18.938607Z",
+      "updated_at": "2026-10-09T14:14:09.809857Z"
+    }
+  ]
+}
