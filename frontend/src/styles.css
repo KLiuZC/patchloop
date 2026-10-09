@@ -85,11 +85,6 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
 .spin { animation: spin 1.4s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.workspace-intro { display: flex; align-items: center; gap: 0.875rem; margin-bottom: 1.75rem; padding: 1.1875rem 1.5rem; background: linear-gradient(110deg, #eef1f9, #f2f4fa 75%); border: 1px solid #e7eaf3; border-radius: 0.6875rem; }
-.intro-mark { display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 0.6875rem; background: #fff9; color: #626d8f; border: 1px solid #ffffffe0; }
-.workspace-intro strong { display: block; color: #5e6a88; font-size: 0.875rem; font-weight: 550; }
-.workspace-intro p { font-size: 0.8125rem; color: #646c7d; margin-top: 0.25rem; }
-.intro-label { margin-left: auto; color: #656d80; border: 1px solid #dce2ed; border-radius: 0.3125rem; padding: 0.1875rem 0.5rem; font-size: 0.6875rem; }
 .task-panel, .panel, .validation-panel, .log-panel, .diff-panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
 .list-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1.25rem; padding: 1.1875rem 1.4375rem; border-bottom: 1px solid var(--line); }
 .toolbar-title { display: flex; align-items: center; gap: 0.5625rem; min-width: 0; }
@@ -130,7 +125,6 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
 .empty-state p { font-size: 0.875rem; color: #69707b; line-height: 1.9; margin: 0.625rem 0 1.3125rem; }
 .loading-state { padding: 4.75rem 1.25rem; display: flex; align-items: center; justify-content: center; gap: 0.625rem; color: #676e7e; font-size: 0.875rem; }
 
-.create-layout { display: grid; grid-template-columns: minmax(0, 1fr) 16.375rem; gap: 1.75rem; align-items: start; }
 .create-form { min-width: 0; }
 .create-form fieldset { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; padding: 0; box-shadow: var(--shadow); }
 .form-section { padding: 1.625rem 1.75rem 1rem; }
@@ -181,22 +175,6 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
 .checkbox-label input { accent-color: var(--accent); width: 0.875rem; height: 0.875rem; }
 .form-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.875rem; margin-top: 1.375rem; }
 .form-actions p { font-size: 0.75rem; color: #69707d; }
-.submission-aside { position: sticky; top: 6.0625rem; padding: 1.6875rem 0.3125rem 0.625rem 0.625rem; }
-.aside-symbol { height: 2.9375rem; width: 2.9375rem; background: #edf0fa; display: flex; align-items: center; justify-content: center; color: #5f6990; border-radius: 0.875rem; margin-bottom: 1.625rem; border: 1px solid #e3e8f7; }
-.submission-aside h2 { font-size: 1.5rem; line-height: 1.6; font-weight: 540; letter-spacing: -.0.25rem; color: #626d88; }
-.submission-aside > p { font-size: 0.8125rem; color: #646b77; line-height: 1.9; margin-top: 0.875rem; }
-.process-list { padding: 0; margin: 1.875rem 0; list-style: none; }
-.process-list li { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.375rem; }
-.process-list li > span { font-size: 0.6875rem; color: #676f81; display: flex; align-items: center; justify-content: center; width: 1.375rem; height: 1.375rem; border: 1px solid #dce3f1; border-radius: 50%; }
-.process-list strong { display: block; font-size: 0.8125rem; font-weight: 500; color: #646f88; }
-.process-list small { display: block; font-size: 0.75rem; color: #6b707b; margin-top: 0.1875rem; }
-.submission-summary { padding: 1.25rem 0; border-top: 1px solid #e1e6f0; border-bottom: 1px solid #e1e6f0; margin-bottom: 1.125rem; }
-.submission-summary > span { font-size: 0.75rem; color: #6a707e; display: block; }
-.submission-summary strong { display: block; font-size: 1.5rem; font-weight: 520; color: #63708c; margin-top: 0.3125rem; }
-.submission-summary small { font-size: 0.75rem; font-weight: 400; color: #636b7a; }
-.submission-summary p { font-size: 0.75rem; color: #676d7a; margin-top: 0.1875rem; overflow-wrap: anywhere; }
-.aside-note { display: flex; align-items: flex-start; gap: 0.5rem; color: #676e7c; margin: 0.75rem 0; }
-.aside-note p { font-size: 0.75rem; line-height: 1.75; }
 
 .detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.6875rem; }
 .detail-heading > div:first-child { min-width: 0; }
@@ -423,8 +401,6 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
   .topbar { padding: 0 1.625rem; }
   .task-table-header, .task-row { grid-template-columns: minmax(7.5rem, 1fr) 5.9375rem 7.1875rem 1rem; }
   .task-table-header > span:nth-child(4), .row-time { display: none; }
-  .create-layout { grid-template-columns: minmax(0, 1fr) 13.125rem; gap: 1.25rem; }
-  .submission-aside h2 { font-size: 1.3125rem; }
   .overview-grid { grid-template-columns: minmax(0, 1fr) 16.5rem; gap: 1.125rem; }
   .status-fact { padding: 0 0.9375rem; }
 }
@@ -435,8 +411,6 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
   .brand > span, .nav-caption, .nav-item > span, .sidebar-bottom { display: none; }
   .nav-item { width: 2.75rem; height: 2.6875rem; justify-content: center; padding: 0; }
   .nav-item > span { display: block; position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; white-space: nowrap; }
-  .create-layout { grid-template-columns: minmax(0, 1fr); }
-  .submission-aside { display: none; }
   .overview-grid { grid-template-columns: minmax(0, 1fr); }
   .task-facts dl { display: grid; grid-template-columns: 6.25rem minmax(0, 1fr); align-items: baseline; gap: 0.625rem; }
   .task-facts dt { margin: 0; }
@@ -461,9 +435,6 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
   .page-heading > .button { font-size: 0.75rem; padding: 0.5rem 0.6875rem; min-height: 2.1875rem; margin-top: 1.5625rem; }
   .page-heading p { font-size: 0.8125rem; max-width: 15rem; line-height: 1.8; }
   .eyebrow { font-size: 0.625rem; letter-spacing: 0.09375rem; }
-  .workspace-intro { padding: 1rem; gap: 0.625rem; }
-  .workspace-intro p { line-height: 1.7; }
-  .intro-label { display: none; }
   .list-toolbar { padding: 0.875rem; flex-wrap: wrap; gap: 0.75rem; }
   .toolbar-actions { margin-left: auto; }
   .toolbar-title strong { font-size: 0.8125rem; }

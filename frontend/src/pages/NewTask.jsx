@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowUpRight, FlaskConical, LoaderCircle, Play, ShieldCheck, Sparkles } from 'lucide-react'
-import { motion as Motion } from 'motion/react'
+import { ArrowLeft, ArrowUpRight, FlaskConical, LoaderCircle } from 'lucide-react'
 import { createTask } from '../lib/api'
 import { buildTaskPayload, defaultForm, modelPresets, validateTaskForm } from '../lib/task'
 import { ErrorNotice } from '../components/ui'
@@ -69,26 +68,18 @@ export default function NewTask() {
 
   return <div className="page new-task-page">
     <Link className="back-link" to="/tasks"><ArrowLeft size={15} />返回任务列表</Link>
-    <div className="page-heading"><div><span className="eyebrow">A NEW REPAIR</span><h1 id="page-title" tabIndex={-1}>描述问题，开始修复</h1><p>指定仓库和验证方式，让每一步都有明确的目标。</p></div></div>
-    <div className="create-layout">
-      <form onSubmit={submit} noValidate className="create-form">
-        <fieldset disabled={mutation.isPending}>
-          <section className="form-section"><div className="section-heading"><span className="step-number">01</span><div><h2>修复什么</h2><p>任务会固定在提交时的 Git 版本。</p></div><button className="button button-quiet button-small example-button" type="button" onClick={fillExample}><FlaskConical size={14} />填入示例</button></div>
-            <Field name="repo_path" label="仓库目录" hint="运行服务的电脑上的 Git 仓库路径，也支持相对于服务启动目录的路径。" error={errors.repo_path}><input {...input('repo_path', { placeholder: '例如 examples/toy_repo', maxLength: 4096, spellCheck: false, autoComplete: 'off' })} /></Field>
-            <Field name="goal" label="修复要求" hint="写清出现的问题、预期行为，以及需要保留的约束。" error={errors.goal}><textarea {...input('goal', { rows: 5, maxLength: 20000, placeholder: '例如：版本号解析不支持 v 前缀。请修复这个问题，保持已有行为，不修改测试。' })} /></Field>
-            <Field name="verification_command" label="验证命令" hint="在干净基线和候选补丁上分别执行，用于确认问题是否被修复。" error={errors.verification_command}><input className="mono-input" {...input('verification_command', { maxLength: 20000, spellCheck: false })} /></Field>
-          </section>
-          <TaskConfiguration form={form} errors={errors} input={input} change={change} disabled={mutation.isPending} />
-        </fieldset>
-        {mutation.isError && <ErrorNotice error={mutation.error}><Link to="/tasks">查看任务列表</Link>，核对是否已经创建成功。</ErrorNotice>}
-        <div className="form-actions"><p>任务提交后，可以在详情页跟踪进度。</p><button className="button button-primary" type="submit" disabled={mutation.isPending}>{mutation.isPending ? <LoaderCircle size={16} className="spin" /> : <ArrowUpRight size={17} />}{mutation.isPending ? '正在提交…' : '提交任务'}</button></div>
-      </form>
-      <Motion.aside className="submission-aside" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', bounce: 0, duration: 0.35 }}>
-        <div className="aside-symbol"><Sparkles size={25} strokeWidth={1.6} /></div><span className="eyebrow">REPAIR, WITH EVIDENCE</span><h2>一个任务，<br />一份可核对的结果。</h2><p>修改在独立副本中生成。任务结束后，你会得到补丁和独立验证记录。</p>
-        <ol className="process-list"><li><span>1</span><div><strong>提交任务</strong><small>保存目标、版本和执行配置</small></div></li><li><span>2</span><div><strong>后台修复</strong><small>模型检查代码、修改并测试</small></div></li><li><span>3</span><div><strong>核对结果</strong><small>查看改动及修复前后的验证</small></div></li></ol>
-        <div className="submission-summary"><span>本次执行预算</span><strong>{Number(form.max_model_calls) || '—'} <small>轮以内</small></strong><p>{form.provider === 'glm' ? '智谱 GLM' : 'DeepSeek'} · {form.model || '服务默认模型'}</p></div>
-        <div className="aside-note"><Play size={15} /><p>任务由独立 worker 领取。实际执行会产生模型调用费用。</p></div><div className="aside-note"><ShieldCheck size={15} /><p>完成执行、通过验证、人工审查分别记录。</p></div>
-      </Motion.aside>
-    </div>
+    <div className="page-heading"><div><span className="eyebrow">A NEW REPAIR</span><h1 id="page-title" tabIndex={-1}>描述问题，开始修复</h1><p>配置仓库、修复要求和验证命令。</p></div></div>
+    <form onSubmit={submit} noValidate className="create-form">
+      <fieldset disabled={mutation.isPending}>
+        <section className="form-section"><div className="section-heading"><span className="step-number">01</span><div><h2>修复什么</h2><p>任务会固定在提交时的 Git 版本。</p></div><button className="button button-quiet button-small example-button" type="button" onClick={fillExample}><FlaskConical size={14} />填入示例</button></div>
+          <Field name="repo_path" label="仓库目录" hint="运行服务的电脑上的 Git 仓库路径，也支持相对于服务启动目录的路径。" error={errors.repo_path}><input {...input('repo_path', { placeholder: '例如 examples/toy_repo', maxLength: 4096, spellCheck: false, autoComplete: 'off' })} /></Field>
+          <Field name="goal" label="修复要求" hint="写清出现的问题、预期行为，以及需要保留的约束。" error={errors.goal}><textarea {...input('goal', { rows: 5, maxLength: 20000, placeholder: '例如：版本号解析不支持 v 前缀。请修复这个问题，保持已有行为，不修改测试。' })} /></Field>
+          <Field name="verification_command" label="验证命令" hint="在干净基线和候选补丁上分别执行，用于确认问题是否被修复。" error={errors.verification_command}><input className="mono-input" {...input('verification_command', { maxLength: 20000, spellCheck: false })} /></Field>
+        </section>
+        <TaskConfiguration form={form} errors={errors} input={input} change={change} disabled={mutation.isPending} />
+      </fieldset>
+      {mutation.isError && <ErrorNotice error={mutation.error}><Link to="/tasks">查看任务列表</Link>，核对是否已经创建成功。</ErrorNotice>}
+      <div className="form-actions"><p>任务提交后，可以在详情页跟踪进度。</p><button className="button button-primary" type="submit" disabled={mutation.isPending}>{mutation.isPending ? <LoaderCircle size={16} className="spin" /> : <ArrowUpRight size={17} />}{mutation.isPending ? '正在提交…' : '提交任务'}</button></div>
+    </form>
   </div>
 }
