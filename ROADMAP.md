@@ -1,6 +1,6 @@
 # patchloop 发展路线
 
-更新日期：2026-10-08。M1 网页真实验收实现版本：`07bbc8e`，合并提交：`303312a`；M2 审查、路径保护与本地交付在 `1c88506` 上完成真实模型验收，已合并为 `4e4f65d`。M3 已实现公开 Issue 来源快照与仓库固定版本准备；任务衔接、网页入口和 M4 仍在计划中。
+更新日期：2026-10-09。M1 网页真实验收实现版本：`07bbc8e`，合并提交：`303312a`；M2 审查、路径保护与本地交付在 `1c88506` 上完成真实模型验收，已合并为 `4e4f65d`。M3 已实现公开 Issue 来源快照、仓库固定版本准备及修复任务关联；网页入口和 M4 仍在计划中。
 
 ## 1. 目标与当前位置
 
@@ -22,7 +22,7 @@ DevFlow-AI 是研发协作与分析平台，参考价值主要在仓库上下文
 - 对应公开仓库的准备接口：复核仓库身份，保存准确 commit SHA，再下载至独立目录；支持重复请求、失败留档与重启查询。
 - [两仓库修复集成验证](evals/reports/repair-real-task-smoke2/README.md)：RepairRunner 已在两个已有开发题上通过可见验证及官方判卷。这与上述 API/worker 的玩具任务验收分开记录。
 
-当前仍是本机单用户、单 worker 的系统。网页工作台、人工审查、路径保护及本地交付均已合并至 `main`。M3 在 `feat/github-tasks` 中已实现公开 Issue 来源保存与仓库准备，尚未将这些记录接入修复任务或网页入口。停止 worker 不等于已有单任务取消接口；原始 `result.review_status` 保留修复快照，网页中的最新审查与交付状态通过独立接口读取。
+当前仍是本机单用户、单 worker 的系统。网页工作台、人工审查、路径保护及本地交付均已合并至 `main`。M3 在 `feat/github-tasks` 中已实现公开 Issue 来源保存与仓库准备，已通过后端接口将这些记录接入修复任务，专门的 GitHub 网页入口待实现。停止 worker 不等于已有单任务取消接口；原始 `result.review_status` 保留修复快照，网页中的最新审查与交付状态通过独立接口读取。
 
 ## 2. 对照 DevFlow-AI，差距在哪里
 
@@ -32,7 +32,7 @@ DevFlow-AI 是研发协作与分析平台，参考价值主要在仓库上下文
 | --- | --- | --- | --- |
 | 代码修复与验证 | 主要通过只读工作区工具组织分析 | 能修改代码、生成补丁并独立验证 | 保留修复内核，持续用任务检验效果 |
 | 页面与可操作性 | 有对话、仓库、工作流、知识与动作草稿页面 | 已有任务工作台、人工审查和本地交付 | M3：增加 GitHub 来源与任务入口 |
-| GitHub 上下文 | 有 Issue、PR、CI 同步与分析入口 | 已有公开 Issue 快照和固定版本仓库准备，执行仍使用本地任务 | M3：任务来源关联与网页入口 |
+| GitHub 上下文 | 有 Issue、PR、CI 同步与分析入口 | 已有公开 Issue 快照、固定版本仓库准备及来源关联任务 | M3：任务来源关联与网页入口 |
 | 人工确认与交付 | 有动作草稿及部分 GitHub 元数据写操作 | 已有网页审查及受路径、版本和证据约束的本地交付 | M4：PR 交付 |
 | 对话与知识 | 有 ChatAgent、RAG、记忆和 Skill 加载 | 单次修复目标与线性消息历史 | 按实际任务需要逐项加入 |
 | 多 Agent | Planner、专项分析、Observer、Synthesis 工作流 | 单 Agent 修复 | 先评估独立 reviewer 等具体收益 |
@@ -101,7 +101,7 @@ M1 与 M2 已能演示网页提交、修复、结果查看、人工审查和本�
 
 完成 M1、M2 后，可演示“提交问题 → 观察修复 → 查看测试 → 人工确认 → 获取修改分支”的本地产品流程。
 
-### M3：GitHub 问题输入（来源读取与仓库准备已实现）
+### M3：GitHub 问题输入（来源、仓库准备及任务衔接已实现）
 
 建议分支：`feat/github-tasks`。目标是将真实研发问题转成当前执行器能够处理的固定任务，先完成读取链路。
 
@@ -123,9 +123,11 @@ M1 与 M2 已能演示网页提交、修复、结果查看、人工审查和本�
 
 后续按以下顺序推进：
 
-1. 任务衔接：由用户确认修复目标、范围、固定基线、镜像及验证命令，创建关联来源与仓库准备记录的修复任务；提交时重新检查准备状态和本地代码，不能仅凭历史 `ready` 执行。
+1. 任务衔接已实现：`POST /tasks/from-issue` 要求用户确认修复目标、范围、镜像及验证命令。固定来源和基线从准备记录读取，提交与 worker 执行前分别检查本地代码；同请求重放不重复排队。来源上下文冻结在任务记录中，进入模型请求和修复档案，保留原有验证、审查及恢复流程。数据库 v9 通过新增来源列和幂等请求表兼容旧数据。
 2. 网页入口：填写 Issue URL、预览来源和任务配置，从详情页回溯来源与固定基线。
 3. 小任务验收：选取适合的小型 Python 仓库问题，完成修复、独立验证和人工审查，记录实际证据。
+
+第三步后端验证：918 项全量测试通过，覆盖重复和并发提交、事务回滚、准备目录变更、完整执行配置的恢复核对，以及冻结 Issue 上下文进入修复、验证和人工接受流程。临时修复副本禁用宿主 Git hooks、模板和过滤器；Git 完整性检查放在 SQLite 写事务之外。真实 v8 数据库的临时副本升级到 v9 后，4 条任务、2 条审查、1 条交付和 1 条 Issue 来源原始字段完全保留，原库未改动。本步未调用真实模型，未改动前端。
 
 扩展工作按实际需要加入：
 
@@ -184,7 +186,7 @@ M4 的交付验收不要求自动合并到主分支。后续是否增加自动�
 6. 已归档验证结果并完成合并前检查；`feat/task-ui` 已合并为 `303312a`。
 7. `feat/patch-review` 已实现后端/网页审查、路径保护及独立分支交付；隔离联调与真实模型验收均通过，已合并为 `4e4f65d`。
 8. 已从该提交创建 `feat/github-tasks`，M3 第一步来源读取已提交为 `b7e5e6d`，第二步仓库准备已实现并完成实际下载验证。
-9. 下一步将来源与固定版本的仓库准备记录关联到修复任务，随后接入网页和小任务验收。
+9. 已实现来源与仓库准备关联任务，并以临时 Git 仓库和脚本化模型验证修复、独立测试及审查流程。下一步接入 GitHub 网页入口，再准备小任务真实验收。
 
 每项独立功能使用单独分支；提交前检查工作区和上次提交状态，阶段完成后更新本文及必要的实验记录。已完成与未完成能力以源码和验收证据为准。
 
@@ -195,6 +197,7 @@ M4 的交付验收不要求自动合并到主分支。后续是否增加自动�
 - 领取、持久化与恢复：[store.py](src/patchloop/api/store.py)、[worker.py](src/patchloop/worker.py)。
 - GitHub 来源读取与保存：[github.py](src/patchloop/api/github.py)、[source_models.py](src/patchloop/api/source_models.py)、[source_store.py](src/patchloop/api/source_store.py)；接口测试：[test_github_issues.py](tests/test_github_issues.py)。
 - 仓库版本解析、下载与状态：[repository_github.py](src/patchloop/api/repository_github.py)、[repository_git.py](src/patchloop/api/repository_git.py)、[repositories.py](src/patchloop/api/repositories.py)、[repository_store.py](src/patchloop/api/repository_store.py)。
+- Issue 任务衔接：[issue_tasks.py](src/patchloop/api/issue_tasks.py)、[test_issue_tasks.py](tests/test_issue_tasks.py)。
 - 独立官方判卷：[judge.py](src/patchloop/repair/judge.py)；历史实验入口：[EXPERIMENTS.md](EXPERIMENTS.md)。
 - 网页工作台：[frontend/README.md](frontend/README.md)；真实模型验收：[task-ui-toy-smoke](evals/reports/task-ui-toy-smoke/README.md)。
 - DevFlow 页面参考：其本地副本的 `frontend/app/chat/page.tsx`、`workflow-runs/page.tsx`、`action-drafts/page.tsx`。页面存在及源码调用关系不替代全栈验收。

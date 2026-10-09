@@ -4,6 +4,8 @@ import tempfile
 import uuid
 from pathlib import Path
 
+from .patch_policy import _GIT_OPTIONS, _git_environment
+
 
 class WorktreeWorkspace:
     """A disposable standalone checkout rooted at one immutable base commit."""
@@ -18,9 +20,13 @@ class WorktreeWorkspace:
     def __enter__(self) -> "WorktreeWorkspace":
         if not self.repo_path.is_dir():
             raise ValueError(f"repository does not exist: {self.repo_path}")
+        env = _git_environment()
+        env["GIT_LFS_SKIP_SMUDGE"] = "1"
+        options = [*_GIT_OPTIONS, "-c", "protocol.file.allow=always", "-c", "submodule.recurse=false"]
         check = subprocess.run(
-            ["git", "rev-parse", "--is-inside-work-tree"],
+            ["git", *options, "rev-parse", "--is-inside-work-tree"],
             cwd=self.repo_path,
+            env=env, timeout=30,
             capture_output=True,
             text=True,
         )
@@ -34,19 +40,19 @@ class WorktreeWorkspace:
         # A standalone clone keeps its own .git directory. This matters when the
         # checkout is bind-mounted into Docker: a git worktree's .git file points
         # at an absolute host path that is unavailable inside the container.
-        subprocess.run(
-            ["git", "clone", "--no-hardlinks", "--no-local", str(self.repo_path), str(self.path)],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        subprocess.run(
-            ["git", "checkout", "--detach", self.base_sha],
-            cwd=self.path,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
+        try:
+            subprocess.run(
+                ["git", *options, "clone", "--no-checkout", "--template=", "--no-hardlinks", "--no-local",
+                 str(self.repo_path), str(self.path)],
+                check=True, capture_output=True, text=True, env=env, timeout=60,
+            )
+            subprocess.run(
+                ["git", *options, "checkout", "--detach", self.base_sha],
+                cwd=self.path, check=True, capture_output=True, text=True, env=env, timeout=30,
+            )
+        except BaseException:
+            self.__exit__()
+            raise
         return self
 
     def __exit__(self, *exc) -> None:

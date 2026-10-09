@@ -120,7 +120,7 @@ curl -sS "http://127.0.0.1:8000/tasks?status=completed&limit=20"
 
 ### 公开 GitHub Issue 来源
 
-M3 支持读取公开 GitHub Issue，并保存独立的来源记录。它会记录仓库、Issue 编号与对象 ID、标题、正文、状态、来源更新时间、读取时间和 JSON 快照摘要。随后可通过仓库准备接口下载固定版本代码。当前入口在 API 的 `/docs`，网页入口及来源与修复任务的关联尚未接入。
+M3 支持读取公开 GitHub Issue，并保存独立的来源记录。它会记录仓库、Issue 编号与对象 ID、标题、正文、状态、来源更新时间、读取时间和 JSON 快照摘要。随后可准备固定版本代码，并通过 `/tasks/from-issue` 创建关联来源的修复任务。当前 GitHub 导入和任务创建入口在 API 的 `/docs`，专门的网页入口尚未接入。
 
 | 接口 | 用途 |
 | --- | --- |
@@ -187,6 +187,44 @@ M3 支持读取公开 GitHub Issue，并保存独立的来源记录。它会记�
 本阶段仅支持公开 GitHub 仓库，拒绝重定向和仓库身份变化。Git 禁用用户 Git 配置、凭证助手、交互提示、hooks 和自动子模块操作，不安装依赖、不执行仓库代码。含子模块的版本会明确失败；Git LFS 只保留指针文件，不下载其外部对象。浅下载减少历史数据，但不是磁盘配额，大仓库仍可能占用较多空间。版本解析有 25 秒接收预算，Git 准备步骤共用 180 秒超时，超时会终止该次 Git 进程组。
 
 此步骤无需 worker、Docker 或模型密钥，不创建修复任务。后续还需选择运行镜像、验证命令与修复范围，再关联固定来源和代码版本创建任务。版本解析使用 [GitHub commit 接口](https://docs.github.com/en/rest/commits/commits#get-a-commit)，浅下载行为见 [git fetch](https://git-scm.com/docs/git-fetch)。
+
+### 从 Issue 创建修复任务
+
+仓库准备成功后，重启新版 API，在 `/docs` 使用 `POST /tasks/from-issue`。需要填写确认后的目标、验证命令和执行配置；代码路径、基线 SHA 和 Issue 来源由服务从准备记录读取，不能在请求中覆盖。
+
+```json
+{
+  "request_id": "<新生成的 UUID>",
+  "preparation_id": "<准备成功的 preparation_id>",
+  "goal": "<确认后的问题与期望行为>",
+  "verification_command": "python -m pytest -q",
+  "execution": {
+    "image": "<已安装该仓库依赖的本地 Docker 镜像>",
+    "provider": "deepseek",
+    "max_model_calls": 10
+  },
+  "workdir": ".",
+  "path_policy": {
+    "allowed_paths": ["src/**"]
+  }
+}
+```
+
+示例中的镜像、目标及允许路径需要按实际仓库填写；`patchloop-toy` 仅适合准备过相应依赖的小型 Python 玩具任务，不是任意仓库的运行环境。程序不自动安装依赖，不执行 Issue 正文中的命令。路径规则从仓库根目录计算；`workdir` 可选，默认为根目录，也可填写实际存在的子目录。缺省的保护规则继续禁止修改常见测试路径。
+
+首次成功返回 201，响应包含 `task` 和 `replayed: false`，`task.status` 为 `queued`；`Location` 指向 `/tasks/{task_id}`。`task.source` 保存 Issue 内容和快照哈希、准备编号、固定 SHA、版本解析时间，查询任务不重新读取 GitHub。模型运行时会同时收到用户确认的目标和冻结的 Issue 上下文；正文作为问题材料，不提供扩大路径范围或发布内容的权限。
+
+同请求编号及相同配置重试返回 200 和当前任务状态，不创建第二条任务；同编号换配置返回 409。新编号可以有意创建另一次修复尝试。任务和请求映射在同一 SQLite 事务中保存，失败时不会留下孤立任务。数据库升级至 v9，旧任务的来源保持为空，历史修复产物与审查记录不改写。
+
+未找到准备记录返回 404；未完成准备、代码被修改、身份不匹配或目录无效返回 409；请求字段无效返回 422。创建前会重新检查目录、Git 配置、HEAD 和工作区；worker 在初始化模型和 Docker 前再检查一次，提交之后发生变更也会停止。重试已存在的请求仅查询保存的任务，即使代码已变化也不会重新排队。
+
+创建请求只排队，不调用模型；需要运行时，使用返回的 `task.task_id`：
+
+```bash
+uv run agent worker --task-id "<返回的 task_id>"
+```
+
+这条命令会执行真实模型调用。已有任务详情页面可用 `/tasks/<task_id>` 查看进度、补丁、验证和人工审查；专门的 GitHub 导入页面以及来源信息的网页展示留到下一步。本步用临时 Git 仓库、脚本化模型、真实本地测试验证了创建、执行、独立验证及接受流程，没有调用付费模型。
 
 ### 人工审查接口
 

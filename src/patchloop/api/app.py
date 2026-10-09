@@ -12,7 +12,8 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from .models import (ReviewHistory, ReviewResponse, ReviewState, ReviewSubmission,
                      DeliveryResponse, DeliveryState, DeliverySubmission,
-                     TaskPage, TaskRecord, TaskStatus, TaskSubmission)
+                     TaskPage, TaskRecord, TaskStatus, TaskSubmission, IssueTaskSubmission, IssueTaskResult)
+from .issue_tasks import IssueTaskConflict, IssueTaskService
 from .delivery import DeliveryService
 from .review import ReviewConflict, ReviewNotFound
 from .store import InvalidTaskCursor, TaskStore
@@ -67,6 +68,7 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     source_store = IssueSourceStore(store)
     github = GitHubIssueClient(transport=github_transport)
     repositories = RepositoryPreparationService(store, github, root=repositories_root)
+    issue_tasks = IssueTaskService(store, repositories)
     server_directory = Path.cwd().resolve()
 
     @asynccontextmanager
@@ -86,6 +88,11 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     app.state.issue_source_store = source_store
     app.state.github_client = github
     app.state.repository_service = repositories
+    app.state.issue_task_service = issue_tasks
+
+    @app.exception_handler(IssueTaskConflict)
+    async def issue_task_conflict(request: Request, exc: IssueTaskConflict):
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
 
     @app.exception_handler(sqlite3.Error)
     async def storage_error(request: Request, exc: sqlite3.Error):
@@ -162,6 +169,15 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
         if snapshot is None:
             raise HTTPException(status_code=404, detail="Issue source not found")
         return snapshot
+
+    @app.post("/tasks/from-issue", response_model=IssueTaskResult, status_code=201)
+    def submit_issue_task(submission: IssueTaskSubmission, response: Response) -> IssueTaskResult:
+        """Create one runnable task using frozen Issue context and prepared code."""
+        result = issue_tasks.submit(submission)
+        if result.replayed:
+            response.status_code = 200
+        response.headers["Location"] = f"/tasks/{result.task.task_id}"
+        return result
 
     @app.post("/tasks", response_model=TaskRecord, status_code=201)
     def submit_task(submission: TaskSubmission, response: Response) -> TaskRecord:

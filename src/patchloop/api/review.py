@@ -97,6 +97,8 @@ def _snapshot(task: TaskRecord) -> tuple[ReviewEvidence, bool]:
     record_value = task.model_dump(mode="json")
     if task.path_policy is None:
         record_value.pop("path_policy")
+    if task.source is None:
+        record_value.pop("source")
     record_bytes = _json_bytes(record_value)
     return ReviewEvidence(
         base_sha=task.base_sha, patch_sha256=patch_hash,

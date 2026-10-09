@@ -594,14 +594,18 @@ def test_v7_to_v8_migration_is_additive_and_preserves_all_existing_rows(tmp_path
     assert IssueSourceStore(task_store).get(source.source_id) == source
     assert IssueSourceStore(task_store).get_snapshot(source.source_id) == snapshot
     with sqlite3.connect(database) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 8
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 9
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
-        assert tables == {*original_rows, "repository_preparations"}
+        assert tables == {*original_rows, "repository_preparations", "issue_task_requests"}
         assert [row[1] for row in connection.execute("PRAGMA table_info(repository_preparations)")] == [
             "preparation_id", "request_id", "source_id", "record_json",
         ]
         upgraded_schema = connection.execute("SELECT type, name, sql FROM sqlite_master ORDER BY name").fetchall()
-        assert all(definition in upgraded_schema for definition in original_schema)
+        assert all(definition in upgraded_schema for definition in original_schema if definition[:2] != ("table", "tasks"))
         for table, rows in original_rows.items():
-            assert connection.execute(f"SELECT * FROM {table} ORDER BY 1").fetchall() == rows
+            upgraded_rows = connection.execute(f"SELECT * FROM {table} ORDER BY 1").fetchall()
+            if table == "tasks":
+                assert all(row[-1] is None for row in upgraded_rows)
+                upgraded_rows = [row[:-1] for row in upgraded_rows]
+            assert upgraded_rows == rows
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []

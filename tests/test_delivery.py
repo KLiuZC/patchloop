@@ -930,6 +930,7 @@ def test_v5_accepted_review_migrates_without_changing_historical_evidence_or_old
     # Reconstruct the v5 hash independently: the old record has no policy key.
     historical_record = task.model_dump(mode="json")
     assert historical_record.pop("path_policy") is None
+    assert historical_record.pop("source") is None
     historical_bytes = json.dumps(
         historical_record, sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(",", ":"),
     ).encode("utf-8")
@@ -960,7 +961,7 @@ def test_v5_accepted_review_migrates_without_changing_historical_evidence_or_old
     with TestClient(create_app(store.path, deliveries_root=tmp_path / "deliveries")) as restarted:
         migrated_store = restarted.app.state.task_store
         with migrated_store._connection() as connection:
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 8
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 9
             assert [row["name"] for row in connection.execute("PRAGMA table_info(tasks)")] == [
                 *old_columns, "path_policy_json",
             ]
@@ -985,6 +986,7 @@ def test_v5_accepted_review_migrates_without_changing_historical_evidence_or_old
         assert detail.status_code == 200, detail.text
         migrated_record = detail.json()
         assert migrated_record.pop("path_policy") is None
+        assert migrated_record.pop("source") is None
         assert migrated_record == historical_record
         assert migrated_store.get(task.task_id) == task
 
