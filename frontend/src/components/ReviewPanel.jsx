@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, ClipboardCheck, History, RefreshCw, X } from 'lucide-react'
+import { Check, RefreshCw, X } from 'lucide-react'
 import { ApiError } from '../lib/api'
 import { getReview, listReviews, loadReviewSnapshot, sameEvidence, submitReview } from '../lib/reviews'
 import { clearPendingReview, keepLatestReview, readPendingReview, reviewError, reviewReason, savePendingReview } from '../lib/review-draft'
@@ -8,11 +8,14 @@ import { formatDate } from '../lib/task'
 import DiffViewer from './DiffViewer'
 import ValidationPanel from './ValidationPanel'
 import DeliveryPanel from './DeliveryPanel'
+import IssueSourcePanel from './IssueSourcePanel'
+import VerificationCommand from './VerificationCommand'
+import ReviewStepHeading from './ReviewStepHeading'
 import { ErrorNotice, LoadingState, ReviewBadge } from './ui'
 
-function EvidenceDetails({ evidence }) {
+function EvidenceDetails({ evidence, label = '审查依据' }) {
   if (!evidence) return null
-  return <details className="review-evidence"><summary>审查依据</summary><dl>
+  return <details className="review-evidence"><summary>{label}</summary><dl>
     <dt>基线提交</dt><dd><code>{evidence.base_sha}</code></dd>
     <dt>补丁 SHA-256</dt><dd><code>{evidence.patch_sha256}</code></dd>
     <dt>验证报告 SHA-256</dt><dd><code>{evidence.validation_sha256}</code></dd>
@@ -28,6 +31,7 @@ function ReviewSession({ taskId }) {
   const [pending, setPending] = useState(() => readPendingReview(taskId))
   const [comment, setComment] = useState(() => readPendingReview(taskId)?.comment ?? client.getQueryData(['review-comment', taskId]) ?? '')
   const [busy, setBusy] = useState(false)
+  const [editingDecision, setEditingDecision] = useState(false)
   const [error, setError] = useState(null)
   const [feedback, setFeedback] = useState('')
   const [conflict, setConflict] = useState(false)
@@ -72,6 +76,7 @@ function ReviewSession({ taskId }) {
       if (ownsPending || pending?.request_id === record.request_id) {
         setPending(null)
         setComment('')
+        setEditingDecision(false)
       }
       setError(null)
       setFeedback(state.status === 'stale' ? '审查已记录，但依据已变化，需要重新审查。' : '审查已保存。')
@@ -170,42 +175,63 @@ function ReviewSession({ taskId }) {
     }
   }
 
-  return <div className="review-layout">
-    <section className="panel review-heading-panel"><div className="panel-heading"><h2><ClipboardCheck size={18} />人工审查</h2>
-      <button type="button" className="button button-quiet button-small" disabled={busy || snapshot.isFetching} onClick={reload}><RefreshCw size={14} className={snapshot.isFetching ? 'spin' : ''} />重新加载审查资料</button></div>
-      <div className="review-current"><span>当前状态</span>{current.isError ? <span>暂无法读取</span> : current.data ? <ReviewBadge value={current.data.status} /> : <span>正在读取…</span>}<span className="muted">{current.data ? `已记录 ${current.data.revision} 次审查` : ''}</span></div>
-      <p className="review-help">核对补丁和测试结果后提交意见。接受后，可在下方生成独立修改分支。</p>
-      {current.isError && <ErrorNotice error={new ApiError(reviewError(current.error), current.error.status)} onRetry={() => current.refetch()} />}
-      {frozen && reviewReason(frozen) && <p className="notice notice-warning">{reviewReason(frozen)}</p>}
-      {(changed || conflict) && <p className="notice notice-warning" role="alert">审查资料或其他审查决定已更新。你的意见已保留，请重新加载资料后核对。</p>}
-    </section>
+  const decision = current.data?.latest_review
+  const settled = decision && ['accepted', 'rejected'].includes(current.data?.status)
+    && !current.isError && !snapshot.isError && !changed && !conflict
+  const showEditor = !settled || editingDecision || Boolean(pending) || Boolean(comment)
 
+  return <div className="review-layout">
+    <header className="review-statusbar">
+      <div className="review-current"><span>当前状态</span>{current.isError ? <span>暂无法读取</span> : current.data ? <ReviewBadge value={current.data.status} /> : <span>正在读取…</span>}<span className="muted">{current.data ? `已记录 ${current.data.revision} 次审查` : ''}</span></div>
+      <button type="button" className="button button-quiet button-small" disabled={busy || snapshot.isFetching} onClick={reload}><RefreshCw size={14} className={snapshot.isFetching ? 'spin' : ''} />重新加载审查资料</button>
+    </header>
+    {current.isError && <ErrorNotice error={new ApiError(reviewError(current.error), current.error.status)} onRetry={() => current.refetch()} />}
+    {frozen && reviewReason(frozen) && <p className="notice notice-warning">{reviewReason(frozen)}</p>}
+    {(changed || conflict) && <p className="notice notice-warning" role="alert">审查资料或其他审查决定已更新。你的意见已保留，请重新加载资料后核对。</p>}
     {snapshot.isPending && <LoadingState label="正在核对审查资料…" />}
     {snapshot.isError && <ErrorNotice error={new ApiError(reviewError(snapshot.error), snapshot.error.status)} onRetry={reload} />}
-    {snapshot.data?.task && <section className="panel goal-panel"><div className="panel-heading"><h2>本次审查要求</h2></div><p>{snapshot.data.task.goal}</p>
-      <div className="verification-command"><span>验证命令</span><code>{snapshot.data.task.verification.command}</code></div><EvidenceDetails evidence={frozen.evidence} /></section>}
-    {snapshot.data?.patch && <DiffViewer patch={snapshot.data.patch} />}
-    {snapshot.data?.validation && <ValidationPanel validation={snapshot.data.validation} />}
 
-    <section className="panel review-form" aria-label="提交人工审查"><div className="panel-heading"><h2>审查意见</h2></div>
-      <div className="field"><label htmlFor="review-comment">意见（选填）</label><textarea id="review-comment" value={comment} rows={3} maxLength={4000} disabled={busy || Boolean(pending)} aria-describedby="review-comment-hint" placeholder="例如：补丁额外支持大写 V，超出了本次修复范围。" onChange={(event) => { setComment(event.target.value); client.setQueryData(['review-comment', taskId], event.target.value); setFeedback('') }} /><div className="field-hint" id="review-comment-hint">{comment.length} / 4000</div></div>
+    <section className="panel review-step review-context">
+      <ReviewStepHeading number="01" title="任务要求" />
+      {snapshot.data?.task ? <>
+        <p className="review-goal">{snapshot.data.presentation?.goal ?? snapshot.data.task.goal}</p>
+        {snapshot.data.presentation?.source && <IssueSourcePanel source={snapshot.data.presentation.source}
+          baseSha={snapshot.data.task.base_sha} repoPath={snapshot.data.task.repo_path} collapseBody embedded />}
+      </> : <p className="review-help">可核对的任务资料将在修复结束后显示。</p>}
+    </section>
+
+    <section className="panel review-step review-inspection">
+      <ReviewStepHeading number="02" title="检查修改" />
+      <DiffViewer patch={snapshot.data?.patch} embedded downloadable={Boolean(snapshot.data?.patch)} />
+      <ValidationPanel validation={snapshot.data?.validation} compact embedded />
+      {snapshot.data?.task && <details className="review-verification"><summary>查看验证命令</summary><VerificationCommand command={snapshot.data.task.verification.command} /></details>}
+      <EvidenceDetails evidence={frozen?.evidence} label="详细记录" />
+    </section>
+
+    <section className="panel review-step review-form" aria-label="提交人工审查">
+      <ReviewStepHeading number="03" title="审查决定" />
+      {settled && <div className="review-decision-summary"><div><ReviewBadge value={decision.decision} /><time dateTime={decision.created_at}>{formatDate(decision.created_at)}</time><span>第 {decision.revision} 次审查</span></div><p className="review-comment">{decision.comment || '未填写意见。'}</p>{!showEditor && <button type="button" className="button button-quiet button-small" disabled={busy} onClick={() => setEditingDecision(true)}>修改审查决定</button>}</div>}
+      {showEditor && <>
+        <div className="field"><label htmlFor="review-comment">意见（选填）</label><textarea id="review-comment" value={comment} rows={3} maxLength={4000} disabled={busy || Boolean(pending)} aria-describedby="review-comment-hint" placeholder="说明是否符合要求，以及需要调整的内容。" onChange={(event) => { setComment(event.target.value); client.setQueryData(['review-comment', taskId], event.target.value); setFeedback('') }} /><div className="field-hint" id="review-comment-hint">{comment.length} / 4000</div></div>
+        <div className="review-actions"><button type="button" className="button button-quiet review-reject" disabled={blocked || !frozen?.can_reject || frozen.status === 'rejected'} onClick={() => decide('rejected')}><X size={16} />拒绝补丁</button>
+          <button type="button" className="button button-primary" disabled={blocked || !frozen?.can_accept || frozen.status === 'accepted'} onClick={() => decide('accepted')}><Check size={16} />接受补丁</button>
+          {settled && !pending && <button type="button" className="button button-quiet button-small" disabled={busy} onClick={() => { setEditingDecision(false); setComment(''); client.removeQueries({ queryKey: ['review-comment', taskId], exact: true }) }}>取消修改</button>}
+          {busy && <span className="review-help" role="status">正在处理审查…</span>}</div>
+      </>}
       {pending && <div className="notice notice-warning review-retry"><div><strong>有一条审查提交尚未确认</strong><p>核对结果或重试原请求后，再提交新的决定。</p></div><div className="review-actions"><button type="button" className="button button-quiet button-small" disabled={busy} onClick={reconcile}>核对提交结果</button><button type="button" className="button button-quiet button-small" disabled={busy} onClick={() => send(pending, true)}>重试原提交</button></div></div>}
       {error && <ErrorNotice error={error} />}
       {feedback && <p className="review-feedback" role="status">{feedback}</p>}
-      <div className="review-actions"><button type="button" className="button button-quiet review-reject" disabled={blocked || !frozen?.can_reject || frozen.status === 'rejected'} onClick={() => decide('rejected')}><X size={16} />拒绝补丁</button>
-        <button type="button" className="button button-primary" disabled={blocked || !frozen?.can_accept || frozen.status === 'accepted'} onClick={() => decide('accepted')}><Check size={16} />接受补丁</button>{busy && <span className="review-help" role="status">正在处理审查…</span>}</div>
+      <details className="review-history"><summary>审查历史{history.data ? `（${history.data.items.length}）` : ''}</summary>
+        {history.isPending && <LoadingState label="正在读取审查历史…" />}
+        {history.isError && <ErrorNotice error={new ApiError(reviewError(history.error), history.error.status)} onRetry={() => history.refetch()} />}
+        {!history.isPending && !history.isError && !history.data?.items.length && <p className="review-help">暂无审查记录。</p>}
+        {history.data?.items.length > 0 && <ol aria-label="审查历史">{history.data.items.slice().reverse().map((item) => <li key={item.review_id}>
+          <div className="review-history-heading"><ReviewBadge value={item.decision} /><span>第 {item.revision} 次审查</span><time dateTime={item.created_at} title={item.created_at}>{formatDate(item.created_at)}</time></div>
+          <p className="review-comment">{item.comment || '未填写意见。'}</p><EvidenceDetails evidence={item.evidence} />
+        </li>)}</ol>}
+      </details>
     </section>
 
-    <DeliveryPanel key={`${taskId}-${current.data?.revision ?? 0}-${current.data?.status ?? 'unknown'}`} taskId={taskId} reviewState={current.isError ? null : current.data} />
-
-    <section className="panel review-history"><div className="panel-heading"><h2><History size={18} />审查历史</h2><span className="muted">最新在前</span></div>
-      {history.isPending && <LoadingState label="正在读取审查历史…" />}
-      {history.isError && <ErrorNotice error={new ApiError(reviewError(history.error), history.error.status)} onRetry={() => history.refetch()} />}
-      {!history.isPending && !history.isError && !history.data?.items.length && <p className="review-help">暂无审查记录。</p>}
-      {history.data?.items.length > 0 && <ol aria-label="审查历史">{history.data.items.slice().reverse().map((item) => <li key={item.review_id}>
-        <div className="review-history-heading"><ReviewBadge value={item.decision} /><span>第 {item.revision} 次审查</span><time dateTime={item.created_at} title={item.created_at}>{formatDate(item.created_at)}</time></div>
-        <p className="review-comment">{item.comment || '未填写意见。'}</p><EvidenceDetails evidence={item.evidence} />
-      </li>)}</ol>}
-    </section>
+    <DeliveryPanel key={`${taskId}-${current.data?.revision ?? 0}-${current.data?.status ?? 'unknown'}`} taskId={taskId} reviewState={current.isError ? null : current.data} variant="review" />
   </div>
 }

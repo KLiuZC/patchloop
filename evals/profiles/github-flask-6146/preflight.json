@@ -1,0 +1,44 @@
+{
+  "checked_at": "2026-10-09T04:15:05.460194+00:00",
+  "kind": "verification_profile_preflight",
+  "model_calls": 0,
+  "issue_url": "https://github.com/pallets/flask/issues/6146",
+  "repository": "pallets/flask",
+  "base_sha": "d086db856be187255b8ec61ef409357393020f32",
+  "implementation_commit": "071124ffc113a6026a25f5a5510dcd7eec0d6451",
+  "image": {
+    "tag": "patchloop-toy",
+    "id": "sha256:a332fc2b8bd3fdb081f36325f89e7a4617c3192bea9cc46eddad7cf3729bec85",
+    "platform": "linux/arm64"
+  },
+  "baseline_document_sha256": "6bc83d21199fb07378afefa4491ada139385e3d865109f865e4b843fd6754175",
+  "profile_sha256": "9e1d65d2e7838de4f119c59b27f336e3444feef2b5e03feebec82adee005e722",
+  "command_sha256": "a460a2e3043c5c1daa739676adc919fd791dad65c9beece0f5f58803f9182e08",
+  "controls": {
+    "baseline": {
+      "exit_code": 1,
+      "output": "test_cloudflare_flask_guide_in_hosting_platforms (__main__.HostingDocumentation.test_cloudflare_flask_guide_in_hosting_platforms) ... FAIL\ntest_existing_hosting_platforms_remain (__main__.HostingDocumentation.test_existing_hosting_platforms_remain) ... ok\ntest_self_hosted_options_remain (__main__.HostingDocumentation.test_self_hosted_options_remain) ... ok\n\n======================================================================\nFAIL: test_cloudflare_flask_guide_in_hosting_platforms (__main__.HostingDocumentation.test_cloudflare_flask_guide_in_hosting_platforms)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<string>\", line 25, in test_cloudflare_flask_guide_in_hosting_platforms\nAssertionError: 0 != 1 : Add one inline bullet link to the Cloudflare Flask guide under Hosting Platforms\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n\n[exit code 1]"
+    },
+    "inline_link_under_hosting": {
+      "exit_code": 0,
+      "output": "test_cloudflare_flask_guide_in_hosting_platforms (__main__.HostingDocumentation.test_cloudflare_flask_guide_in_hosting_platforms) ... ok\ntest_existing_hosting_platforms_remain (__main__.HostingDocumentation.test_existing_hosting_platforms_remain) ... ok\ntest_self_hosted_options_remain (__main__.HostingDocumentation.test_self_hosted_options_remain) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nOK\n"
+    },
+    "link_in_wrong_section": {
+      "exit_code": 1,
+      "output": "test_cloudflare_flask_guide_in_hosting_platforms (__main__.HostingDocumentation.test_cloudflare_flask_guide_in_hosting_platforms) ... FAIL\ntest_existing_hosting_platforms_remain (__main__.HostingDocumentation.test_existing_hosting_platforms_remain) ... ok\ntest_self_hosted_options_remain (__main__.HostingDocumentation.test_self_hosted_options_remain) ... ok\n\n======================================================================\nFAIL: test_cloudflare_flask_guide_in_hosting_platforms (__main__.HostingDocumentation.test_cloudflare_flask_guide_in_hosting_platforms)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<string>\", line 25, in test_cloudflare_flask_guide_in_hosting_platforms\nAssertionError: 0 != 1 : Add one inline bullet link to the Cloudflare Flask guide under Hosting Platforms\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nFAILED (failures=1)\n"
+    },
+    "wrong_guide_url": {
+      "exit_code": 1,
+      "output": "test_cloudflare_flask_guide_in_hosting_platforms (__main__.HostingDocumentation.test_cloudflare_flask_guide_in_hosting_platforms) ... FAIL\ntest_existing_hosting_platforms_remain (__main__.HostingDocumentation.test_existing_hosting_platforms_remain) ... ok\ntest_self_hosted_options_remain (__main__.HostingDocumentation.test_self_hosted_options_remain) ... ok\n\n======================================================================\nFAIL: test_cloudflare_flask_guide_in_hosting_platforms (__main__.HostingDocumentation.test_cloudflare_flask_guide_in_hosting_platforms)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<string>\", line 25, in test_cloudflare_flask_guide_in_hosting_platforms\nAssertionError: 0 != 1 : Add one inline bullet link to the Cloudflare Flask guide under Hosting Platforms\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nFAILED (failures=1)\n"
+    },
+    "previous_platform_removed": {
+      "exit_code": 1,
+      "output": "test_cloudflare_flask_guide_in_hosting_platforms (__main__.HostingDocumentation.test_cloudflare_flask_guide_in_hosting_platforms) ... ok\ntest_existing_hosting_platforms_remain (__main__.HostingDocumentation.test_existing_hosting_platforms_remain) ... FAIL\ntest_self_hosted_options_remain (__main__.HostingDocumentation.test_self_hosted_options_remain) ... ok\n\n======================================================================\nFAIL: test_existing_hosting_platforms_remain (__main__.HostingDocumentation.test_existing_hosting_platforms_remain)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<string>\", line 37, in test_existing_hosting_platforms_remain\nAssertionError: {'https://docs.microsoft.com/en-us/azure/app-service/quickstart-python'} is not false : Existing platform links removed: ['https://docs.microsoft.com/en-us/azure/app-service/quickstart-python']\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n"
+    }
+  },
+  "limitations": [
+    "Synthetic controls validate the profile, not agent performance.",
+    "No Sphinx build, external link check or actual deployment verification."
+  ],
+  "original_checkout_intact": true
+}

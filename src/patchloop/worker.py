@@ -64,6 +64,9 @@ def execute_task(record: TaskRecord, artifacts: Path) -> RepairResult:
     config = record.execution
     if config is None:
         raise ValueError("task has no execution configuration")
+    if record.source is not None:
+        from .api.issue_tasks import inspect_issue_task
+        inspect_issue_task(record)
     inspected = subprocess.run(
         ["docker", "image", "inspect", config.image, "--format", "{{.Id}} {{.Os}}/{{.Architecture}}"],
         capture_output=True, text=True, timeout=30,
@@ -118,9 +121,9 @@ def _saved_result(task: TaskRecord) -> dict | None:
         patch = (root / "patch.diff").read_bytes().decode("utf-8")
         if not all(isinstance(value, dict) for value in (summary, request, validation)):
             return None
-        expected = {"task_id": str(task.task_id), "repo_path": task.repo_path, "workdir": task.workdir,
-                    "base_sha": task.base_sha, "goal": task.goal}
-        if any(request.get(key) != value for key, value in expected.items()):
+        expected = task.to_repair_task().to_dict()
+        canonical = lambda value: json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False)
+        if canonical(request) != canonical(expected):
             return None
         if not isinstance(request.get("verification"), dict) or request["verification"].get("command") != task.verification_command:
             return None

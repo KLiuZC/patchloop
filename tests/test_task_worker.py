@@ -62,7 +62,7 @@ def test_v1_database_migration_keeps_original_tasks_storage_only(tmp_path):
     assert saved.execution is None and saved.validation_status == "not_run"
     assert store.claim(tmp_path / "runs") is None
     with sqlite3.connect(database) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 9
 
 
 def test_concurrent_claims_never_duplicate_a_task(store):
@@ -261,9 +261,7 @@ def local_repair_executor(store, *, interrupt=False, interrupt_snapshot=False):
                     msg = SimpleNamespace(content="done", tool_calls=[])
                 return msg, SimpleNamespace(prompt_tokens=11, completion_tokens=3)
 
-        repair_task = RepairTask(task_id=str(record.task_id), repo_path=Path(record.repo_path), base_sha=record.base_sha,
-                                 goal=record.goal, workdir=record.workdir,
-                                 verification=VerificationProfile(command=record.verification_command))
+        repair_task = record.to_repair_task()
         return RepairRunner(repair_task, artifacts, lambda root, workdir: Runner(root / workdir)).run(ScriptedModel())
 
     return task, executor

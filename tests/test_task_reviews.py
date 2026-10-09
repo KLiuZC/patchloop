@@ -661,9 +661,10 @@ def test_v4_migration_preserves_existing_rows_results_and_is_reentrant(tmp_path)
         assert post(restarted, completed, first_body, expected=200)["review"] == accepted["review"]
         assert restarted.get(f"/tasks/{completed.task_id}").json() == expected_records[completed.task_id]
     with sqlite3.connect(database) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 9
         upgraded_rows = connection.execute("SELECT * FROM tasks ORDER BY task_id").fetchall()
-        assert [row[:-1] for row in upgraded_rows] == old_rows
+        assert [row[:-2] for row in upgraded_rows] == old_rows
+        assert all(row[-2:] == (None, None) for row in upgraded_rows)
         assert all(row[-1] is None for row in upgraded_rows)
         assert connection.execute("SELECT count(*) FROM task_reviews").fetchone()[0] == 1
     assert file_snapshot(completed) == files_before

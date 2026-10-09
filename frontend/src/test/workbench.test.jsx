@@ -218,6 +218,8 @@ describe('任务工作台', () => {
     mount(`/tasks/${taskId}`)
     expect(await screen.findByText('这是一条仅保存的任务记录')).toBeVisible()
     expect(screen.queryByText('已进入队列，等待 worker 领取')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText('此任务仅保存，未配置执行与验证。')).toBeVisible())
+    expect(screen.queryByText('任务正在排队，尚无验证记录。')).not.toBeInTheDocument()
   })
 
   it('keeps the full task id available when clipboard access fails', async () => {
@@ -227,6 +229,7 @@ describe('任务工作台', () => {
     mount(`/tasks/${taskId}`)
     await user.click(await screen.findByRole('button', { name: '复制编号', exact: true }))
     expect(await screen.findByText('复制失败，请手动选择文本')).toHaveAttribute('role', 'status')
+    await user.click(screen.getByText('完整路径与标识'))
     expect(screen.getByText(taskId)).toBeVisible()
   })
 
@@ -280,5 +283,33 @@ describe('任务工作台', () => {
     const before = screen.getByText('修复前 · 干净基线').closest('.verification-card')
     fireEvent.click(within(before).getByText('查看测试输出'))
     await waitFor(() => expect(screen.getByText('baseline output')).toBeVisible())
+  })
+
+  it('keeps full requirements in the overview while shortening the page heading', async () => {
+    const goal = '保留完整问题描述及修复范围。'.repeat(15)
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse(taskRecord({ goal }))))
+    mount(`/tasks/${taskId}`)
+    await screen.findByRole('heading', { name: '任务说明' })
+    expect(screen.getByRole('heading', { level: 1 }).textContent.length).toBe(61)
+    expect(screen.getByText(goal, { selector: '.overview-goal' })).toBeVisible()
+    expect(screen.getByText('查看验证命令').closest('details')).not.toHaveAttribute('open')
+    expect(screen.getByText('完整路径与标识').closest('details')).not.toHaveAttribute('open')
+    expect(screen.queryByText('REPAIR DETAILS')).not.toBeInTheDocument()
+  })
+
+  it('opens the correct detail tabs from the overview shortcuts', async () => {
+    const record = taskRecord({ status: 'completed', validation_status: 'passed', result: { patch: '',
+      validation: { status: 'passed', command: 'pytest -q', baseline: { status: 'failed', exit_code: 1 }, candidate: { status: 'passed', exit_code: 0 } } } })
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse(record)))
+    const user = userEvent.setup()
+    mount(`/tasks/${taskId}`)
+    await user.click(await screen.findByRole('button', { name: '查看代码改动' }))
+    expect(screen.getByRole('tab', { name: '代码改动' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: '代码改动' })).toHaveFocus()
+    await user.click(screen.getByRole('tab', { name: '概览' }))
+    await user.click(screen.getByRole('button', { name: '查看完整报告' }))
+    expect(screen.getByRole('tab', { name: '验证报告' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: '验证报告' })).toHaveFocus()
+    expect(screen.getByRole('region', { name: '固定验证命令' })).toBeInTheDocument()
   })
 })

@@ -1082,6 +1082,7 @@ source = { editable = "." }
 dependencies = [
     { name = "datasets" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "openai" },
     { name = "pydantic" },
     { name = "python-dotenv" },
@@ -1092,7 +1093,6 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "httpx" },
     { name = "pytest" },
 ]
 
@@ -1100,6 +1100,7 @@ dev = [
 requires-dist = [
     { name = "datasets", specifier = ">=5.0.1" },
     { name = "fastapi", specifier = ">=0.142.2" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "openai", specifier = ">=3.19.2" },
     { name = "pydantic", specifier = ">=2.13.5" },
     { name = "python-dotenv", specifier = ">=1.2.3" },
@@ -1109,10 +1110,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "pytest", specifier = ">=9.1.1" },
-]
+dev = [{ name = "pytest", specifier = ">=9.1.1" }]
 
 [[package]]
 name = "pluggy"

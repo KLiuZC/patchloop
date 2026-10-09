@@ -6,15 +6,24 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import UUID, uuid4
 
+import httpx
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 
 from .models import (ReviewHistory, ReviewResponse, ReviewState, ReviewSubmission,
                      DeliveryResponse, DeliveryState, DeliverySubmission,
-                     TaskPage, TaskRecord, TaskStatus, TaskSubmission)
+                     TaskPage, TaskRecord, TaskStatus, TaskSubmission, IssueTaskSubmission, IssueTaskResult)
+from .issue_tasks import IssueTaskConflict, IssueTaskService
 from .delivery import DeliveryService
 from .review import ReviewConflict, ReviewNotFound
 from .store import InvalidTaskCursor, TaskStore
+from .github import GitHubIssueClient, GitHubReadError
+from .source_models import GitHubIssueSnapshot, IssueImport, IssueImportResult, IssueSource
+from .source_store import IssueSourceStore, SourceConflict, SourceCorrupt
+from .repositories import PreparationNotFound, RepositoryPreparationService
+from .repository_models import (RepositoryPreparationResult, RepositoryPreparationState,
+                                RepositoryPreparationSubmission)
+from .repository_store import PreparationConflict, PreparationCorrupt
 
 
 logger = logging.getLogger(__name__)
@@ -50,15 +59,22 @@ def _repository_base(submission: TaskSubmission, server_directory: Path) -> tupl
     return root, workdir, base
 
 
-def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: Path | None = None) -> FastAPI:
+def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: Path | None = None,
+               github_transport: httpx.BaseTransport | None = None,
+               repositories_root: Path | None = None) -> FastAPI:
     """Create the task API. No worker, model client or Docker container is started."""
     store = TaskStore(Path(db_path))
     delivery_service = DeliveryService(store, deliveries_root)
+    source_store = IssueSourceStore(store)
+    github = GitHubIssueClient(transport=github_transport)
+    repositories = RepositoryPreparationService(store, github, root=repositories_root)
+    issue_tasks = IssueTaskService(store, repositories)
     server_directory = Path.cwd().resolve()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         store.initialize()
+        repositories.recover_interrupted()
         yield
 
     app = FastAPI(
@@ -69,11 +85,99 @@ def create_app(db_path: Path = Path("data/tasks.sqlite3"), *, deliveries_root: P
     )
     app.state.task_store = store
     app.state.delivery_service = delivery_service
+    app.state.issue_source_store = source_store
+    app.state.github_client = github
+    app.state.repository_service = repositories
+    app.state.issue_task_service = issue_tasks
+
+    @app.exception_handler(IssueTaskConflict)
+    async def issue_task_conflict(request: Request, exc: IssueTaskConflict):
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
 
     @app.exception_handler(sqlite3.Error)
     async def storage_error(request: Request, exc: sqlite3.Error):
         logger.error("Task storage operation failed: %s", type(exc).__name__)
         return JSONResponse(status_code=503, content={"detail": "Task storage is unavailable; try again later"})
+
+    @app.exception_handler(GitHubReadError)
+    async def github_error(request: Request, exc: GitHubReadError):
+        headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after is not None else {}
+        return JSONResponse(status_code=exc.status_code, content={"detail": str(exc)}, headers=headers)
+
+    @app.exception_handler(SourceConflict)
+    async def source_conflict(request: Request, exc: SourceConflict):
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.exception_handler(SourceCorrupt)
+    async def source_corrupt(request: Request, exc: SourceCorrupt):
+        return JSONResponse(status_code=500, content={"detail": "Saved Issue source is inconsistent; existing snapshots were not changed"})
+
+    @app.exception_handler(PreparationConflict)
+    async def preparation_conflict(request: Request, exc: PreparationConflict):
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.exception_handler(PreparationCorrupt)
+    async def preparation_corrupt(request: Request, exc: PreparationCorrupt):
+        return JSONResponse(status_code=500, content={"detail": "Saved repository preparation is inconsistent"})
+
+    @app.exception_handler(PreparationNotFound)
+    async def preparation_missing(request: Request, exc: PreparationNotFound):
+        return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    @app.post("/repositories/prepare", response_model=RepositoryPreparationResult, status_code=201)
+    def prepare_repository(submission: RepositoryPreparationSubmission, response: Response) -> RepositoryPreparationResult:
+        """Pin and download a source's public repository. Does not create a repair task."""
+        try:
+            result = repositories.prepare(submission)
+        except OSError as exc:
+            raise HTTPException(status_code=503, detail="Repository storage is unavailable") from exc
+        if result.replayed:
+            response.status_code = 200
+        response.headers["Location"] = f"/repositories/{result.preparation.preparation_id}"
+        return result
+
+    @app.get("/repositories/{preparation_id}", response_model=RepositoryPreparationState)
+    def get_repository(preparation_id: UUID) -> RepositoryPreparationState:
+        return repositories.get(preparation_id)
+
+    @app.post("/sources/github/issues", response_model=IssueImportResult, status_code=201)
+    def import_issue(submission: IssueImport, response: Response) -> IssueImportResult:
+        """Read a public Issue into an immutable snapshot, without creating a task."""
+        existing = source_store.get_for_request(submission.request_id)
+        if existing is not None:
+            if existing.requested_url != submission.url:
+                raise SourceConflict("request_id was already used for a different Issue URL")
+            result = IssueImportResult(source=existing, replayed=True)
+        else:
+            source, snapshot = github.fetch(submission)
+            result = source_store.save(source, snapshot)
+        if result.replayed:
+            response.status_code = 200
+        response.headers["Location"] = f"/sources/github/issues/{result.source.source_id}"
+        return result
+
+    @app.get("/sources/github/issues/{source_id}", response_model=IssueSource)
+    def get_issue_source(source_id: UUID) -> IssueSource:
+        source = source_store.get(source_id)
+        if source is None:
+            raise HTTPException(status_code=404, detail="Issue source not found")
+        return source
+
+    @app.get("/sources/github/issues/{source_id}/snapshot", response_model=GitHubIssueSnapshot)
+    def get_issue_snapshot(source_id: UUID) -> GitHubIssueSnapshot:
+        snapshot = source_store.get_snapshot(source_id)
+        if snapshot is None:
+            raise HTTPException(status_code=404, detail="Issue source not found")
+        return snapshot
+
+    @app.post("/tasks/from-issue", response_model=IssueTaskResult, status_code=201)
+    def submit_issue_task(submission: IssueTaskSubmission, response: Response) -> IssueTaskResult:
+        """Create one runnable task using frozen Issue context and prepared code."""
+        result = issue_tasks.submit(submission)
+        if result.replayed:
+            response.status_code = 200
+        response.headers["Location"] = f"/tasks/{result.task.task_id}"
+        return result
 
     @app.post("/tasks", response_model=TaskRecord, status_code=201)
     def submit_task(submission: TaskSubmission, response: Response) -> TaskRecord:

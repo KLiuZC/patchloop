@@ -55,9 +55,9 @@ function deferred() {
   return { promise, resolve }
 }
 
-function mount(initialReview = review(), id = taskId) {
-  const view = render(<DeliveryPanel taskId={id} reviewState={initialReview} />)
-  return { ...view, update: (nextReview, nextId = id) => view.rerender(<DeliveryPanel taskId={nextId} reviewState={nextReview} />) }
+function mount(initialReview = review(), id = taskId, variant = 'default') {
+  const view = render(<DeliveryPanel taskId={id} reviewState={initialReview} variant={variant} />)
+  return { ...view, update: (nextReview, nextId = id) => view.rerender(<DeliveryPanel taskId={nextId} reviewState={nextReview} variant={variant} />) }
 }
 
 const generate = () => screen.getByRole('button', { name: '生成修改分支' })
@@ -98,6 +98,55 @@ afterEach(() => {
 })
 
 describe('local delivery display and explicit submission', () => {
+  it('summarizes the completed current delivery in the review layout', async () => {
+    server[taskId] = plan({ can_deliver: false, reason: 'delivery already completed', delivery: record(), delivery_intact: true })
+    mount(review(), taskId, 'review')
+    await ready()
+    expect(screen.getByText('本地交付已完成。')).toBeVisible()
+    expect(screen.queryByRole('button', { name: '生成修改分支' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '复制提交 SHA' })).toBeVisible()
+    expect(screen.getByText('交付详细记录').closest('details')).not.toHaveAttribute('open')
+    expect(screen.getByText('目标 HEAD')).not.toBeVisible()
+    expect(submitDelivery).not.toHaveBeenCalled()
+  })
+
+  it('keeps historical completion separate from a new deliverable approval', async () => {
+    const newer = '730ac7b8-a3c0-4000-a000-000000000002'
+    server[taskId] = plan({ review_id: newer, review_revision: 2, delivery: record(), delivery_intact: true })
+    mount(review({ revision: 2, latest_review: { ...review().latest_review, review_id: newer, revision: 2 } }), taskId, 'review')
+    await ready()
+    expect(screen.getByText(/历史交付/)).toBeVisible()
+    expect(generate()).toBeEnabled()
+    expect(submitDelivery).not.toHaveBeenCalled()
+  })
+
+  it('retains explicit recovery for a preparing record in the review layout', async () => {
+    server[taskId] = plan({ can_deliver: false, delivery: record({ status: 'preparing', commit_sha: null, tree_sha: null }) })
+    mount(review(), taskId, 'review')
+    await ready()
+    expect(recover()).toBeEnabled()
+    expect(generate()).toBeDisabled()
+    expect(submitDelivery).not.toHaveBeenCalled()
+  })
+
+  it('keeps inspection errors visible even for a completed current delivery', async () => {
+    server[taskId] = plan({ can_deliver: false, reason: 'repository inspection failed', delivery: record(), delivery_intact: null })
+    mount(review(), taskId, 'review')
+    await ready()
+    expect(screen.getByRole('alert')).toHaveTextContent('repository inspection failed')
+    expect(screen.getByText('本地交付已完成。')).toBeVisible()
+    expect(screen.queryByRole('button', { name: '生成修改分支' })).not.toBeInTheDocument()
+  })
+
+  it('shows newer review mismatch without hiding completed delivery evidence', async () => {
+    server[taskId] = plan({ can_deliver: false, reason: 'delivery already completed', delivery: record(), delivery_intact: true })
+    mount(review({ revision: 2 }), taskId, 'review')
+    await ready()
+    expect(screen.getByText(/当前审查与交付记录不一致/)).toBeVisible()
+    expect(screen.getByText('本地交付已完成。')).toBeVisible()
+    expect(submitDelivery).not.toHaveBeenCalled()
+  })
+
   it('shows the server-generated plan, dirty handling, policy and changed files without delivering on acceptance', async () => {
     server[taskId].dirty = true
     mount()

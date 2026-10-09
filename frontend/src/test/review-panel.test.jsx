@@ -12,6 +12,7 @@ vi.mock('../components/DeliveryPanel', () => ({ default: () => null }))
 import { clearPendingReview, readPendingReview } from '../lib/review-draft'
 import { getReview, listReviews, loadReviewSnapshot, submitReview } from '../lib/reviews'
 import { secondId, taskId } from './fixtures'
+import { issueTask } from './github-fixtures'
 
 vi.mock('../lib/reviews', async (importOriginal) => ({
   ...await importOriginal(),
@@ -101,9 +102,13 @@ function mount(id = taskId, client = createQueryClient()) {
   return { ...view, client, switchTask: (nextId) => view.rerender(tree(nextId)) }
 }
 
-const accept = () => screen.getByRole('button', { name: '接受补丁' })
-const reject = () => screen.getByRole('button', { name: '拒绝补丁' })
-const commentField = () => screen.getByRole('textbox', { name: '意见（选填）' })
+function openDecisionEditor() {
+  const edit = screen.queryByRole('button', { name: '修改审查决定' })
+  if (edit) fireEvent.click(edit)
+}
+const accept = () => { openDecisionEditor(); return screen.getByRole('button', { name: '接受补丁' }) }
+const reject = () => { openDecisionEditor(); return screen.getByRole('button', { name: '拒绝补丁' }) }
+const commentField = () => { openDecisionEditor(); return screen.getByRole('textbox', { name: '意见（选填）' }) }
 const reload = () => screen.getByRole('button', { name: '重新加载审查资料' })
 const currentStatus = () => within(screen.getByText('当前状态').parentElement)
 
@@ -150,6 +155,49 @@ afterEach(() => {
 })
 
 describe('人工审查交互', () => {
+  it('shows a recorded decision first and only opens editing on request', async () => {
+    const record = reviewRecord({ comment: '符合修改要求' })
+    setState(reviewState({ status: 'accepted', revision: 1, latest_review: record }))
+    server[taskId].history.items = [record]
+    const user = userEvent.setup()
+    mount(); await ready()
+    expect(screen.queryByRole('textbox', { name: '意见（选填）' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '接受补丁' })).not.toBeInTheDocument()
+    expect(screen.getByText('符合修改要求', { selector: '.review-decision-summary p' })).toBeVisible()
+    expect(screen.getByText('查看验证命令').closest('details')).not.toHaveAttribute('open')
+    expect(screen.getByText('审查历史（1）').closest('details')).not.toHaveAttribute('open')
+    await user.click(screen.getByRole('button', { name: '修改审查决定' }))
+    expect(screen.getByRole('textbox', { name: '意见（选填）' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: '取消修改' }))
+    expect(screen.queryByRole('textbox', { name: '意见（选填）' })).not.toBeInTheDocument()
+    expect(submitReview).not.toHaveBeenCalled()
+  })
+
+  it('shows the user requirement separately from a collapsed frozen Issue', async () => {
+    const checked = server[taskId].snapshot
+    const goal = checked.task.goal
+    const { source } = issueTask({ goal })
+    source.repo_path = checked.task.repo_path
+    checked.task.goal += '\n\nThe following JSON is frozen GitHub Issue context\n' + JSON.stringify(source)
+    checked.presentation = { goal, source }
+    const rawGoal = checked.task.goal
+    const user = userEvent.setup()
+    mount(); await ready()
+    const requirements = screen.getByRole('heading', { name: '任务要求' }).closest('section')
+    expect(requirements).toHaveTextContent(goal)
+    expect(requirements).not.toHaveTextContent('The following JSON')
+    expect(requirements).not.toHaveTextContent('preparation_id')
+    expect(screen.getByRole('link', { name: 'example/repair-demo #42' })).toHaveAttribute('href', source.issue.url)
+    expect(screen.getByRole('heading', { name: source.issue.title })).toBeVisible()
+    expect(screen.getByText(/输入 v1.2.3 会报错/)).not.toBeVisible()
+    await user.click(screen.getByText('查看 Issue 正文'))
+    expect(screen.getByText(/输入 v1.2.3 会报错/)).toBeVisible()
+    expect(checked.task.goal).toBe(rawGoal)
+    await user.click(accept())
+    await waitFor(() => expect(submitReview).toHaveBeenCalledTimes(1))
+    expect(submitReview.mock.calls[0][1].evidence).toEqual(evidence)
+  })
+
   it('shows the checked patch, evidence, independent validation and newest history first', async () => {
     const first = reviewRecord({ comment: '第一次：核对通过' })
     const latest = reviewRecord({ review_id: otherRequestId, request_id: otherRequestId, revision: 2, decision: 'rejected', comment: '第二次：修改超出范围' })
@@ -159,12 +207,15 @@ describe('人工审查交互', () => {
     mount()
     await ready()
     expect(screen.getByRole('region', { name: '代码差异' })).toHaveTextContent('+return version.removeprefix("v")')
-    const requirements = screen.getByRole('heading', { name: '本次审查要求' }).closest('section')
-    expect(requirements).toHaveTextContent('python -m pytest -q')
-    await user.click(within(requirements).getByText('审查依据'))
-    expect(within(requirements).getByText(evidence.base_sha)).toBeVisible()
-    expect(within(requirements).getByText(evidence.patch_sha256)).toBeVisible()
-    expect(within(requirements).getByText(evidence.validation_sha256)).toBeVisible()
+    const requirements = screen.getByRole('heading', { name: '任务要求' }).closest('section')
+    expect(requirements).toHaveTextContent('仅修复小写 v 前缀')
+    const inspection = screen.getByRole('heading', { name: '检查修改' }).closest('section')
+    await user.click(within(inspection).getByText('查看验证命令'))
+    expect(inspection).toHaveTextContent('python -m pytest -q')
+    await user.click(within(inspection).getByText('详细记录'))
+    expect(within(inspection).getByText(evidence.base_sha)).toBeVisible()
+    expect(within(inspection).getByText(evidence.patch_sha256)).toBeVisible()
+    expect(within(inspection).getByText(evidence.validation_sha256)).toBeVisible()
     const before = screen.getByText('修复前 · 干净基线').closest('.verification-card')
     const after = screen.getByText('修复后 · 候选补丁').closest('.verification-card')
     expect(within(before).getByText('验证未通过')).toBeVisible()
@@ -173,6 +224,7 @@ describe('人工审查交互', () => {
     await user.click(within(after).getByText('查看测试输出'))
     expect(screen.getByText('baseline: 1 failed')).toBeVisible()
     expect(screen.getByText('candidate: 4 passed')).toBeVisible()
+    await user.click(screen.getByText(/^审查历史（/))
     const items = within(screen.getByRole('list', { name: '审查历史' })).getAllByRole('listitem')
     expect(items[0]).toHaveTextContent('第二次：修改超出范围')
     expect(items[1]).toHaveTextContent('第一次：核对通过')
@@ -546,13 +598,14 @@ describe('人工审查交互', () => {
     const user = userEvent.setup()
     const { container } = mount()
     await ready()
+    await user.click(screen.getByText(/^审查历史（/))
     expect(within(screen.getByRole('list', { name: '审查历史' })).getByText(html)).toBeVisible()
     await user.type(commentField(), html)
     expect(commentField()).toHaveValue(html)
     await user.click(accept())
     await screen.findByText('审查已保存。')
     expect(submitReview).toHaveBeenCalledWith(taskId, expect.objectContaining({ comment: html }))
-    await waitFor(() => expect(screen.getAllByText(html)).toHaveLength(2))
+    await waitFor(() => expect(within(screen.getByRole('list', { name: '审查历史' })).getAllByText(html)).toHaveLength(2))
     expect(container.querySelector('img, script')).toBeNull()
   })
 
@@ -602,6 +655,7 @@ describe('人工审查交互', () => {
     server[taskId].snapshot = { state, task: null, patch: null, validation: null }
     mount()
     expect(await screen.findByText('这次任务尚无完整的修复记录。')).toBeVisible()
+    fireEvent.click(screen.getByText(/^审查历史（/))
     expect(await screen.findByText('暂无审查记录。')).toBeVisible()
     expect(accept()).toBeDisabled()
     expect(reject()).toBeDisabled()
