@@ -1,6 +1,6 @@
 import { webcrypto } from 'node:crypto'
 import { TextEncoder } from 'node:util'
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, afterEach, expect, it, vi } from 'vitest'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -162,6 +162,28 @@ it('keeps a PR link visible when base drift blocked the publication', async () =
   expect(screen.getByText('需要处理')).toBeVisible()
   expect(screen.queryByText('已发布')).not.toBeInTheDocument()
   expect(server.writes).toHaveLength(0)
+})
+
+it('renders confirmed PR Markdown and copies the exact body without another publication', async () => {
+  const user = userEvent.setup()
+  const clipboard = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+  const value = await previewValue({ body: '## 修复内容\n\n只修改 `calc.py`。\n\n- **验证通过**\n- 保留测试文件\n' })
+  const record = publication(value)
+  server.items = [record]
+  const original = structuredClone(record)
+  mount()
+  await user.click(await screen.findByText('已确认的 PR 内容'))
+  const body = screen.getByRole('region', { name: '已确认的 PR 正文' })
+  expect(await within(body).findByRole('heading', { name: '修复内容' })).toBeVisible()
+  expect(within(body).getByText('calc.py').tagName).toBe('CODE')
+  await user.click(screen.getByRole('button', { name: '查看原文' }))
+  expect(screen.getByRole('region', { name: 'PR 原文' }).textContent).toBe(value.plan.body)
+  await user.click(screen.getByRole('button', { name: '复制 PR 原文' }))
+  expect(clipboard).toHaveBeenCalledWith(value.plan.body)
+  await user.click(screen.getByRole('button', { name: '返回排版' }))
+  expect(await screen.findByRole('heading', { name: '修复内容' })).toBeVisible()
+  expect(server.items).toEqual([original])
+  expect(server.calls.every(([, options]) => options.method !== 'POST')).toBe(true)
 })
 
 it('does not send a write if the user leaves during the final read-only check', async () => {

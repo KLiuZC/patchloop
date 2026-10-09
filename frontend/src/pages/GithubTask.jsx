@@ -8,6 +8,7 @@ import { buildTaskPayload, formatDate, modelPresets, validateTaskForm } from '..
 import { CopyButton, ErrorNotice, LoadingState } from '../components/ui'
 import TaskConfiguration, { Field } from '../components/TaskConfiguration'
 import GitHubIcon from '../components/GitHubIcon'
+import IssueBody from '../components/IssueBody'
 
 const operations = { issue: importIssue, repository: prepareRepository, task: createIssueTask }
 
@@ -194,7 +195,7 @@ export default function GithubTask() {
         {stageFeedback('issue')}
         {flow.sourceId && sourceQuery.isPending && <LoadingState label="正在恢复问题来源…" />}
         {sourceQuery.isError && <ErrorNotice error={sourceQuery.error} onRetry={() => sourceQuery.refetch()} />}
-        {source && !editingSource && <div className="issue-preview"><a href={source.url} target="_blank" rel="noreferrer"><GitHubIcon />{source.repository.full_name} #{source.issue_number}<ArrowUpRight size={14} /></a><div className="issue-title-group"><span className="issue-section-label">问题标题</span><h3>{source.title}</h3></div><div className="issue-body-group"><span className="issue-section-label">问题描述</span><p className="issue-body" tabIndex={0} aria-label="Issue 正文">{source.body || '此 Issue 没有正文。'}</p></div><div className="source-caption">{source.state === 'open' ? '开放中' : '已关闭'} · 读取于 {formatDate(source.fetched_at)}</div></div>}
+        {source && !editingSource && <div className="issue-preview"><a href={source.url} target="_blank" rel="noreferrer"><GitHubIcon />{source.repository.full_name} #{source.issue_number}<ArrowUpRight size={14} /></a><div className="issue-title-group"><span className="issue-section-label">问题标题</span><h3>{source.title}</h3></div><div className="issue-body-group"><IssueBody body={source.body} issueUrl={source.url} /></div><div className="source-caption">{source.state === 'open' ? '开放中' : '已关闭'} · 读取于 {formatDate(source.fetched_at)}</div></div>}
       </section>
       <section className="panel github-section"><div className="section-heading"><span className="step-number">02</span><div><h2>准备代码</h2></div></div>
         {!source && <p className="muted">先导入 Issue。</p>}

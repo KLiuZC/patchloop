@@ -14,6 +14,7 @@ import { CopyButton, ErrorNotice, LoadingState } from './ui'
 import GitHubIcon from './GitHubIcon'
 import ReviewStepHeading from './ReviewStepHeading'
 import Select from './Select'
+import MarkdownBody from './MarkdownBody'
 
 const statusLabels = { pending: '发布进行中', blocked: '需要处理', uncertain: '结果待核对', completed: '已发布' }
 const phases = { check: '核对发布条件', push: '推送修改分支', pull_request: '创建或核对 PR', completed: '发布完成' }
@@ -45,7 +46,8 @@ function PublicationRecord({ record, onResume, disabled }) {
     {record.pull_request && <a className="publication-pr-link" href={record.pull_request.url} target="_blank" rel="noreferrer"><GitHubIcon />查看 PR #{record.pull_request.number}<span>{record.pull_request.state === 'closed' ? '已关闭' : record.plan.draft ? '草稿' : '开放中'}</span><ArrowUpRight size={15} /></a>}
     <PlanFacts plan={record.plan} />
     {record.error && <Feedback error={record.error} />}
-    <details className="publication-detail"><summary>已确认的 PR 内容</summary><pre>{record.plan.body}</pre></details>
+    <div className="publication-body"><MarkdownBody body={record.plan.body} baseUrl={record.pull_request?.url || record.plan.issue_url}
+      collapse label="已确认的 PR 正文" rawLabel="PR 原文" collapseLabel="已确认的 PR 内容" /></div>
     {record.status !== 'completed' && <div className="publication-actions"><button type="button" className="button button-quiet button-small" disabled={disabled} onClick={() => onResume(record)}>{record.pr_attempted ? '核对 PR 结果' : '按原方案恢复发布'}</button><span className="field-hint">{record.pr_attempted ? '创建结果不明确时，只核对已有 PR。' : '沿用已确认的内容，可能继续推送或创建 PR。'}</span></div>}
   </div>
 }
