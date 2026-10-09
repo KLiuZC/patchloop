@@ -337,7 +337,7 @@ curl -sS -X POST "http://127.0.0.1:8000/tasks/<task_id>/github-delivery/preview"
 
 重复请求在内容与证据不变时返回相同 `plan_sha256`，仅核对时间更新；修改目标分支、PR 文本、草稿选项或批准证据都会产生不同摘要。该摘要不是授权令牌。后续发布必须单独保存用户确认，并重新查询远端仓库身份、权限和目标分支 SHA；如与验证基线不符，应停止并重新验证，不能凭旧预览直接推送。
 
-分支名称通过 [Git 分支名检查](https://git-scm.com/docs/git-check-ref-format)；目标、来源分支、标题、正文和草稿选项对应 [GitHub 创建 PR 接口](https://docs.github.com/en/rest/pulls/pulls#create-a-pull-request)的输入。远端检查与发布使用下方独立接口；网页发布区域尚待接入。
+分支名称通过 [Git 分支名检查](https://git-scm.com/docs/git-check-ref-format)；目标、来源分支、标题、正文和草稿选项对应 [GitHub 创建 PR 接口](https://docs.github.com/en/rest/pulls/pulls#create-a-pull-request)的输入。远端检查与发布使用下方独立接口；网页入口位于 GitHub 任务的“人工审查 → 05 GitHub 发布”，交互与恢复说明见 [前端文档](frontend/README.md)。
 
 ### GitHub 分支与 PR 发布
 
@@ -664,7 +664,8 @@ frontend/            React + JavaScript 工作台、接口与页面测试
 - [x] M3：公开 GitHub Issue 读取、固定版本准备与任务创建（真实文档任务验收通过）
 - [x] PR 发布方案、离线预览接口及批准证据核对
 - [x] 确认发布后端、远端检查、分支推送与 PR 状态恢复（隔离验证）
-- [ ] M4：网页发布入口及自有 GitHub 仓库的真实 PR 交付验收
+- [x] 网页 PR 预览、确认发布及结果恢复（模拟接口验收）
+- [ ] M4：自有 GitHub 仓库的真实 PR 交付验收
 - [ ] PR / CI 上下文读取（按实际需要扩展）
 - [x] 30 题子集、两家模型及单次直出基线、失败归因与证据归档
 - [x] 可开关的剩余轮数提醒、轨迹事件和运行配置记录

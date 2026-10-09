@@ -7,6 +7,7 @@ import {
 } from '../lib/delivery'
 import { CopyButton, ErrorNotice, LoadingState } from './ui'
 import ReviewStepHeading from './ReviewStepHeading'
+import GitHubPublicationPanel from './GitHubPublicationPanel'
 
 const changedMessage = '审查、依据或交付计划已变化，请刷新交付计划后重新核对。'
 const terminal = (record) => record && record.status !== 'preparing'
@@ -15,11 +16,11 @@ const recordedRequest = (record) => ({
   evidence: { ...record.evidence }, target_head: record.target_head,
 })
 
-export default function DeliveryPanel({ taskId, reviewState, variant = 'default' }) {
-  return <DeliverySession key={taskId} taskId={taskId} reviewState={reviewState} variant={variant} />
+export default function DeliveryPanel({ taskId, reviewState, variant = 'default', githubSource }) {
+  return <DeliverySession key={taskId} taskId={taskId} reviewState={reviewState} variant={variant} githubSource={githubSource} />
 }
 
-function DeliverySession({ taskId, reviewState, variant }) {
+function DeliverySession({ taskId, reviewState, variant, githubSource }) {
   const [plan, setPlan] = useState(null)
   const [pending, setPending] = useState(() => readPendingDelivery(taskId))
   const [loading, setLoading] = useState(true)
@@ -223,7 +224,7 @@ function DeliverySession({ taskId, reviewState, variant }) {
       </dl>
   )
 
-  return <section className={`panel delivery-panel${variant === 'review' ? ' review-step' : ''}`} aria-label="本地交付">
+  return <><section className={`panel delivery-panel${variant === 'review' ? ' review-step' : ''}`} aria-label="本地交付">
     {variant === 'review' ? <ReviewStepHeading number="04" title="本地交付"><button type="button" className="button button-quiet button-small" disabled={busy || loading} onClick={() => refresh()}><RefreshCw size={14} aria-hidden="true" />刷新交付计划</button></ReviewStepHeading>
       : <div className="panel-heading"><h2><GitBranch size={18} aria-hidden="true" />本地交付</h2><button type="button" className="button button-quiet button-small" disabled={busy || loading} onClick={() => refresh()}><RefreshCw size={14} aria-hidden="true" />刷新交付计划</button></div>}
     {!summaryOnly && <p className="muted">接受补丁后，可生成独立修改分支。</p>}
@@ -262,5 +263,5 @@ function DeliverySession({ taskId, reviewState, variant }) {
     {!summaryOnly && <div className="delivery-actions"><button type="button" className="button button-primary" disabled={blocked || Boolean(pending) || Boolean(ownsRecord) || preparing} onClick={() => send()}><GitBranch size={16} aria-hidden="true" />生成修改分支</button>
       {preparing && <button type="button" className="button button-quiet" disabled={recoveryBlocked} onClick={() => send('recover')}>恢复交付</button>}
       {busy && <span className="muted" role="status">正在核对交付…</span>}</div>}
-  </section>
+  </section>{githubSource && <GitHubPublicationPanel key={taskId} taskId={taskId} source={githubSource} reviewState={reviewState} deliveryState={readError || loading ? null : plan} />}</>
 }

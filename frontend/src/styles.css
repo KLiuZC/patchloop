@@ -310,6 +310,39 @@ h1 { font-size: 1.9375rem; font-weight: 620; letter-spacing: -.0.5625rem; line-h
 .model-message { padding-inline: calc(0.75rem + 1px); color: #637185; }
 .model-message-text { min-width: 0; flex: 1; white-space: pre-wrap; overflow-wrap: anywhere; }
 .log-footnote { text-align: center; color: #616c7c; font-size: 0.75rem; padding: 0 1.25rem 1.25rem; }
+.publication-repository, .publication-pr-link { display: inline-flex; align-items: center; gap: .5rem; color: var(--accent); font-size: .875rem; max-width: 100%; overflow-wrap: anywhere; }
+.publication-repository { display: flex; width: fit-content; gap: .75rem; margin-bottom: 1rem; }
+.publication-repository > .github-mark { width: 1.6875rem; height: 1rem; }
+.publication-repository + .notice { margin-top: 0; }
+.publication-form { margin-top: .25rem; }
+.publication-form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.publication-form textarea { min-height: 12rem; resize: vertical; line-height: 1.65; }
+.publication-form .field { margin-bottom: 1rem; }
+.publication-form .field-grid { margin-bottom: 0; }
+.publication-help, .publication-phase { font-size: .8125rem; color: #667082; line-height: 1.8; margin-bottom: 1rem; }
+.publication-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.publication-preview, .publication-confirm { border-top: 1px solid var(--line); padding-top: 1.25rem; margin-top: 1.25rem; }
+.publication-confirm .checkbox-label { align-items: flex-start; line-height: 1.65; margin-bottom: .75rem; }
+.publication-confirm input { flex-shrink: 0; margin-top: .25rem; }
+.publication-facts ul { list-style: none; margin: 0; padding: 0; }
+.publication-inline-note { margin-left: .75rem; color: #71798a; font-size: .75rem; }
+.publication-remote { display: flex; flex-direction: column; gap: .375rem; color: #377252; font-size: .8125rem; background: #f3f8f5; border: 1px solid #deebe3; border-radius: .5rem; padding: .875rem 1rem; margin-top: 1rem; }
+.publication-remote strong { font-weight: 600; }
+.publication-pending { display: block; }
+.publication-pending button { margin-left: 0; }
+.publication-progress { display: flex; align-items: center; gap: .5rem; margin-top: 1rem; font-size: .8125rem; color: #646f81; }
+.publication-record-heading { display: flex; align-items: center; flex-wrap: wrap; gap: .625rem; margin-bottom: .875rem; font-size: .75rem; color: #71798a; }
+.publication-status { border-radius: .3125rem; padding: .25rem .5rem; color: #5b6988; background: #f0f3fa; }
+.publication-status.is-completed { color: #377252; background: #eef6f0; }
+.publication-status.is-blocked, .publication-status.is-uncertain { color: #856c3d; background: #fff6e5; }
+.publication-record h3 { overflow-wrap: anywhere; line-height: 1.65; }
+.publication-record .publication-phase { margin: .375rem 0 .75rem; }
+.publication-pr-link { padding: .625rem .75rem; border: 1px solid #e1e5ee; border-radius: .5rem; }
+.publication-pr-link > span { font-size: .75rem; color: #71798a; }
+.publication-detail { margin-top: 1rem; color: #636d81; font-size: .8125rem; }
+.publication-detail pre { margin-top: .75rem; padding: 1rem; border: 1px solid var(--line); border-radius: .5rem; background: #fbfcfe; font-size: .8125rem; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.publication-history { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--line); color: #636d81; font-size: .8125rem; }
+.publication-history .publication-record { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
 .result-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.625rem; margin-top: 1.25rem; font-size: 0.6875rem; color: #67717e; }
 .result-footer > span:first-child { display: flex; align-items: center; gap: 0.3125rem; }
 

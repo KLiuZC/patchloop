@@ -22,11 +22,11 @@ function EvidenceDetails({ evidence, label = '审查依据' }) {
   </dl></details>
 }
 
-export default function ReviewPanel({ taskId }) {
-  return <ReviewSession key={taskId} taskId={taskId} />
+export default function ReviewPanel({ taskId, source }) {
+  return <ReviewSession key={taskId} taskId={taskId} source={source} />
 }
 
-function ReviewSession({ taskId }) {
+function ReviewSession({ taskId, source }) {
   const client = useQueryClient()
   const [pending, setPending] = useState(() => readPendingReview(taskId))
   const [comment, setComment] = useState(() => readPendingReview(taskId)?.comment ?? client.getQueryData(['review-comment', taskId]) ?? '')
@@ -232,6 +232,6 @@ function ReviewSession({ taskId }) {
       </details>
     </section>
 
-    <DeliveryPanel key={`${taskId}-${current.data?.revision ?? 0}-${current.data?.status ?? 'unknown'}`} taskId={taskId} reviewState={current.isError ? null : current.data} variant="review" />
+    <DeliveryPanel key={`${taskId}-${current.data?.revision ?? 0}-${current.data?.status ?? 'unknown'}`} taskId={taskId} reviewState={current.isError ? null : current.data} variant="review" githubSource={source} />
   </div>
 }

@@ -55,7 +55,7 @@ function sameLink(value, host, path) {
   return link !== null && link.suffix === '' && link.path.replace(/\/$/, '').toLowerCase() === path.toLowerCase()
 }
 
-function validRepository(value) {
+export function validRepository(value) {
   if (!isObject(value) || !isId(value.id) || !isString(value.full_name)) return false
   const match = repositoryPattern.exec(value.full_name)
   return match !== null && !['.', '..'].includes(match[2])
@@ -64,7 +64,7 @@ function validRepository(value) {
     && isBoolean(value.archived) && value.visibility === 'public'
 }
 
-function validRef(value) {
+export function validRef(value) {
   return isText(value) && value.length <= 200 && !hasControl(value) && !/^[-/]|[/.]$/.test(value)
     && !/\.\.|\/\/|\s|[~^:?*[\\]|@\{/u.test(value) && value !== '@'
     && value.split('/').every((part) => !part.startsWith('.') && !part.endsWith('.lock'))
