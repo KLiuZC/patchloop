@@ -3,6 +3,8 @@ name = "patchloop"
 version = "0.1.0"
 description = "A minimal coding agent that fixes failing tests, with an evaluation harness."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md", "LICENSES/*.txt"]
 authors = [
     { name = "Zhicheng Liu", email = "zhicheng.liu1@student.unsw.edu.au" }
 ]

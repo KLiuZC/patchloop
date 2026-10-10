@@ -170,3 +170,7 @@ API 负责受理、查询、审查和交付；worker 独立领取修复任务。
 | [前端交互约定](docs/frontend-behavior.md) | 请求恢复、会话存储、审查证据与内容展示 |
 | [实验索引](EXPERIMENTS.md) | 基线、策略对照、产品验收及历史台账入口 |
 | [发展路线](ROADMAP.md) | 已完成阶段、当前边界及后续工作 |
+
+## 许可证
+
+项目原创代码与文档采用 [MIT License](LICENSE)，版权归 Zhicheng Liu 所有。第三方图标、依赖及评测归档中的上游材料保留各自的许可和版权声明，详见[第三方材料说明](THIRD_PARTY_NOTICES.md)。
