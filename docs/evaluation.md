@@ -1,74 +1,96 @@
 # 评测与验收
 
-[返回项目首页](../README.md) · [使用指南](usage.md) · [实验记录](../EXPERIMENTS.md)
+[项目首页](../README.md) · [实验索引](../EXPERIMENTS.md) · [使用指南](usage.md)
 
-本文区分修复能力评测与产品流程验收：前者使用固定题单和官方判卷，后者核对具体任务从输入、验证到交付的记录。运行命令均以项目根目录为工作目录。
+本文说明评测范围、运行入口、结果判读和已完成的对照结果。逐次运行与产品验收通过实验索引访问，历史报告保留原始版本和证据。
 
 ## 目录
 
-- [已完成的评测](#已完成的评测)
+- [范围与口径](#范围与口径)
+- [运行准备](#运行准备)
 - [批量评测](#批量评测)
-- [SWE-bench 单题适配器](#swe-bench-单题适配器)
-- [对已有补丁只判卷](#对已有补丁只判卷)
-- [剩余轮数提醒实验](#剩余轮数提醒实验)
-- [显式交卷工具](#显式交卷工具实验完成默认关闭)
+- [单题修复与独立判卷](#单题修复与独立判卷)
+- [预算与结束方式](#预算与结束方式)
+- [结果读取与复算](#结果读取与复算)
+- [完整结果](#完整结果)
 - [产品流程验收](#产品流程验收)
 
-## 已完成的评测
+## 范围与口径
 
-SWE-bench Verified 固定 30 题子集（6 个仓库各 5 题，gold 校验 30/30 通过）：
+| 类型 | 用途 | 结果边界 |
+| --- | --- | --- |
+| gold 预检 | 用标准答案检查题目环境和判卷流程 | 不计作 Agent 修复成绩 |
+| `smoke5` | 开发与功能冒烟 | 已用于设计和调试，不作为泛化成绩 |
+| `verified30` | 固定 30 题的基线和策略对照 | 同一题单重复运行；已用于失败分析，不是新留出集 |
+| 产品流程验收 | 核对网页、worker、审查和交付 | 独立于 SWE-bench 修复能力统计 |
 
+`verified30` 覆盖 6 个仓库、每仓库 5 题，历史 gold 校验为 30/30。正式对照保留请求失败、空补丁和未解决题目；人工诊断不补分。新评估需在运行前固定题单、分母、模型、实现版本和重试规则，不根据模型结果事后换题。
 
-| 配置                         | 解决数           | 解决率                         | 每遍估算费用   |
-| -------------------------- | ------------- | --------------------------- | -------- |
-| DeepSeek flash + agent，3 遍 | 20、19、20 / 30 | 均值 **65.6%**，样本标准差 1.9 个百分点 | 平均 ¥1.69 |
-| DeepSeek flash + 轮数提醒，3 遍 | 20、21、23 / 30 | 均值 **71.1%**，样本标准差 5.1 个百分点 | 平均 ¥1.64 |
-| DeepSeek flash + 提醒 + finish，3 遍 | 23、23、20 / 30 | 均值 **73.3%**，样本标准差 5.8 个百分点 | 平均 ¥1.87 |
-| GLM flash + agent，1 遍      | 20/30         | **66.7%**                   | ¥4.05    |
-| DeepSeek flash 单次直出，1 遍    | 4/30          | **13.3%**                   | ¥3.70    |
+模型只接收题面与允许访问的仓库环境，不向其提供 hints、测试补丁或标准答案；官方判卷反馈不回填本次修复循环。单次直出基线只接收题面，因此与工具 Agent 的差异包含源码访问、工具执行和多轮反馈的共同影响。
 
+## 运行准备
 
-这是特定子集的成绩，不代表 Verified 全集。单次直出只看题面，分差包含源码访问、工具执行与多轮反馈的共同收益。API 超时与空补丁保留在分母中，人工诊断不补分。费用按内置价格表估算，不是账单；标准差不是置信区间。
-
-4C 的剩余轮数提醒实验在同一 30 题上运行三遍，解决数为 **20、21、23/30**，均值 **71.1%**（样本标准差 5.1 个百分点）。无提醒基线为 **20、19、20/30**，均值 65.6%。提醒组空补丁为 3/90、基线为 12/90；这是过程改善的证据，解决率差异仍需新题单验证，不能直接宣称提醒带来确定的提分。
-
-finish 后续实验已完成，决定**保留为默认关闭的可选工具**。相较仅提醒组，finish 组平均解决率高 2.2 个百分点，但平均估算费用约高 14.1%，平均轮数 25.1→26.3、被上限停止次数 15/90→20/90，尚不能证明稳定的提分或收尾效率收益。后续推荐实验配置为仅传 `--budget-reminders`，不传 `--explicit-finish`；CLI 的两个开关仍各自默认关闭。详见 [finish 实验报告](../evals/reports/4c-explicit-finish/README.md)。
-
-详细结果、逐题表、判卷限制、源码快照及下一项实验约定见 [4B 基线归档](../evals/reports/4b-baseline/README.md)。无需模型或 Docker 即可重新生成统计表：
-
-```bash
-python3 evals/summarize_baseline.py
-```
-
-## 批量评测
-
-安装官方判卷程序：
+以下 patchloop 命令在项目根目录执行。需要配置模型凭证、启动 Docker、准备题目镜像，并安装官方 harness：
 
 ```bash
 uv tool install "git+https://github.com/SWE-bench/SWE-bench"
 ```
 
-在 `SWEBENCH_WORKDIR`（默认 `~/code/swebench-work`）下准备 `swe-bench-tasks` 任务仓库。历史 Apple Silicon 环境使用任务仓库在本地构建题目镜像，在 harness 工作目录执行 `swebench eval verified --gold -i <id> --task-repo ./swe-bench-tasks -j 1` 完成预检。正式运行前冻结题单；评测开始后保留失败任务及其分类，不依据模型结果更换题目。
+harness 工作目录按显式 `--harness-dir`、`SWEBENCH_WORKDIR`、默认 `~/code/swebench-work` 选择。需要本地构建镜像时，在该目录准备 `swe-bench-tasks` 任务仓库，并在 **harness 工作目录**执行 gold 预检，例如：
 
 ```bash
-uv run agent eval -r smoke-deepseek -f evals/subsets/smoke5.txt -p deepseek        # agent 答题并判分
-uv run agent eval -r smoke-single-shot -f evals/subsets/smoke5.txt -p deepseek --mode single-shot   # 无工具、一次直出的基线
+swebench eval verified --gold \
+  -i pytest-dev__pytest-7205 \
+  --run-id gold-preflight \
+  --task-repo ./swe-bench-tasks -j 1
 ```
 
-题目子集用 `agent subset` 生成，固定随机种子、按难度分层、每个仓库封顶，文件头里带着重新生成的命令。`evals/subsets/smoke5.txt` 用于冒烟与开发。`evals/subsets/verified30.txt` 已完成基线评测；因为失败轨迹已经用于指导后续设计，此后作为开发/对比集，最终泛化验证需另留未用于调参的题单：
+架构、依赖及构建并发按实际机器核对。旧的 Apple Silicon、Rosetta、磁盘容量和构建耗时观察保存在[历史环境备忘](history/experiments-through-2026-10-09.md#环境备忘)，不是所有环境的固定要求。
+
+题单由 `agent subset` 按随机种子、难度分层与仓库上限生成。已有题单应直接使用；下面将历史生成参数输出到新文件，避免覆盖冻结题单：
 
 ```bash
-uv run agent subset -o evals/subsets/verified30.txt --size 30 --seed 20260929 --cap 7 -x evals/subsets/smoke5.txt
+uv run agent subset -o evals/subsets/verified30-reproduced.txt \
+  --size 30 --seed 20260929 --cap 7 -x evals/subsets/smoke5.txt
 ```
 
-每道题使用独立的镜像容器，Agent 输入仅包含 Issue 原文，不包含 hints、隐藏测试或标准答案。候选补丁写入 `evals/results/<run-id>/predictions.jsonl`，由官方 harness 判卷。`summary.json` 保存逐题轮数、Token、缓存命中、费用估算和解决状态；轨迹与补丁位于同目录的 `traj/`，不纳入 Git。同一个 run-id 再次运行会跳过已保存预测记录的题目，**包括空补丁或请求失败的题目**；重试时应使用新 run-id，保留原记录。`seconds` 是各题耗时之和，并行运行时不等于整体墙钟耗时。
+数据集 revision 变化仍可能影响重建结果，应核对 ID、数据哈希和原记录。需要泛化评估时另行选题，并排除已参与设计或分析的问题。
 
-## SWE-bench 单题适配器
+## 批量评测
 
-`agent repair-swebench` 从 Verified 数据集读取一题，在题目镜像的 `/testbed` 中运行 Agent，再启动新的同镜像容器验证补丁。Agent 只收到 issue 文本，不会收到测试补丁或隐藏测试名称。默认做可见验证，加 `--judge` 后自动把已保存补丁交给官方 harness，官方反馈不会进入本次模型循环。
+Agent 修复及官方判卷：
 
 ```bash
-# 复现来自题面；不使用仅在官方判卷阶段注入的测试名称。
+uv run agent eval -r smoke-deepseek-new \
+  -f evals/subsets/smoke5.txt -p deepseek
+```
+
+同题单的单次直出对照：
+
+```bash
+uv run agent eval -r smoke-single-shot-new \
+  -f evals/subsets/smoke5.txt -p deepseek --mode single-shot
+```
+
+开启轮数提醒的对照配置：
+
+```bash
+uv run agent eval -r v30-budget-new \
+  -f evals/subsets/verified30.txt -p deepseek \
+  --workers 2 --memory 3g --budget-reminders
+```
+
+每次新实验使用新的 run-id，并保持需要比较的其他条件一致。macOS 可在命令前加 `caffeinate -i` 防止闲置睡眠。两题并发和内存参数来自历史配置，应根据机器资源调整并记录。
+
+同一 run-id 再次运行会跳过已保存预测记录的题目，包括空补丁和请求失败。需要重新求解时使用新 run-id；不要通过删除旧结果改变正式分母。保存的 `run_config.json` 必须与继续运行的配置相符，缺少配置记录的旧运行也需使用新编号。
+
+## 单题修复与独立判卷
+
+`agent repair-swebench` 在题目镜像 `/testbed` 中修复，再使用新容器执行可见验证；加 `--judge` 后将已保存补丁交给官方 harness。镜像需提前准备，此入口不会通过 `--task-repo` 重建镜像。
+
+下面是 pytest-7205 的题面复现示例，不引用官方隐藏测试名称：
+
+```bash
 PATCHLOOP_VERIFY_CMD=$(cat <<'PROFILE'
 set -e
 cat > /tmp/test_bw_issue.py <<'PYTEST'
@@ -85,97 +107,86 @@ PROFILE
 docker info >/dev/null && uv run agent repair-swebench \
   --instance pytest-dev__pytest-7205 \
   --verify "$PATCHLOOP_VERIFY_CMD" \
-  --provider deepseek \
-  --budget-reminders \
-  --judge \
+  --provider deepseek --budget-reminders --judge \
   --artifacts /tmp/patchloop-repair-runs/pytest-7205-new-attempt
 ```
 
-每次新答题应使用空的产物目录；已有目录会被拒绝，避免覆盖历史补丁和判卷记录。镜像需要预先准备，本命令不会通过 `--task-repo` 重建镜像。
+每次新修复使用空的产物目录。已有目录会被拒绝；可见复现覆盖范围不等于官方测试范围，历史上该题存在可见通过但官方未解决的候选，见[单题报告](../evals/reports/repair-swebench-pytest7205-v3/README.md)。
 
-## 对已有补丁只判卷
-
-`repair-judge` 不创建模型客户端、不重跑修复或可见测试。`--artifacts` 指向含有 `task.json`、`summary.json` 和 `patch.diff` 的**具体题目目录**，与 `repair-swebench` 接收的父目录不同：
+仅对上述已保存补丁判卷，不重新调用模型或运行可见验证：
 
 ```bash
-docker info >/dev/null && uv run agent repair-judge \
-  --artifacts /tmp/patchloop-repair-runs/swebench-pytest-7205-v3/pytest-dev__pytest-7205
+uv run agent repair-judge \
+  --artifacts /tmp/patchloop-repair-runs/pytest-7205-new-attempt/pytest-dev__pytest-7205
 ```
 
-官方 harness 工作目录按 `--harness-dir`、`SWEBENCH_WORKDIR`、`~/code/swebench-work` 的顺序选取。`repair-judge --timeout`（自动判卷对应 `--judge-timeout`）设置官方单题测试超时，默认 1800 秒，不是整个下载/启动阶段的总超时。需要本机已有 `swebench` CLI 与正常运行的 Docker；使用 `.env` 的 HF_TOKEN 时会传递给 harness，但不要求模型 API key。
+`repair-judge` 接收具体题目目录，`repair-swebench` 接收其父目录。前者的 `--timeout`、后者的 `--judge-timeout` 设置官方单题测试超时，默认 1800 秒，不是下载和启动全过程的时限。只判卷需要 Docker 与 harness，不要求模型密钥；可使用 `.env` 中的 `HF_TOKEN`。
 
-新增产物：
+## 预算与结束方式
 
-```text
-official.json                         最近一次判卷结果：独立于可见验证
-official/<唯一判卷ID>/
-  patch.diff                          本次提交的准确补丁快照
-  predictions.jsonl                   自动生成的官方答卷格式
-  harness.log                        判卷程序的标准输出及错误
-  results.json / report.json          官方汇总及逐题报告（如已产生）
-  test_output.txt / run_instance.log  原始测试及执行日志（如已产生）
-  result.json                        本次判卷结果；重判不会覆盖旧尝试
-```
+| 选项 | 行为 | 默认值与适用范围 |
+| --- | --- | --- |
+| `--budget-reminders` | 剩余 20、5 次模型请求时提醒，保留工具调用与结果配对 | `agent run`、`agent eval`、`agent repair` 默认关闭；`repair-swebench` 默认开启 |
+| `--explicit-finish` | 要求模型单独调用 `finish(summary)` 主动结束 | 默认关闭；批量评测仅适用于 agent 模式 |
 
-官方结果保存 `instance_id`、`base_sha`、`patch_sha256`、可见验证状态、判卷 ID、F2P/P2P 计数和原始异常标签。开始前核对 patch 与原修复摘要/可见验证哈希；提交快照创建或判卷期间原件改变会报错。`validation.json`、原始 `summary.json` 和轨迹保持不变。读取或展示历史 `official.json` 时应确认其补丁哈希仍与当前 `patch.diff` 一致。
+任务 API 的 `execution.budget_reminders` 默认开启，与上述部分 CLI 不同，见 [API 执行配置](api.md#执行配置与路径策略)。
 
-`official.status` 的含义：`passed` 是官方 resolved；`failed` 是官方明确未解决（包括空补丁或补丁不能应用）；`error` 是 harness 启动/执行失败、报告缺失或格式不完整、官方明确的基础设施异常，此时 `resolved=null`。`no_tests_collected` 等模糊标签原样保留，不覆盖逐题 resolved 结论，不自动当作根因。CLI 退出码分别为 0、1、2；`--judge` 开启时以官方判卷退出码为准，修复执行本身失败则跳过判卷。
+提醒不增加预算或强制结束。40 轮预算对应第 21、36 次请求前；多个工具调用仍算一轮。阈值须在已消耗至少一轮后达到：20 轮预算仅在第 16 轮提醒，5 轮及以下不提醒。事件在请求发出前写入轨迹，包含触发轮次和剩余数。
 
-这个适配器已用原有 `pytest-7205` 补丁验收“只判卷”路径：可见 bytes 复现通过，官方 F2P 1/10、P2P 16/16，最终 0/1，表示**判卷流程成功执行，但候选补丁未解决题目**。详见 [单题实验报告](../evals/reports/repair-swebench-pytest7205-v3/README.md)。
+显式结束要求非空 `summary`，且该次回复只调用 `finish`。参数错误或与其他工具同轮调用时拒绝结束，并将结果回填；纯文字回复会提示继续调用 `finish`。仍受轮数上限约束，结束声明不保证补丁正确或非空。`finish_required` 记录后续提示，`stop_reason` 区分自然结束、显式结束、预算耗尽和运行错误。
 
-后续已在 pytest-7432 和 Flask-5014 各运行一次完整 `repair-swebench --judge`：均从可见基线失败到候选通过，并被官方判为 resolved；F2P 各 1/1，P2P 为 77/77 与 59/59。记录、复现脚本及补丁见 [两题集成验证](../evals/reports/repair-real-task-smoke2/README.md)。这是已有开发题上的工程验收，不是新的留出集成绩。
+`--mode single-shot` 不接受提醒和显式结束开关。更改任一实验开关时使用新的 run-id。现有实验决定保留 `finish` 为默认关闭的可选工具，后续对照优先固定仅提醒配置。
 
-## 剩余轮数提醒实验
+## 结果读取与复算
 
-`agent run` 和 `agent eval` 支持 `--budget-reminders`，**默认关闭**。开启后，在剩余 20、5 次模型请求时各提醒一次；40 轮预算对应第 21、36 轮请求前，剩余数包含即将开始的一轮。一次回复中的多个工具调用仍只算一轮。预算较小时，只触发已经消耗至少一轮后能到达的阈值，例如 20 轮预算只在第 16 轮提醒，5 轮及以下不提醒。
+| 产物 | 用途 |
+| --- | --- |
+| `evals/results/<run-id>/run_config.json` | 模型、预算、源码／依赖／数据哈希及 SDK 等运行信息，不保存密钥或标准答案原文 |
+| `predictions.jsonl` | 官方判卷使用的逐题候选补丁 |
+| `summary.json` | 逐题判卷结论、轮次、用量、费用及本次调用统计 |
+| `traj/` | 轨迹与补丁，默认不纳入 Git |
+| 单题目录的 `validation.json` | 干净基线和候选的可见验证 |
+| 单题目录的 `official.json` | 最近一次官方判卷结果 |
+| `official/<判卷ID>/` | 本次准确补丁、预测文件、harness 日志、报告及原始输出；重判保留旧尝试 |
 
-提醒使用普通 user 消息，插在上一轮全部工具结果之后；不强制交卷、不增加工具、不改变原始系统提示词。模型提前收尾时不再提醒。提醒的原文、目标轮次和剩余数作为 `type=budget_reminder` 事件写入轨迹，每题结果记录 `budget_reminders_sent`。事件在请求发出前写入，即使该请求失败也能查到这次尝试。
+`summary.json.invocation.wall_seconds` 是本次评测调用的墙钟耗时，包含求解与判卷，不包含此前的数据集加载；`seconds` 是各题耗时之和。Token 仅统计已返回的用量，超时请求可能存在未知账单；模型别名和镜像环境变化也会影响复现。
+
+官方结果绑定 `instance_id`、基线、补丁哈希及判卷 ID。开始前核对补丁与原任务摘要、验证报告；创建快照或判卷期间原件变化会报错。原 `validation.json`、`summary.json` 和轨迹不由重判改写，读取历史官方结果时仍需核对补丁哈希。
+
+| `official.status` | 含义 | 单题判卷 CLI 退出码 |
+| --- | --- | --- |
+| `passed` | 官方判为 resolved | 0 |
+| `failed` | 官方明确未解决，包含空补丁或不能应用的补丁 | 1 |
+| `error` | harness 启动／执行失败、缺少完整报告或明确基础设施异常；`resolved=null` | 2 |
+
+官方 F2P 统计原本失败用例的修复情况，P2P 统计原本通过用例的回归情况。`no_tests_collected` 等模糊标签保留原文，不直接作为根因，也不覆盖官方逐题结论。`--judge` 开启时以官方判卷退出码为准，修复执行本身失败则跳过判卷。
+
+无需模型或 Docker，可重新核对并生成 4B 统计：
 
 ```bash
-# 开发集：检验提醒和完整判卷流程
-uv run agent eval -r smoke5-budget-deepseek \
-  -f evals/subsets/smoke5.txt -p deepseek --workers 2 --memory 3g --budget-reminders
-
-# 正式对比：每次使用新 run-id，保持其他参数一致
-uv run agent eval -r v30-budget-r1 \
-  -f evals/subsets/verified30.txt -p deepseek --workers 2 --memory 3g --budget-reminders
+python3 evals/summarize_baseline.py
 ```
 
-macOS 上可在命令前加 `caffeinate -i`，防止运行期间系统闲置睡眠。
+该脚本会写入汇总文件；复算后核对 Git 差异，避免把格式或统计变化误记为新的实验运行。
 
-`--mode single-shot` 不接受该开关。新评测会在答题前保存 `run_config.json`，包含模型、提醒配置、轮数/超时/并发、源码及依赖锁哈希、所选数据行哈希和实际 SDK 版本；不保存密钥或标准答案原文。配置一致才允许同一 run-id 续跑；源码、模型、题单或提醒开关改变时请换新 run-id。没有配置记录的历史运行也要求使用新 run-id，避免混入旧答卷。
+## 完整结果
 
-`summary.json.invocation` 记录本次 `evaluate` 调用的开始/结束时间、实际墙钟耗时和跳过的已答题数，包含本次答题与判卷，不包含数据集加载时间，也不把多次中断的间隔累计为运行时间。旧的 `seconds` 字段保留为任务耗时之和。超时请求的用量、可变模型别名及镜像环境变化仍可能影响复现和费用估算。
+下表均来自固定 `verified30` 题单。每次 30 题，重复运行使用相同问题；标准差是这些运行之间的样本波动，不是总体置信区间。
 
-开发集通过只能证明实现能工作。4C 三遍已完成：提醒减少了空补丁和达到轮数上限的任务，但解决率差异仍受模型随机性影响；`verified30` 已用于分析失败，最终泛化验证需另留新题单。详细结果见 [4C 报告](../evals/reports/4c-budget-reminders/README.md)。
+| 配置 | 解决数 | 解决率 | 每次估算费用 |
+| --- | --- | --- | --- |
+| DeepSeek flash + Agent，3 次 | 20、19、20 / 30 | 均值 **65.6%**，样本标准差 1.9 个百分点 | 平均 ¥1.69 |
+| DeepSeek flash + 轮数提醒，3 次 | 20、21、23 / 30 | 均值 **71.1%**，样本标准差 5.1 个百分点 | 平均 ¥1.64 |
+| DeepSeek flash + 提醒 + finish，3 次 | 23、23、20 / 30 | 均值 **73.3%**，样本标准差 5.8 个百分点 | 平均 ¥1.87 |
+| GLM flash + Agent，1 次 | 20/30 | **66.7%** | ¥4.05 |
+| DeepSeek flash 单次直出，1 次 | 4/30 | **13.3%** | ¥3.70 |
 
-首次 [smoke5 验证](../evals/results/smoke5-budget-deepseek/README.md) 已完成：4/5、5 道均自行收尾、3 次提醒按时发送，零 API 错误。未通过的一题在提醒前就已结束，失败来自字符串显示与官方断言不符；本次仅验证功能闭环，不作为提醒收益结论。
+这些结果不代表 Verified 全集。提醒组在现有实验中减少空补丁并改善收尾行为，解决率差异仍需新题单验证；显式 `finish` 未证明稳定的提分或效率收益。费用按历史价格表估算，不等于当前价格或账单。
 
-## 显式交卷工具（实验完成，默认关闭）
-
-`agent run` 和 `agent eval` 支持 `--explicit-finish`，默认关闭。开启后，模型必须单独调用 `finish({"summary": "修复总结"})` 才会主动结束；程序保存总结，收集当前补丁，然后沿用原有评测流程。交卷不保证补丁正确，空补丁也允许提交，最终仍由官方判卷决定 `resolved`。
-
-- `summary` 必须是非空字符串。参数错误会作为工具结果回传，让模型在剩余预算内修正。
-- 单独的文字回复不再表示交卷，程序会提示调用 `finish`，仍受原来的轮数上限约束。
-- 同一回复中将 `finish` 与其他工具一起调用时，交卷被拒绝，其余工具按原顺序执行；全部工具结果回传后，模型可以再单独交卷。
-- 原有结束方式仍是默认。开启 `--budget-reminders --explicit-finish` 时，提醒的触发轮次不变，仅把收尾要求改为调用 `finish`。
-- 该选项只适用于 agent 模式，与 `--mode single-shot` 同用会报参数错误；开启或关闭它须使用新的 run-id，以免混入不同配置的答卷。
-
-运行配置和轨迹元数据保存 `explicit_finish`。纯文字回复后的提示记录为 `finish_required` 事件，`turn` 表示下一次模型请求的轮次。结果通过 `stop_reason` 区分 `finish`（显式交卷）、`no_tool_calls`（原模式文字结束）、`max_turns`（预算耗尽）；评测中的运行异常记为 `error`，单次直出记为 `single_shot`。`final_message` 保存模型交卷总结，不是独立验证过的修复结论。
-
-smoke5 已通过 5/5，verified30 三次分别解决 23、23、20 题（每次 30 题）；默认值经检查仍为 `False`。功能可正常交卷，但当前对比没有达到节省轮数和费用的预期，因此暂不作为推荐主配置。没有传 `--explicit-finish` 时仍使用原来的文字结束方式，历史实验结果不变。
+完整分析及逐题证据分别见[基线报告](../evals/reports/4b-baseline/README.md)、[提醒实验](../evals/reports/4c-budget-reminders/README.md)、[finish 实验](../evals/reports/4c-explicit-finish/README.md)。报告中的原始限制和失败记录继续保留。
 
 ## 产品流程验收
 
-以下记录验证具体工程流程，与上面的修复能力评测分别统计。任务规模、验证范围、版本信息和限制保留在各自报告中。
+网页、API、worker、审查、本地交付和 GitHub PR 的真实验收统一由[产品流程验收索引](../EXPERIMENTS.md#产品流程验收)导航。两仓库官方判卷集成、只重判旧补丁等记录见[修复与官方判卷集成](../EXPERIMENTS.md#修复与官方判卷集成)。
 
-| 场景 | 结果与证据 |
-| --- | --- |
-| API 与 worker | [真实示例任务](../evals/reports/task-worker-toy-smoke/README.md)：完成任务受理、后台修复、独立验证、持久化和容器清理 |
-| 网页工作台 | [网页真实验收](../evals/reports/task-ui-toy-smoke/README.md)：提交、结果展示、刷新后查询；记录测试未覆盖的大写前缀行为变化 |
-| 人工审查与本地交付 | [本地交付验收](../evals/reports/patch-review-delivery-toy-smoke/README.md)：人工接受后生成独立分支，交付内容与批准补丁一致 |
-| 公开 Issue 输入 | [Flask #6146 文档任务](../evals/reports/github-issue-flask6146-smoke/README.md)：导入问题、准备版本、文档修复及本地交付，未发布上游 PR |
-| GitHub PR 交付 | [示例仓库真实验收](../evals/reports/github-pr-publish-demo-smoke/README.md)：修复前 1 failed / 10 passed，修复后 11 passed；批准后发布草稿 PR，保留认证修复和原请求恢复记录 |
-| 官方判卷集成 | [两仓库修复验收](../evals/reports/repair-real-task-smoke2/README.md)：两道已有开发题通过可见验证及官方判卷，不作为新留出集成绩 |
-
-原始配置与逐次实验结论见 [EXPERIMENTS.md](../EXPERIMENTS.md)。本文只汇总已有结果，不将页面截图或文档更新计作新的模型实验。
+这些验收针对具体任务与流程，不加入上述基线分母。模拟请求测试、固定验证脚本预检和截图检查同样不作为真实模型修复成绩。

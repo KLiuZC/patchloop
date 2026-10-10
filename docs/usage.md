@@ -7,6 +7,7 @@
 ## 目录
 
 - [模型与凭证](#模型与凭证)
+- [服务与 worker](#服务与-worker)
 - [网页任务流程](#网页任务流程)
 - [状态与常见问题](#状态与常见问题)
 - [独立修复与验证](#独立修复与验证)
@@ -29,6 +30,36 @@
 GitHub 远端检查与发布使用服务端的 `PATCHLOOP_GITHUB_TOKEN`。建议按目标仓库配置 Contents、Pull requests 读写权限，当前发布支持个人账号 Token；离线预览和读取已保存记录不需要此凭证。修改配置后重启对应服务。权限与恢复规则见 [GitHub 发布接口](api.md#github-分支与-pr-发布)。
 
 本地分支交付会创建 Git commit，需要配置实际使用者的 Git 作者信息。模型修复、独立验证、人工审查与分支交付是分开的操作。
+
+## 服务与 worker
+
+API 保存和查询任务，worker 在 Docker 中执行修复。首次安装与前端启动见[快速开始](../README.md#快速开始)。只查看已有记录时不需要启动 worker；执行新任务前确认 Docker 与目标镜像可用。
+
+```bash
+uv run agent serve
+```
+
+默认 API 监听 `127.0.0.1:8000`，可通过 `--port 8001` 更改端口。API 持续运行时，在另一个终端按需要启动 worker：
+
+| 命令 | 用途 |
+| --- | --- |
+| `uv run agent worker` | 持续等待并串行领取带执行配置的任务 |
+| `uv run agent worker --once` | 最多领取一题后退出 |
+| `uv run agent worker --task-id "<task_id>"` | 只处理指定任务 |
+
+worker 启动后可能立即处理已有排队任务并调用模型。默认数据库为启动目录下的 `data/tasks.sqlite3`；API 与 worker 使用相同数据库，每个数据库只允许一个 worker。自定义位置时两个进程都传入同一 `--db`，例如在不同终端分别执行：
+
+```bash
+uv run agent serve --db /absolute/path/tasks.sqlite3
+```
+
+```bash
+uv run agent worker --db /absolute/path/tasks.sqlite3
+```
+
+worker 的 `--artifacts` 可指定产物目录。模型、轮数、命令／验证超时和内存在任务配置中固定；默认值及约束见 [API 公共配置](api.md#执行配置与路径策略)。
+
+Ctrl+C 或 SIGTERM 停止整个 worker，并尽可能保存已生成补丁和轨迹。重启后先核对完整终态和任务容器，恢复已保存结果或标记中断；不会自动重新求解。强制终止前未落盘的内容不能保证恢复。单任务取消与任务总时限尚未实现，清理和恢复细节见[架构说明](architecture.md#数据目录与恢复)。
 
 ## 网页任务流程
 
