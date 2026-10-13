@@ -7,6 +7,7 @@ from typing import Any
 from ..eval import task_text
 from ..loop import RunResult, run
 from ..sandbox import DockerRunner
+from ..environment import inspect_image, prepare_swebench_environment, solver_runner
 from .artifacts import ArtifactStore, sha256_text
 from .contracts import BaselineResult, RepairResult, ValidationResult
 from .verifier import baseline_error, profile_status
@@ -73,9 +74,12 @@ class SWEbenchRepairRunner:
         self.memory = memory
         self.platform = platform
 
-    def _runner(self) -> DockerRunner:
+    def _runner(self, *, isolated: bool = False) -> DockerRunner:
+        if isolated:
+            return solver_runner(self.image_info["id"], workdir=self.task.workdir,
+                                 platform=self.platform, memory=self.memory)
         return DockerRunner(
-            self.task.image,
+            self.image_info["id"],
             workdir=self.task.workdir,
             platform=self.platform,
             memory=self.memory,
@@ -120,8 +124,10 @@ class SWEbenchRepairRunner:
         execution = None
         error = ""
         try:
-            with self._runner() as runner:
-                self._check_base(runner)
+            self.image_info = inspect_image(self.task.image)
+            with self._runner(isolated=True) as runner:
+                prepare_swebench_environment(runner, self.task.to_dict(),
+                                            self.artifacts.root / "environment.json", self.image_info)
                 self.artifacts.event("workspace_ready", image=self.task.image, workdir=self.task.workdir)
                 execution = run(
                     self.task.prompt,

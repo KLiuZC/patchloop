@@ -54,7 +54,7 @@ def test_validation_startup_error_keeps_patch_and_finishes_report(tmp_path, monk
     repair = SWEbenchRepairRunner(task, root)
     starts = 0
 
-    def factory():
+    def factory(**kwargs):
         nonlocal starts
         starts += 1
         if starts == failed_start:
@@ -62,6 +62,8 @@ def test_validation_startup_error_keeps_patch_and_finishes_report(tmp_path, monk
         return LocalRunner(tmp_path)
 
     monkeypatch.setattr(repair, "_runner", factory)
+    monkeypatch.setattr(module, "inspect_image", lambda *a: {"id": "pinned"})
+    monkeypatch.setattr(module, "prepare_swebench_environment", lambda *a: None)
     monkeypatch.setattr(repair, "_check_base", lambda runner: None)
     monkeypatch.setattr(module, "run", lambda *a, **kw: RunResult(
         run_id=task.instance_id, finished=True, stop_reason="no_tool_calls", patch="saved patch", prompt_tokens=20,

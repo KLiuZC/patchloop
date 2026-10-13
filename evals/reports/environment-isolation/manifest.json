@@ -1,0 +1,49 @@
+{
+  "implementation_base_commit": "4c82e683ac6deca93d27ea42601c31036c7146c2",
+  "implementation_note": "Source hashes describe the working-tree implementation validated before this change was committed.",
+  "policy": {
+    "version": "swebench-isolation-v1",
+    "hidden_paths": [
+      "/opt/miniconda3/pkgs",
+      "/opt/conda/pkgs",
+      "/root/.cache",
+      "/root/.conda/pkgs",
+      "/home"
+    ],
+    "scan_roots": [
+      "/opt",
+      "/usr/local/lib",
+      "/usr/lib",
+      "/root",
+      "/home",
+      "/tmp",
+      "/var/tmp"
+    ],
+    "probe_sha256": "1d5518f0800d9d563afcd95bfbb394e4ad99af683604d33ebdbd7367e33a97b5"
+  },
+  "source_sha256": {
+    "src/patchloop/environment.py": "24f3a4ebc47356ba997a890d5f129d49f757863cb5b22b67b85a3c9b21f94a29",
+    "src/patchloop/environment_probe.py": "1d5518f0800d9d563afcd95bfbb394e4ad99af683604d33ebdbd7367e33a97b5",
+    "src/patchloop/sandbox.py": "38213b0bc130f9480c3a6cfa4eac5dc6535ea3c62e4089f8699b5b8cf2a968da",
+    "src/patchloop/eval.py": "de4e53b0f4c957f8139aa0097b86b62f9b449fd67849688aa1a2bc84b9d92235",
+    "src/patchloop/repair/swebench.py": "1ec77aba2b5e96f41a64653598cd455266bbc25240e1716c9c7605fb97a6094e",
+    "src/patchloop/cli.py": "32a180e6bd8fe778b1f1cd8e999fc2d59f7408daebaa41eac69fedc6f6c04899",
+    "evals/audit_environment_access.py": "9ac3df1a833b40f7128cbc59e2d517914cb4c388ced7b1c5029089c758975905"
+  },
+  "artifact_sha256": {
+    "access-inventory.json": "e2e88cc1a626762659f3a8841dfba73df66f74ca374b9875f7456f8a62d3ce68",
+    "gold-report.json": "08ee65862e19ccf2f96ea0d3b57a8369d6ff1bd6c7994da1ece84432f9072471",
+    "gold-results.json": "f627bb335def5ecaed75305ea50995bf6d538f042b870ae839261626634ea3c6",
+    "xarray-4687-environment.json": "e86b6299ad9412f3308a4be14ad6a902cebf6943d9af874d5ff700cfaf17d873",
+    "xarray-4687-preflight.json": "4a3dd3401a70afde6882c95a36163e09902b76ec06121b98ea9dbc71bfe6b4f6"
+  },
+  "validation": {
+    "targeted_tests_passed": 66,
+    "model_calls": 0,
+    "visible_tests_passed": 1,
+    "gold_resolved": 1,
+    "gold_total": 1,
+    "gold_fail_to_pass": 1,
+    "gold_pass_to_pass": 1717
+  }
+}

@@ -30,6 +30,8 @@
 
 ## 运行准备
 
+新的 SWE-bench 求解会先遮蔽包缓存、收敛 Git 历史并检查源码副本与导入位置；失败时不调用模型。批量结果中预检失败保持未判卷，完整解决率留空。先使用 `agent preflight-swebench` 完成不调用模型的环境验收，操作及已验证范围见[隔离预检说明](../evals/reports/environment-isolation/README.md#不调用模型的单题预检)。
+
 以下 patchloop 命令在项目根目录执行。需要配置模型凭证、启动 Docker、准备题目镜像，并安装官方 harness：
 
 ```bash
@@ -170,6 +172,8 @@ python3 evals/summarize_baseline.py
 该脚本会写入汇总文件；复算后核对 Git 差异，避免把格式或统计变化误记为新的实验运行。
 
 ## 完整结果
+
+**环境审计更新（2026-10-13）：**历史四组 xarray 实验存在读取缓存中新版源码的情况；以下数字仍是历史环境下的原始结果。见[污染范围与敏感性分析](../evals/reports/environment-isolation/README.md)。
 
 下表均来自固定 `verified30` 题单。每次 30 题，重复运行使用相同问题；标准差是这些运行之间的样本波动，不是总体置信区间。
 

@@ -139,6 +139,8 @@ API 负责受理、查询、审查和交付；worker 独立领取修复任务。
 
 ## 评测与验证
 
+**历史结果说明：**以下实验中已发现模型读取镜像缓存内新版 xarray 源码的情况，清洁环境复验尚未完成。受影响范围、敏感性分析和隔离验收见[环境审计报告](evals/reports/environment-isolation/README.md)。
+
 在 SWE-bench Verified 的**固定 30 题子集**上，DeepSeek flash 的重复对照结果如下。每个配置运行三次，每次使用同一题单和官方判卷。
 
 | 配置 | 每次解决题数 | 平均解决率 |

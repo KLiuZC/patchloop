@@ -15,7 +15,10 @@ def _docker_available() -> bool:
 
 
 def _image_present(name: str) -> bool:
-    return subprocess.run(["docker", "image", "inspect", name], capture_output=True).returncode == 0
+    try:
+        return subprocess.run(["docker", "image", "inspect", name], capture_output=True, timeout=15).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
 
 
 def _git_repo(path):

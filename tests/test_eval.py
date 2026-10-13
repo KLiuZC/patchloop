@@ -135,7 +135,9 @@ def test_solve_passes_reminders_to_loop_and_records_count(tmp_path, monkeypatch)
                                prompt_tokens=100, cached_tokens=50, completion_tokens=10,
                                stop_reason="finish", final_message="Fixed issue")
 
-    monkeypatch.setattr(evaluation, "DockerRunner", Runner)
+    monkeypatch.setattr(evaluation, "solver_runner", Runner)
+    monkeypatch.setattr(evaluation, "inspect_image", lambda *a: {"id": "pinned"})
+    monkeypatch.setattr(evaluation, "prepare_swebench_environment", lambda *a: None)
     monkeypatch.setattr(evaluation, "run", loop)
     result, patch = evaluation.solve({"instance_id": "x__y-1", "repo": "x/y", "problem_statement": "bug"},
                                      evaluation_llm(), "agent", 40, 180, tmp_path, budget_reminders=True, explicit_finish=True)

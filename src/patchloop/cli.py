@@ -282,6 +282,28 @@ def repair_swebench_command(
     raise typer.Exit(code=0 if result.validation_status == "passed" else 1)
 
 
+@app.command("preflight-swebench")
+def preflight_swebench_command(
+    instance_id: str = typer.Option(..., "--instance", "-i"),
+    verify: str = typer.Option(..., "--verify", help="Existing visible checks expected to exit 0; no gold or hidden tests."),
+    artifacts: Path = typer.Option(..., "--artifacts", help="New directory for raw and isolated environment reports."),
+    memory: str = typer.Option("3g", "--memory"),
+    timeout: int = typer.Option(180, "--timeout", min=1),
+):
+    """Inspect a SWE-bench solving environment without calling a model."""
+    from .environment import preflight_instance
+    from .eval import image_name
+    try:
+        instance = load_instances([instance_id], DEFAULT_DATASET)[0]
+        report = preflight_instance(instance, image_name(instance), artifacts, verify=verify,
+                                    memory=memory, timeout=timeout)
+    except (OSError, ValueError, RuntimeError) as exc:
+        console.print(escape(f"{type(exc).__name__}: {exc}"), style="red")
+        raise typer.Exit(code=2)
+    console.print(f"preflight={report['status']} · artifacts={artifacts}")
+    raise typer.Exit(code=0 if report["status"] == "passed" else 2)
+
+
 @app.command("repair-judge")
 def repair_judge_command(
     artifacts: Path = typer.Option(..., "--artifacts", exists=True, file_okay=False, help="Existing task directory containing task.json and patch.diff."),
@@ -387,6 +409,8 @@ def eval_command(
         console.print(f"[red]{escape(str(e))}[/]")
         raise typer.Exit(code=2)
     _print_summary(summary, out_dir)
+    if summary.get("environment_failures"):
+        raise typer.Exit(code=2)
 
 
 def _print_summary(summary: dict, out_dir: Path) -> None:
@@ -414,7 +438,10 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
             verdict, escape(note),
         )
     console.print(table)
-    rate = f"{summary['resolved']}/{summary['judged']} ({summary['resolve_rate'] * 100:.0f}%)" if summary["judged"] else "not judged"
+    if summary.get("environment_failures"):
+        rate = f"incomplete: {summary['environment_failures']} environment preflight failure(s)"
+    else:
+        rate = f"{summary['resolved']}/{summary['judged']} ({summary['resolve_rate'] * 100:.0f}%)" if summary["judged"] else "not judged"
     invocation = summary.get("invocation")
     time_note = (
         f"this invocation {invocation['wall_seconds'] / 60:.1f} min"

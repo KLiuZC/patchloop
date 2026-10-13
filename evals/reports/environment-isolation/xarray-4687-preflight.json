@@ -1,0 +1,110 @@
+{
+  "instance_id": "pydata__xarray-4687",
+  "image": {
+    "requested": "swebench/sweb.eval.x86_64.pydata_1776_xarray-4687:latest",
+    "id": "sha256:2fef5e69c8c0210e5240618a354722aafaddc4137e92b6768d61967bd7f36fd3",
+    "platform": "linux/amd64",
+    "repo_digests": [
+      "swebench/sweb.eval.x86_64.pydata_1776_xarray-4687@sha256:2fef5e69c8c0210e5240618a354722aafaddc4137e92b6768d61967bd7f36fd3"
+    ]
+  },
+  "policy": {
+    "version": "swebench-isolation-v1",
+    "hidden_paths": [
+      "/opt/miniconda3/pkgs",
+      "/opt/conda/pkgs",
+      "/root/.cache",
+      "/root/.conda/pkgs",
+      "/home"
+    ],
+    "scan_roots": [
+      "/opt",
+      "/usr/local/lib",
+      "/usr/lib",
+      "/root",
+      "/home",
+      "/tmp",
+      "/var/tmp"
+    ],
+    "probe_sha256": "1d5518f0800d9d563afcd95bfbb394e4ad99af683604d33ebdbd7367e33a97b5"
+  },
+  "base_commit": "d3b6aa6d8b997df115a53c001d00222a0f92f63a",
+  "visible_command": "python -m pytest -q xarray/tests/test_computation.py -k test_where",
+  "status": "passed",
+  "before": {
+    "directories_scanned": 17871,
+    "findings": [
+      {
+        "kind": "project_archive",
+        "path": "/opt/miniconda3/pkgs/xarray-2025.4.0-py310h06a4308_0.conda"
+      },
+      {
+        "kind": "external_project_directory",
+        "path": "/opt/miniconda3/pkgs/xarray-2025.4.0-py310h06a4308_0/lib/python3.10/site-packages/xarray",
+        "resolved_path": "/opt/miniconda3/pkgs/xarray-2025.4.0-py310h06a4308_0/lib/python3.10/site-packages/xarray"
+      }
+    ],
+    "git": {
+      "alternates_present": false,
+      "commit_objects": 3982,
+      "head": "7f6c8b0609fba5f50a918734bb5b8c42fb34f311",
+      "reflog": [
+        "7f6c8b0609fba5f50a918734bb5b8c42fb34f311",
+        "7f6c8b0609fba5f50a918734bb5b8c42fb34f311"
+      ],
+      "remotes": "",
+      "tracked_changes": "",
+      "tree": "8b555e27a5779a9cc342acca2011fd59ebeac97a"
+    },
+    "imports": {
+      "pytest": {
+        "origin": "/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pytest/__init__.py",
+        "version": "7.4.0"
+      },
+      "xarray": {
+        "origin": "/testbed/xarray/__init__.py",
+        "version": "0.20.3.dev52+gd3b6aa6d8"
+      }
+    },
+    "python": {
+      "executable": "/opt/miniconda3/envs/testbed/bin/python",
+      "version": "3.10.15"
+    },
+    "scan_errors": [],
+    "status": "failed"
+  },
+  "after": {
+    "directories_scanned": 7692,
+    "findings": [],
+    "git": {
+      "alternates_present": false,
+      "commit_objects": 1,
+      "head": "d3b6aa6d8b997df115a53c001d00222a0f92f63a",
+      "reflog": [],
+      "remotes": "",
+      "tracked_changes": "",
+      "tree": "8b555e27a5779a9cc342acca2011fd59ebeac97a"
+    },
+    "imports": {
+      "pytest": {
+        "origin": "/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pytest/__init__.py",
+        "version": "7.4.0"
+      },
+      "xarray": {
+        "origin": "/testbed/xarray/__init__.py",
+        "version": "0.20.3.dev52+gd3b6aa6d8"
+      }
+    },
+    "python": {
+      "executable": "/opt/miniconda3/envs/testbed/bin/python",
+      "version": "3.10.15"
+    },
+    "scan_errors": [],
+    "status": "passed"
+  },
+  "visible_check": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output": ".                                                                        [100%]\n1 passed, 247 deselected in 0.55s\n"
+  }
+}

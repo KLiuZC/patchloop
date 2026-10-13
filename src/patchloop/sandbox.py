@@ -125,6 +125,7 @@ class DockerRunner:
         network: str = "none",
         mount_target: str | None = None,
         labels: dict[str, str] | None = None,
+        hidden_paths: tuple[str, ...] = (),
     ):
         self.image = image
         self.workdir = workdir
@@ -135,6 +136,13 @@ class DockerRunner:
         self.memory = memory
         self.cpus = cpus
         self.network = network
+        for path in hidden_paths:
+            if (not path.startswith("/") or path == "/" or
+                    any(part in path for part in (":", ",", "..", "\x00"))):
+                raise ValueError("hidden paths must be absolute container directories")
+            if workdir == path or workdir.startswith(path.rstrip("/") + "/"):
+                raise ValueError("cannot hide the working directory")
+        self.hidden_paths = tuple(hidden_paths)
         self.name = f"patchloop-{uuid.uuid4().hex[:8]}"
         self._started = False
 
@@ -143,7 +151,8 @@ class DockerRunner:
         return "Linux Docker container"
 
     def describe(self) -> dict:
-        return {"sandbox": "docker", "image": self.image, "workdir": self.workdir, "container": self.name}
+        return {"sandbox": "docker", "image": self.image, "workdir": self.workdir, "container": self.name,
+                "hidden_paths": list(self.hidden_paths)}
 
     def start(self) -> "DockerRunner":
         cmd = [
@@ -156,6 +165,10 @@ class DockerRunner:
         ]
         if self.platform:
             cmd += ["--platform", self.platform]
+        if self.hidden_paths:
+            cmd += ["--cap-drop", "ALL", "--security-opt", "no-new-privileges"]
+            for path in self.hidden_paths:
+                cmd += ["--tmpfs", f"{path}:ro,nosuid,nodev,noexec,size=1m"]
         for key, value in self.labels.items():
             cmd += ["--label", f"{key}={value}"]
         if self.mount:

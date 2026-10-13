@@ -16,7 +16,8 @@ from .baseline import single_shot
 from .llm import LLM, estimate_cost
 from .loop import cached_tokens_of, run
 from .prompts import TASK_TEMPLATE
-from .sandbox import DockerRunner
+from .environment import (EnvironmentCheckError, inspect_image, policy_metadata,
+                          prepare_swebench_environment, solver_runner)
 
 DEFAULT_DATASET = "SWE-bench/SWE-bench_Verified"
 HARNESS_ALIASES = {
@@ -79,6 +80,7 @@ class InstanceResult:
     budget_reminders_sent: int = 0
     stop_reason: str = ""
     final_message: str = ""
+    environment_status: str = "not_checked"
 
 
 def solve(
@@ -99,7 +101,12 @@ def solve(
     started = time.time()
     patch = ""
     try:
-        with DockerRunner(image_name(instance), workdir="/testbed", platform=platform, memory=memory) as runner:
+        image = inspect_image(image_name(instance))
+        with solver_runner(image["id"], workdir="/testbed", platform=platform, memory=memory) as runner:
+            prepare_swebench_environment(
+                runner, instance, traj_dir.parent / "environment" / f"{iid}.json", image,
+            )
+            result.environment_status = "passed"
             if mode == "agent":
                 r = run(
                     task_text(instance), llm, runner,
@@ -126,9 +133,17 @@ def solve(
                     (traj_dir / f"{iid}.patch").write_text(patch, encoding="utf-8")
             else:
                 raise ValueError(f"unknown mode {mode!r}")
+    except EnvironmentCheckError as e:
+        result.environment_status = "failed"
+        result.error = f"{type(e).__name__}: {e}"
+        result.stop_reason = "environment_failed"
     except Exception as e:  # one broken instance must not take the whole run down
         result.error = f"{type(e).__name__}: {e}"
-        result.stop_reason = "error"
+        if result.environment_status != "passed":
+            result.environment_status = "failed"
+            result.stop_reason = "environment_failed"
+        else:
+            result.stop_reason = "error"
     result.seconds = round(time.time() - started, 1)
     result.patch_lines = patch.count("\n")
     result.cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
@@ -205,16 +220,17 @@ def evaluate(
     ordered = [results[i["instance_id"]] for i in instances if i["instance_id"] in results]
 
     harness_run_id = None
-    if judge and ordered:
+    judgeable = [r for r in ordered if r.environment_status != "failed"]
+    if judge and judgeable:
         by_id = {i["instance_id"]: i for i in instances}
-        missing = [r.instance_id for r in ordered if not image_present(image_name(by_id[r.instance_id]))]
+        missing = [r.instance_id for r in judgeable if not image_present(image_name(by_id[r.instance_id]))]
         if missing:
             log(f"{len(missing)} image(s) missing locally; the harness will build them from the task repo")
         else:
             # with a task repo the harness rebuilds every image, whether or not it already exists
             task_repo = None
         verdicts, harness_run_id = judge_predictions(
-            predictions_path, [r.instance_id for r in ordered], run_id, dataset, harness_dir, task_repo, judge_workers, log,
+            predictions_path, [r.instance_id for r in judgeable], run_id, dataset, harness_dir, task_repo, judge_workers, log,
         )
         for r in ordered:
             if r.instance_id in verdicts:
@@ -250,6 +266,7 @@ def _evaluation_config(instances: list[dict], llm: LLM, **settings) -> dict:
         "api_timeout_seconds": getattr(llm.client.timeout, "read", llm.client.timeout),
         "api_max_retries": llm.client.max_retries,
         "platform": "linux/amd64", "container_cpus": 2.0, "container_network": "none",
+        "environment_policy": policy_metadata(),
         **settings,
         "instance_ids": [i["instance_id"] for i in instances],
         "selected_instances_sha256": hashlib.sha256(selected).hexdigest(),
@@ -323,6 +340,7 @@ def judge_predictions(
 def summarize(results: list[InstanceResult], run_id: str, mode: str, llm: LLM) -> dict:
     judged = [r for r in results if r.resolved is not None]
     resolved = sum(1 for r in judged if r.resolved)
+    environment_failures = sum(r.environment_status == "failed" for r in results)
     return {
         "run_id": run_id,
         "mode": mode,
@@ -331,8 +349,9 @@ def summarize(results: list[InstanceResult], run_id: str, mode: str, llm: LLM) -
         "instances": len(results),
         "judged": len(judged),
         "resolved": resolved,
-        "resolve_rate": round(resolved / len(judged), 3) if judged else None,
+        "resolve_rate": round(resolved / len(judged), 3) if judged and not environment_failures else None,
         "errors": sum(1 for r in results if r.error),
+        "environment_failures": environment_failures,
         "prompt_tokens": sum(r.prompt_tokens for r in results),
         "cached_tokens": sum(r.cached_tokens for r in results),
         "completion_tokens": sum(r.completion_tokens for r in results),
