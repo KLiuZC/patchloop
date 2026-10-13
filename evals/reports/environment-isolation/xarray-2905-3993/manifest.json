@@ -1,0 +1,71 @@
+{
+  "created_at": "2026-10-13T14:32:48.876434+00:00",
+  "implementation_commit": "164d24a613ea295a8eb9c69ef1f58538f32fecdb",
+  "policy": {
+    "version": "swebench-isolation-v1",
+    "hidden_paths": [
+      "/opt/miniconda3/pkgs",
+      "/opt/conda/pkgs",
+      "/root/.cache",
+      "/root/.conda/pkgs",
+      "/home"
+    ],
+    "scan_roots": [
+      "/opt",
+      "/usr/local/lib",
+      "/usr/lib",
+      "/root",
+      "/home",
+      "/tmp",
+      "/var/tmp"
+    ],
+    "probe_sha256": "1d5518f0800d9d563afcd95bfbb394e4ad99af683604d33ebdbd7367e33a97b5"
+  },
+  "production_code_changed": false,
+  "source_sha256": {
+    "src/patchloop/environment.py": "24f3a4ebc47356ba997a890d5f129d49f757863cb5b22b67b85a3c9b21f94a29",
+    "src/patchloop/environment_probe.py": "1d5518f0800d9d563afcd95bfbb394e4ad99af683604d33ebdbd7367e33a97b5",
+    "src/patchloop/sandbox.py": "38213b0bc130f9480c3a6cfa4eac5dc6535ea3c62e4089f8699b5b8cf2a968da",
+    "src/patchloop/eval.py": "de4e53b0f4c957f8139aa0097b86b62f9b449fd67849688aa1a2bc84b9d92235",
+    "src/patchloop/repair/swebench.py": "1ec77aba2b5e96f41a64653598cd455266bbc25240e1716c9c7605fb97a6094e",
+    "src/patchloop/cli.py": "32a180e6bd8fe778b1f1cd8e999fc2d59f7408daebaa41eac69fedc6f6c04899",
+    "evals/audit_environment_access.py": "9ac3df1a833b40f7128cbc59e2d517914cb4c388ced7b1c5029089c758975905",
+    "tests/test_environment.py": "c0d86e8c6bddfbaf7f8b26ba756d25d5546e1948ba20a113b4c7fa6c91fdda5a"
+  },
+  "artifact_sha256": {
+    "gold-results.json": "993973a3cbc2ec1e849cc11683ab5bd1ba98a8b019eb3738f4a086e00cc1f506",
+    "xarray-2905-environment.json": "0d14eb94a03962918f6eafeeac13a21e056ad5b187681b271530ff2f5efbd1fb",
+    "xarray-2905-gold-report.json": "27b1d107a34b33256368dc7f8cf9daa6c4c36af249d527699ba174201b690850",
+    "xarray-2905-preflight.json": "36d1a255934ebda167eb696d97b854e9689f09d260605f21a9125e23db62950b",
+    "xarray-3993-environment.json": "9d87cb5dfb02790fc8f8cd79a770a41b7fc0777cc5bf423a7181b6df86447d71",
+    "xarray-3993-gold-report.json": "cdbfbe61848e8765f61cbad6e74e4e7855e8c6dba960c5ff434ffb8feecb5975",
+    "xarray-3993-preflight.json": "1953c7c4c844cdfc08e9e6c0e89227d3bb3819e8a7bcf1c0575b4e653927b568"
+  },
+  "validation": {
+    "targeted_tests_passed": 68,
+    "model_calls": 0,
+    "gold_run_id": "environment-isolation-gold-xarray2-20261013",
+    "gold_resolved": 2,
+    "gold_total": 2,
+    "instances": {
+      "pydata__xarray-2905": {
+        "base_commit": "7c4e2ac83f7b4306296ff9b7b51aaf016e5ad614",
+        "image_id": "sha256:23c72d6ce177631efc8094bf28418e3a960d96ca23e8ad727a18c644de257e9f",
+        "visible_command": "python -m pytest -q xarray/tests/test_variable.py -k setitem",
+        "visible_passed": 2,
+        "gold_resolved": true,
+        "gold_fail_to_pass": 1,
+        "gold_pass_to_pass": 364
+      },
+      "pydata__xarray-3993": {
+        "base_commit": "8cc34cb412ba89ebca12fc84f76a9e452628f1bc",
+        "image_id": "sha256:701fb2a4aa664b5762bb554652e7557c637bcb498462065688d7d86dfb6aaa2b",
+        "visible_command": "python -m pytest -q xarray/tests/test_dataset.py -k test_integrate",
+        "visible_passed": 2,
+        "gold_resolved": true,
+        "gold_fail_to_pass": 2,
+        "gold_pass_to_pass": 2398
+      }
+    }
+  }
+}

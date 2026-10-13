@@ -145,24 +145,37 @@ def test_eval_cli_returns_failure_for_incomplete_environment_checks(monkeypatch)
     assert result.exit_code == 2
 
 
-def test_real_xarray_cache_is_hidden_while_baseline_remains_executable(tmp_path):
-    image = "swebench/sweb.eval.x86_64.pydata_1776_xarray-4687:latest"
+@pytest.mark.parametrize("number,base_commit,source_path,verify", [
+    ("2905", "7c4e2ac83f7b4306296ff9b7b51aaf016e5ad614", "core/variable.py",
+     "python -m pytest -q xarray/tests/test_variable.py -k setitem"),
+    ("3993", "8cc34cb412ba89ebca12fc84f76a9e452628f1bc", "core/dataarray.py",
+     "python -m pytest -q xarray/tests/test_dataset.py -k test_integrate"),
+    ("4687", "d3b6aa6d8b997df115a53c001d00222a0f92f63a", "computation/computation.py",
+     "python -m pytest -q xarray/tests/test_computation.py -k test_where"),
+])
+def test_real_xarray_cache_is_hidden_while_baseline_remains_executable(
+    tmp_path, number, base_commit, source_path, verify,
+):
+    image = f"swebench/sweb.eval.x86_64.pydata_1776_xarray-{number}:latest"
     try:
         info = environment.inspect_image(image)
     except (OSError, RuntimeError, subprocess.TimeoutExpired):
-        pytest.skip("xarray-4687 image is not available; no automatic downloads")
-    instance = {"instance_id": "pydata__xarray-4687", "repo": "pydata/xarray",
-                "base_commit": "d3b6aa6d8b997df115a53c001d00222a0f92f63a"}
-    path = "/opt/miniconda3/pkgs/xarray-2025.4.0-py310h06a4308_0/lib/python3.10/site-packages/xarray/computation/computation.py"
+        pytest.skip(f"xarray-{number} image is not available; no automatic downloads")
+    instance = {"instance_id": f"pydata__xarray-{number}", "repo": "pydata/xarray",
+                "base_commit": base_commit}
+    cache = "/opt/miniconda3/pkgs/xarray-2025.4.0-py310h06a4308_0"
+    path = f"{cache}/lib/python3.10/site-packages/xarray/{source_path}"
     with environment.solver_runner(info["id"]) as runner:
         report = environment.prepare_swebench_environment(runner, instance, tmp_path / "environment.json", info)
         assert report["status"] == "passed"
         assert report["checks"]["git"]["commit_objects"] == 1
+        assert report["checks"]["git"]["head"] == base_commit
         assert runner.run_result(f"cat {path}", timeout=10).exit_code != 0
         assert runner.run_result(f"python -c 'open(\"{path}\").read()'", timeout=10).exit_code != 0
+        assert runner.run_result(f"test -r {cache}.conda", timeout=10).exit_code != 0
         assert runner.run_result("umount /opt/miniconda3/pkgs", timeout=10).exit_code != 0
         assert runner.run_result("git status --porcelain --untracked-files=no", timeout=10).output == ""
-        assert runner.run_result("python -m pytest -q xarray/tests/test_computation.py -k test_where", timeout=60).exit_code == 0
+        assert runner.run_result(verify, timeout=60).exit_code == 0
 
 
 def test_isolation_mounts_and_reduced_privileges_are_passed_to_docker(monkeypatch):

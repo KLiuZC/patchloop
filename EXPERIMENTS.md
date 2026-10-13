@@ -6,7 +6,7 @@
 
 ## 阅读约定
 
-- 2026-10-13：历史 xarray 轨迹确认存在读取新版源码的环境污染，涉及基线、提醒、finish 和 GLM 组。新增[访问清单与单题隔离验收](evals/reports/environment-isolation/README.md)，原答卷与判卷保持原样；当前没有清洁环境下的新模型解决率。
+- 2026-10-13：历史 xarray 轨迹确认存在读取新版源码的环境污染，涉及基线、提醒、finish 和 GLM 组。新增[访问清单与隔离验收](evals/reports/environment-isolation/README.md)，原答卷与判卷保持原样；4687 及[2905、3993](evals/reports/environment-isolation/xarray-2905-3993/README.md) 均已通过环境与 gold 预检，当前没有清洁环境下的新模型解决率。
 - 修复能力评测与产品流程验收分别统计；预检、脚本化模型测试和只重判已有补丁不计作新的模型修复成绩。
 - `smoke5` 与 `verified30` 均已用于开发。30 题重复实验不代表 Verified 全集，也不构成未见任务的泛化结论。
 - 官方分母、失败记录和原始结论保留。人工补齐依赖或诊断不回填正式分数，后续更正通过报告说明。

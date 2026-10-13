@@ -1,0 +1,110 @@
+{
+  "instance_id": "pydata__xarray-2905",
+  "image": {
+    "requested": "swebench/sweb.eval.x86_64.pydata_1776_xarray-2905:latest",
+    "id": "sha256:23c72d6ce177631efc8094bf28418e3a960d96ca23e8ad727a18c644de257e9f",
+    "platform": "linux/amd64",
+    "repo_digests": [
+      "swebench/sweb.eval.x86_64.pydata_1776_xarray-2905@sha256:23c72d6ce177631efc8094bf28418e3a960d96ca23e8ad727a18c644de257e9f"
+    ]
+  },
+  "policy": {
+    "version": "swebench-isolation-v1",
+    "hidden_paths": [
+      "/opt/miniconda3/pkgs",
+      "/opt/conda/pkgs",
+      "/root/.cache",
+      "/root/.conda/pkgs",
+      "/home"
+    ],
+    "scan_roots": [
+      "/opt",
+      "/usr/local/lib",
+      "/usr/lib",
+      "/root",
+      "/home",
+      "/tmp",
+      "/var/tmp"
+    ],
+    "probe_sha256": "1d5518f0800d9d563afcd95bfbb394e4ad99af683604d33ebdbd7367e33a97b5"
+  },
+  "base_commit": "7c4e2ac83f7b4306296ff9b7b51aaf016e5ad614",
+  "visible_command": "python -m pytest -q xarray/tests/test_variable.py -k setitem",
+  "status": "passed",
+  "before": {
+    "directories_scanned": 17814,
+    "findings": [
+      {
+        "kind": "project_archive",
+        "path": "/opt/miniconda3/pkgs/xarray-2025.4.0-py310h06a4308_0.conda"
+      },
+      {
+        "kind": "external_project_directory",
+        "path": "/opt/miniconda3/pkgs/xarray-2025.4.0-py310h06a4308_0/lib/python3.10/site-packages/xarray",
+        "resolved_path": "/opt/miniconda3/pkgs/xarray-2025.4.0-py310h06a4308_0/lib/python3.10/site-packages/xarray"
+      }
+    ],
+    "git": {
+      "alternates_present": false,
+      "commit_objects": 3521,
+      "head": "13306477cd0bea1a802f5153e6bdcd25fe5d35db",
+      "reflog": [
+        "13306477cd0bea1a802f5153e6bdcd25fe5d35db",
+        "13306477cd0bea1a802f5153e6bdcd25fe5d35db"
+      ],
+      "remotes": "",
+      "tracked_changes": "",
+      "tree": "10c729d108d8166f55f25d8b8da0ce4837f4e0b0"
+    },
+    "imports": {
+      "pytest": {
+        "origin": "/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pytest/__init__.py",
+        "version": "7.4.0"
+      },
+      "xarray": {
+        "origin": "/testbed/xarray/__init__.py",
+        "version": "0.16.3.dev122+g7c4e2ac83"
+      }
+    },
+    "python": {
+      "executable": "/opt/miniconda3/envs/testbed/bin/python",
+      "version": "3.10.15"
+    },
+    "scan_errors": [],
+    "status": "failed"
+  },
+  "after": {
+    "directories_scanned": 7690,
+    "findings": [],
+    "git": {
+      "alternates_present": false,
+      "commit_objects": 1,
+      "head": "7c4e2ac83f7b4306296ff9b7b51aaf016e5ad614",
+      "reflog": [],
+      "remotes": "",
+      "tracked_changes": "",
+      "tree": "10c729d108d8166f55f25d8b8da0ce4837f4e0b0"
+    },
+    "imports": {
+      "pytest": {
+        "origin": "/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pytest/__init__.py",
+        "version": "7.4.0"
+      },
+      "xarray": {
+        "origin": "/testbed/xarray/__init__.py",
+        "version": "0.16.3.dev122+g7c4e2ac83"
+      }
+    },
+    "python": {
+      "executable": "/opt/miniconda3/envs/testbed/bin/python",
+      "version": "3.10.15"
+    },
+    "scan_errors": [],
+    "status": "passed"
+  },
+  "visible_check": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output": "..                                                                       [100%]\n=============================== warnings summary ===============================\nxarray/__init__.py:1\n  /testbed/xarray/__init__.py:1: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html\n    import pkg_resources\n\nxarray/core/dask_array_compat.py:61\nxarray/core/dask_array_compat.py:61\n  /testbed/xarray/core/dask_array_compat.py:61: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.\n    if LooseVersion(dask_version) > LooseVersion(\"2.9.0\"):\n\nxarray/core/pdcompat.py:45\n  /testbed/xarray/core/pdcompat.py:45: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.\n    if LooseVersion(pd.__version__) < \"0.25.0\":\n\n../opt/miniconda3/envs/testbed/lib/python3.10/site-packages/setuptools/_distutils/version.py:345\n  /opt/miniconda3/envs/testbed/lib/python3.10/site-packages/setuptools/_distutils/version.py:345: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.\n    other = LooseVersion(other)\n\nxarray/tests/__init__.py:59\nxarray/tests/__init__.py:59\nxarray/tests/__init__.py:59\nxarray/tests/__init__.py:59\nxarray/tests/__init__.py:59\nxarray/tests/__init__.py:59\n  /testbed/xarray/tests/__init__.py:59: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.\n    return version.LooseVersion(vstring)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n2 passed, 456 deselected, 11 warnings in 3.09s\n"
+  }
+}
