@@ -1,0 +1,73 @@
+{
+  "created_at": "2026-10-14T03:44:38.201204+00:00",
+  "config": {
+    "schema_version": 1,
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "temperature": null,
+    "max_tokens": null,
+    "api_timeout_seconds": 120.0,
+    "api_max_retries": 3,
+    "platform": "linux/amd64",
+    "container_cpus": 2.0,
+    "container_network": "none",
+    "environment_policy": {
+      "version": "swebench-isolation-v1",
+      "hidden_paths": [
+        "/opt/miniconda3/pkgs",
+        "/opt/conda/pkgs",
+        "/root/.cache",
+        "/root/.conda/pkgs",
+        "/home"
+      ],
+      "scan_roots": [
+        "/opt",
+        "/usr/local/lib",
+        "/usr/lib",
+        "/root",
+        "/home",
+        "/tmp",
+        "/var/tmp"
+      ],
+      "probe_sha256": "1d5518f0800d9d563afcd95bfbb394e4ad99af683604d33ebdbd7367e33a97b5"
+    },
+    "dataset": "SWE-bench/SWE-bench_Verified",
+    "mode": "agent",
+    "max_turns": 40,
+    "timeout": 180,
+    "workers": 2,
+    "memory": "3g",
+    "judge_workers": 1,
+    "budget_reminders": true,
+    "explicit_finish": true,
+    "instance_ids": [
+      "pydata__xarray-2905",
+      "pydata__xarray-3993",
+      "pydata__xarray-4687"
+    ],
+    "selected_instances_sha256": "96472b28f3a8b0d76bf3c877f56b30ef9ce5a589ce6d71fd32bf29f30d9e1eef",
+    "source_sha256": {
+      "__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "baseline.py": "014f5ebec8960405a221e40f404d76a7645f768c3b1a17bcc0ef3a067a801298",
+      "cli.py": "32a180e6bd8fe778b1f1cd8e999fc2d59f7408daebaa41eac69fedc6f6c04899",
+      "environment.py": "24f3a4ebc47356ba997a890d5f129d49f757863cb5b22b67b85a3c9b21f94a29",
+      "environment_probe.py": "1d5518f0800d9d563afcd95bfbb394e4ad99af683604d33ebdbd7367e33a97b5",
+      "eval.py": "de4e53b0f4c957f8139aa0097b86b62f9b449fd67849688aa1a2bc84b9d92235",
+      "llm.py": "506ff8fa85ae78d020ef49eaf8f2e43ce56d91f6f17eb721219db3c2f6a87957",
+      "loop.py": "4a43357f2e80149fdc7d730ebc8fddd6c4aeb167f636ed348abaac3acafdba5b",
+      "prompts.py": "d8888e3b3a305d4c5b546ec09603e247e84ed240ae0cdfcbaa57d8499878e2f4",
+      "sandbox.py": "38213b0bc130f9480c3a6cfa4eac5dc6535ea3c62e4089f8699b5b8cf2a968da",
+      "subset.py": "8dba512ec843521d92254f0f849e5cbda3bfecb27f16bc15eb9f8aadb9c6fc5f",
+      "tools.py": "cc579e7abcbb2fd6bcd965fa111dd44768500c1b3041bc7d8c1ff2b65d4f6c08",
+      "trajectory.py": "f3e2b1f242d547e94adff327ba05286d3f11e5b223ef91f3f092809988cb7dfc",
+      "worker.py": "ed9a5275ac942c4574271179757ca834b163befe83dc41ba4163c4d7f6092716"
+    },
+    "uv_lock_sha256": "bf8d75155c64f7e2a9283bb0442f65df0e15fb96999237a835885561ad1d0ecd",
+    "python_version": "3.12.13",
+    "packages": {
+      "openai": "3.19.2",
+      "datasets": "5.0.1",
+      "typer": "0.27.2"
+    }
+  }
+}

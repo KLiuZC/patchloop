@@ -1,0 +1,5 @@
+# Environment-isolation recheck of three previously exposed development tasks.
+# This is a fixed subset of verified30, not a fresh holdout set.
+pydata__xarray-2905
+pydata__xarray-3993
+pydata__xarray-4687

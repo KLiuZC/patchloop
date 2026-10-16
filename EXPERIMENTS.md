@@ -52,6 +52,7 @@
 
 | 资料 | 用途 |
 | --- | --- |
+| [xarray 三题隔离后复验](evals/profiles/xarray3-isolation/README.md) | 已准备的固定题单、10 遍配置、启动前校验和结果口径；尚未运行模型 |
 | [Flask #6146 配置](evals/profiles/github-flask-6146/README.md) | 当次固定基线、文档检查脚本及路径范围 |
 | [GitHub PR 示例配置](evals/profiles/github-publish-demo/README.md) | 当次仓库、Issue、验证命令及发布操作 |
 | [完整实验台账](docs/history/experiments-through-2026-10-09.md) | 原始时间顺序、长备注、环境观察和后续更正 |

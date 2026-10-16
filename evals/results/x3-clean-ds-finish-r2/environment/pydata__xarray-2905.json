@@ -1,0 +1,62 @@
+{
+  "instance_id": "pydata__xarray-2905",
+  "base_commit": "7c4e2ac83f7b4306296ff9b7b51aaf016e5ad614",
+  "image": {
+    "requested": "swebench/sweb.eval.x86_64.pydata_1776_xarray-2905:latest",
+    "id": "sha256:23c72d6ce177631efc8094bf28418e3a960d96ca23e8ad727a18c644de257e9f",
+    "platform": "linux/amd64",
+    "repo_digests": [
+      "swebench/sweb.eval.x86_64.pydata_1776_xarray-2905@sha256:23c72d6ce177631efc8094bf28418e3a960d96ca23e8ad727a18c644de257e9f"
+    ]
+  },
+  "policy": {
+    "version": "swebench-isolation-v1",
+    "hidden_paths": [
+      "/opt/miniconda3/pkgs",
+      "/opt/conda/pkgs",
+      "/root/.cache",
+      "/root/.conda/pkgs",
+      "/home"
+    ],
+    "scan_roots": [
+      "/opt",
+      "/usr/local/lib",
+      "/usr/lib",
+      "/root",
+      "/home",
+      "/tmp",
+      "/var/tmp"
+    ],
+    "probe_sha256": "1d5518f0800d9d563afcd95bfbb394e4ad99af683604d33ebdbd7367e33a97b5"
+  },
+  "status": "passed",
+  "checks": {
+    "directories_scanned": 7690,
+    "findings": [],
+    "git": {
+      "alternates_present": false,
+      "commit_objects": 1,
+      "head": "7c4e2ac83f7b4306296ff9b7b51aaf016e5ad614",
+      "reflog": [],
+      "remotes": "",
+      "tracked_changes": "",
+      "tree": "10c729d108d8166f55f25d8b8da0ce4837f4e0b0"
+    },
+    "imports": {
+      "pytest": {
+        "origin": "/opt/miniconda3/envs/testbed/lib/python3.10/site-packages/pytest/__init__.py",
+        "version": "7.4.0"
+      },
+      "xarray": {
+        "origin": "/testbed/xarray/__init__.py",
+        "version": "0.16.3.dev122+g7c4e2ac83"
+      }
+    },
+    "python": {
+      "executable": "/opt/miniconda3/envs/testbed/bin/python",
+      "version": "3.10.15"
+    },
+    "scan_errors": [],
+    "status": "passed"
+  }
+}
