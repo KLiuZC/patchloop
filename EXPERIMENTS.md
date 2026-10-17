@@ -6,7 +6,7 @@
 
 ## 阅读约定
 
-- 2026-10-13：历史 xarray 轨迹确认存在读取新版源码的环境污染，涉及基线、提醒、finish 和 GLM 组。新增[访问清单与隔离验收](evals/reports/environment-isolation/README.md)，原答卷与判卷保持原样；4687 及[2905、3993](evals/reports/environment-isolation/xarray-2905-3993/README.md) 均已通过环境与 gold 预检，当前没有清洁环境下的新模型解决率。
+- 历史 xarray 轨迹存在读取新版源码的环境污染，涉及基线、提醒、finish 和 GLM 组，见[访问清单与隔离验收](evals/reports/environment-isolation/README.md)。2026-10-13～14 已完成三题隔离后的 10 遍、30 次求解，结果见[复验报告](evals/reports/xarray3-isolation/README.md)；其余 27 题未在新环境重跑，历史答卷和判卷保持原样。
 - 修复能力评测与产品流程验收分别统计；预检、脚本化模型测试和只重判已有补丁不计作新的模型修复成绩。
 - `smoke5` 与 `verified30` 均已用于开发。30 题重复实验不代表 Verified 全集，也不构成未见任务的泛化结论。
 - 官方分母、失败记录和原始结论保留。人工补齐依赖或诊断不回填正式分数，后续更正通过报告说明。
@@ -23,6 +23,7 @@
 | 2026-09-30 | 剩余轮数提醒冒烟 | 检查提醒事件与完整判卷流程；[smoke5 报告](evals/results/smoke5-budget-deepseek/README.md) |
 | 2026-10-01 | 4C 剩余轮数提醒对照 | 同一 30 题三次运行，记录收尾行为和解决率波动；[实验报告](evals/reports/4c-budget-reminders/README.md) |
 | 2026-10-02～10-03 | 显式 `finish` 对照 | 开发集验证与三次 30 题对照；保留可选、默认关闭；[实验报告](evals/reports/4c-explicit-finish/README.md) |
+| 2026-10-13～14 | xarray 三题隔离复验 | DeepSeek 基线 4/9、提醒 6/9、提醒 + finish 6/9；GLM 基线 1/3。29 份补丁实际测试，1 份空补丁保留分母；[报告与官方证据](evals/reports/xarray3-isolation/README.md) |
 
 完整结果表及统计口径统一维护在[评测说明](docs/evaluation.md#完整结果)，逐题记录以各报告引用的原始数据为准。
 
@@ -52,7 +53,7 @@
 
 | 资料 | 用途 |
 | --- | --- |
-| [xarray 三题隔离后复验](evals/profiles/xarray3-isolation/README.md) | 已准备的固定题单、10 遍配置、启动前校验和结果口径；尚未运行模型 |
+| [xarray 三题隔离后复验配置](evals/profiles/xarray3-isolation/README.md) | 已完成的 10 遍配置、题单、启动校验和原计划；[归档报告](evals/reports/xarray3-isolation/README.md)另存完成状态 |
 | [Flask #6146 配置](evals/profiles/github-flask-6146/README.md) | 当次固定基线、文档检查脚本及路径范围 |
 | [GitHub PR 示例配置](evals/profiles/github-publish-demo/README.md) | 当次仓库、Issue、验证命令及发布操作 |
 | [完整实验台账](docs/history/experiments-through-2026-10-09.md) | 原始时间顺序、长备注、环境观察和后续更正 |

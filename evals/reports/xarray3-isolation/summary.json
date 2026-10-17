@@ -1,0 +1,1388 @@
+{
+  "schema_version": 1,
+  "campaign": "xarray3-isolation-v1",
+  "status": "completed",
+  "run_dates_asia_shanghai": [
+    "2026-10-13",
+    "2026-10-14"
+  ],
+  "archived_at_date": "2026-10-17",
+  "unique_tasks": 3,
+  "runs_completed": 10,
+  "attempts": 30,
+  "official_tested": 29,
+  "empty_patches": 1,
+  "cost_cny_estimate": 3.00199602,
+  "groups": [
+    {
+      "provider": "deepseek",
+      "group": "base",
+      "runs": 3,
+      "attempts": 9,
+      "resolved": 4,
+      "resolve_rate": 0.4444444444444444,
+      "run_resolved": [
+        1,
+        2,
+        1
+      ],
+      "turns": 295,
+      "mean_turns": 32.77777777777778,
+      "stop_reasons": {
+        "no_tool_calls": 5,
+        "max_turns": 4
+      },
+      "empty_patches": 1,
+      "cost_cny_estimate": 0.6960554,
+      "wall_seconds_sum": 1423.1,
+      "task_resolved": {
+        "pydata__xarray-2905": 3,
+        "pydata__xarray-3993": 1,
+        "pydata__xarray-4687": 0
+      }
+    },
+    {
+      "provider": "deepseek",
+      "group": "budget",
+      "runs": 3,
+      "attempts": 9,
+      "resolved": 6,
+      "resolve_rate": 0.6666666666666666,
+      "run_resolved": [
+        2,
+        1,
+        3
+      ],
+      "turns": 274,
+      "mean_turns": 30.444444444444443,
+      "stop_reasons": {
+        "no_tool_calls": 6,
+        "max_turns": 3
+      },
+      "empty_patches": 0,
+      "cost_cny_estimate": 0.6550057,
+      "wall_seconds_sum": 1413.8,
+      "task_resolved": {
+        "pydata__xarray-2905": 3,
+        "pydata__xarray-3993": 2,
+        "pydata__xarray-4687": 1
+      }
+    },
+    {
+      "provider": "deepseek",
+      "group": "finish",
+      "runs": 3,
+      "attempts": 9,
+      "resolved": 6,
+      "resolve_rate": 0.6666666666666666,
+      "run_resolved": [
+        2,
+        3,
+        1
+      ],
+      "turns": 278,
+      "mean_turns": 30.88888888888889,
+      "stop_reasons": {
+        "finish": 6,
+        "max_turns": 3
+      },
+      "empty_patches": 0,
+      "cost_cny_estimate": 0.84860108,
+      "wall_seconds_sum": 1594.6,
+      "task_resolved": {
+        "pydata__xarray-2905": 3,
+        "pydata__xarray-3993": 1,
+        "pydata__xarray-4687": 2
+      }
+    },
+    {
+      "provider": "glm",
+      "group": "base",
+      "runs": 1,
+      "attempts": 3,
+      "resolved": 1,
+      "resolve_rate": 0.3333333333333333,
+      "run_resolved": [
+        1
+      ],
+      "turns": 91,
+      "mean_turns": 30.333333333333332,
+      "stop_reasons": {
+        "no_tool_calls": 3
+      },
+      "empty_patches": 0,
+      "cost_cny_estimate": 0.80233384,
+      "wall_seconds_sum": 1584.3,
+      "task_resolved": {
+        "pydata__xarray-2905": 0,
+        "pydata__xarray-3993": 1,
+        "pydata__xarray-4687": 0
+      }
+    }
+  ],
+  "runs": [
+    {
+      "order": 1,
+      "run_id": "x3-clean-ds-base-r1",
+      "provider": "deepseek",
+      "group": "base",
+      "repeat": 1,
+      "model": "deepseek-flash",
+      "harness_run_id": "x3-clean-ds-base-r1-1013-233114",
+      "results_path": "evals/results/x3-clean-ds-base-r1",
+      "invocation": {
+        "started_at": "2026-10-13T15:26:43.588209+00:00",
+        "finished_at": "2026-10-13T15:33:56.219637+00:00",
+        "wall_seconds": 432.6,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 3,
+      "resolved": 1,
+      "empty_patches": 0,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.21141644,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": true,
+          "turns": 32,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 413811,
+          "cached_tokens": 400512,
+          "completion_tokens": 12208,
+          "cost": 0.07014124,
+          "patch_sha256": "bdc3c9a2bb591b5d8ec2fcd2f8f7fad6b25bd51ca1eabd5f3a98d3697b7a3fe8",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": false,
+          "turns": 23,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 231670,
+          "cached_tokens": 221696,
+          "completion_tokens": 7216,
+          "cost": 0.04327192,
+          "patch_sha256": "fbd91efdda7e594a99a35fc6f37c51f2260671520390bba7e7aac25134fd79f7",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_warning_type",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 2
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": false,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 625730,
+          "cached_tokens": 606464,
+          "completion_tokens": 16652,
+          "cost": 0.09800328,
+          "patch_sha256": "970cb795f5047ec020350b47974741830ac40c5e159374049e080386c1997aeb",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_attribute_source",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 1
+            },
+            "PASS_TO_PASS": {
+              "success": 1717,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "run_id": "x3-clean-ds-budget-r1",
+      "provider": "deepseek",
+      "group": "budget",
+      "repeat": 1,
+      "model": "deepseek-flash",
+      "harness_run_id": "x3-clean-ds-budget-r1-1013-234842",
+      "results_path": "evals/results/x3-clean-ds-budget-r1",
+      "invocation": {
+        "started_at": "2026-10-13T15:44:11.854735+00:00",
+        "finished_at": "2026-10-13T15:51:11.016444+00:00",
+        "wall_seconds": 419.2,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 3,
+      "resolved": 2,
+      "empty_patches": 0,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.18303974,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": true,
+          "turns": 21,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 175474,
+          "cached_tokens": 166784,
+          "completion_tokens": 5088,
+          "cost": 0.03237768,
+          "patch_sha256": "82349faf22d1654ef1e11d9689a6d5ad4927b30b77e0be74b93b0543a968249d",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": true,
+          "turns": 21,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 177851,
+          "cached_tokens": 168191,
+          "completion_tokens": 5932,
+          "cost": 0.03675182,
+          "patch_sha256": "97bb45d112005262c5ffb2bea5406cea4e5b39232024b92d9497e0d1507c4b74",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 2,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": false,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 2,
+          "prompt_tokens": 700112,
+          "cached_tokens": 682112,
+          "completion_tokens": 20567,
+          "cost": 0.11391024,
+          "patch_sha256": "5515f19d51927cf531c1969373e1f2cf1d4dd3426cad2743797696f2c2c952b6",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_attribute_source",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 1
+            },
+            "PASS_TO_PASS": {
+              "success": 1717,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "run_id": "x3-clean-ds-finish-r1",
+      "provider": "deepseek",
+      "group": "finish",
+      "repeat": 1,
+      "model": "deepseek-flash",
+      "harness_run_id": "x3-clean-ds-finish-r1-1014-114915",
+      "results_path": "evals/results/x3-clean-ds-finish-r1",
+      "invocation": {
+        "started_at": "2026-10-14T03:44:38.201408+00:00",
+        "finished_at": "2026-10-14T03:51:46.825892+00:00",
+        "wall_seconds": 428.6,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 3,
+      "resolved": 2,
+      "empty_patches": 0,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.2429908,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": true,
+          "turns": 26,
+          "stop_reason": "finish",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 296931,
+          "cached_tokens": 285568,
+          "completion_tokens": 10692,
+          "cost": 0.05984236,
+          "patch_sha256": "7b8d81930a541f23dbdb51f84b0b9e8aef1e5d2958a0cf21af7c0caec5a55b0e",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": false,
+          "turns": 23,
+          "stop_reason": "finish",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 246539,
+          "cached_tokens": 234368,
+          "completion_tokens": 10937,
+          "cost": 0.06060636,
+          "patch_sha256": "a2bd80d038af447223ac9ccfab8e29ed26544cc11eb0913cbdbfba3f95f7485e",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_warning_type",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 2
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": true,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 2,
+          "prompt_tokens": 680540,
+          "cached_tokens": 661504,
+          "completion_tokens": 22569,
+          "cost": 0.12254208,
+          "patch_sha256": "4fc576cb4b6e89bf44732911d1bfc6657a186e4474bcfd43717a14bf6a364aeb",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 1717,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "run_id": "x3-clean-ds-budget-r2",
+      "provider": "deepseek",
+      "group": "budget",
+      "repeat": 2,
+      "model": "deepseek-flash",
+      "harness_run_id": "x3-clean-ds-budget-r2-1014-120529",
+      "results_path": "evals/results/x3-clean-ds-budget-r2",
+      "invocation": {
+        "started_at": "2026-10-14T04:00:16.947614+00:00",
+        "finished_at": "2026-10-14T04:08:11.855323+00:00",
+        "wall_seconds": 474.9,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 3,
+      "resolved": 1,
+      "empty_patches": 0,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.18696454,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": true,
+          "turns": 19,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 140464,
+          "cached_tokens": 132864,
+          "completion_tokens": 4472,
+          "cost": 0.028145279999999998,
+          "patch_sha256": "82349faf22d1654ef1e11d9689a6d5ad4927b30b77e0be74b93b0543a968249d",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": false,
+          "turns": 23,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 274559,
+          "cached_tokens": 261887,
+          "completion_tokens": 9976,
+          "cost": 0.057813739999999995,
+          "patch_sha256": "38b604cfc73d3674620dd8c1740726ff449708c483c2d958f3ed9cfdd8e5b34c",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_warning_type",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 2
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": false,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 2,
+          "prompt_tokens": 697290,
+          "cached_tokens": 680576,
+          "completion_tokens": 17670,
+          "cost": 0.10100552,
+          "patch_sha256": "5d1f32589fad56e1b13b228aa18a93dde6fa938e7f0277b7a78433af95a23d46",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_attribute_source",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 1
+            },
+            "PASS_TO_PASS": {
+              "success": 1717,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "run_id": "x3-clean-ds-finish-r2",
+      "provider": "deepseek",
+      "group": "finish",
+      "repeat": 2,
+      "model": "deepseek-flash",
+      "harness_run_id": "x3-clean-ds-finish-r2-1014-152044",
+      "results_path": "evals/results/x3-clean-ds-finish-r2",
+      "invocation": {
+        "started_at": "2026-10-14T07:12:58.165461+00:00",
+        "finished_at": "2026-10-14T07:23:14.306490+00:00",
+        "wall_seconds": 616.1,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 3,
+      "resolved": 3,
+      "empty_patches": 0,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.31679132,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": true,
+          "turns": 28,
+          "stop_reason": "finish",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 301035,
+          "cached_tokens": 292352,
+          "completion_tokens": 11781,
+          "cost": 0.06165404,
+          "patch_sha256": "4fcdb7a3e662b2547157b5d8e461f3a19ec533df7b13937c5977a4467702a840",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": true,
+          "turns": 25,
+          "stop_reason": "finish",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 236127,
+          "cached_tokens": 225280,
+          "completion_tokens": 9144,
+          "cost": 0.0519286,
+          "patch_sha256": "60dbbcc2ddcf37a211a0fedd6bf31a5952a0bbd2ac331ec17cf3079176bbf5a1",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 2,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": true,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 2,
+          "prompt_tokens": 1116261,
+          "cached_tokens": 1094784,
+          "completion_tokens": 39959,
+          "cost": 0.20320868,
+          "patch_sha256": "d5c2f49286cb2c3705a740f15c339155c5576a6e005d724e116b3a49b77eadfa",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 1717,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "run_id": "x3-clean-ds-base-r2",
+      "provider": "deepseek",
+      "group": "base",
+      "repeat": 2,
+      "model": "deepseek-flash",
+      "harness_run_id": "x3-clean-ds-base-r2-1014-172803",
+      "results_path": "evals/results/x3-clean-ds-base-r2",
+      "invocation": {
+        "started_at": "2026-10-14T09:20:52.249152+00:00",
+        "finished_at": "2026-10-14T09:30:48.645663+00:00",
+        "wall_seconds": 596.4,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 3,
+      "resolved": 2,
+      "empty_patches": 0,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.28520374,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": true,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 526611,
+          "cached_tokens": 513024,
+          "completion_tokens": 12633,
+          "cost": 0.07437948,
+          "patch_sha256": "613e3b22250420e4eee5790fc68740525128ef762ce35d2d5cf1fd412192d2ef",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": true,
+          "turns": 31,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 371804,
+          "cached_tokens": 359167,
+          "completion_tokens": 11004,
+          "cost": 0.06383633999999999,
+          "patch_sha256": "4191d99b74270d25538f9dab18dfabf82fc473c469a6db53ab4fc1fac2187f72",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 2,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": false,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 800486,
+          "cached_tokens": 781696,
+          "completion_tokens": 28141,
+          "cost": 0.14698792,
+          "patch_sha256": "40c15050ce2cd920b9317b8bcb284f83e5e837ae0c25cfd19beb6ef18a421e2c",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_attribute_source",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 1
+            },
+            "PASS_TO_PASS": {
+              "success": 1717,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "run_id": "x3-clean-ds-finish-r3",
+      "provider": "deepseek",
+      "group": "finish",
+      "repeat": 3,
+      "model": "deepseek-flash",
+      "harness_run_id": "x3-clean-ds-finish-r3-1014-220735",
+      "results_path": "evals/results/x3-clean-ds-finish-r3",
+      "invocation": {
+        "started_at": "2026-10-14T14:01:04.485855+00:00",
+        "finished_at": "2026-10-14T14:10:14.437569+00:00",
+        "wall_seconds": 549.9,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 3,
+      "resolved": 1,
+      "empty_patches": 0,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.28881896,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": true,
+          "turns": 31,
+          "stop_reason": "finish",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 392935,
+          "cached_tokens": 381952,
+          "completion_tokens": 12508,
+          "cost": 0.06865404000000001,
+          "patch_sha256": "a9fa5506be68d7c7520013352748bc06678fa4dd0474d0ca7d210efb1a7712f8",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": false,
+          "turns": 25,
+          "stop_reason": "finish",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 322968,
+          "cached_tokens": 308224,
+          "completion_tokens": 10682,
+          "cost": 0.06363648,
+          "patch_sha256": "a69aeea86403730c0feb69a92c0c64da9dd10302212a926c6c07214fb5f50efe",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_warning_type",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 2
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": false,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 2,
+          "prompt_tokens": 1019855,
+          "cached_tokens": 1001472,
+          "completion_tokens": 29529,
+          "cost": 0.15652844,
+          "patch_sha256": "2f7c3d318615869cf9f31e2f2244a8a2c6049091e16f4408e2a08c46fa428299",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_attribute_source",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 1
+            },
+            "PASS_TO_PASS": {
+              "success": 1717,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "run_id": "x3-clean-ds-base-r3",
+      "provider": "deepseek",
+      "group": "base",
+      "repeat": 3,
+      "model": "deepseek-flash",
+      "harness_run_id": "x3-clean-ds-base-r3-1014-221814",
+      "results_path": "evals/results/x3-clean-ds-base-r3",
+      "invocation": {
+        "started_at": "2026-10-14T14:13:11.696529+00:00",
+        "finished_at": "2026-10-14T14:19:45.821696+00:00",
+        "wall_seconds": 394.1,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 2,
+      "resolved": 1,
+      "empty_patches": 1,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.19943522,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": true,
+          "turns": 27,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 254766,
+          "cached_tokens": 244992,
+          "completion_tokens": 6770,
+          "cost": 0.04175383999999999,
+          "patch_sha256": "6a3d620c61734ce83b08c61792b9cac0c825d48be4a3d120594942d227bad428",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": false,
+          "turns": 22,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 183973,
+          "cached_tokens": 174719,
+          "completion_tokens": 6221,
+          "cost": 0.03763238000000001,
+          "patch_sha256": "f451a62ec056cb05a35caad126f80ad194a29feb50e2b058838baa7708912268",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_warning_type",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 2
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": false,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 680821,
+          "cached_tokens": 665600,
+          "completion_tokens": 22879,
+          "cost": 0.120049,
+          "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "empty_patch": true,
+          "environment_status": "passed",
+          "failure_kind": "empty_patch",
+          "official_test_counts": {}
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "run_id": "x3-clean-ds-budget-r3",
+      "provider": "deepseek",
+      "group": "budget",
+      "repeat": 3,
+      "model": "deepseek-flash",
+      "harness_run_id": "x3-clean-ds-budget-r3-1014-222911",
+      "results_path": "evals/results/x3-clean-ds-budget-r3",
+      "invocation": {
+        "started_at": "2026-10-14T14:22:58.376938+00:00",
+        "finished_at": "2026-10-14T14:31:38.053120+00:00",
+        "wall_seconds": 519.7,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 3,
+      "resolved": 3,
+      "empty_patches": 0,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.28500142,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": true,
+          "turns": 34,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 1,
+          "prompt_tokens": 520344,
+          "cached_tokens": 506880,
+          "completion_tokens": 14937,
+          "cost": 0.08334960000000001,
+          "patch_sha256": "80d8348e8560195a661d9fe2ef9f461f3bba431e5899eff986568483110539d7",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": true,
+          "turns": 36,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 2,
+          "prompt_tokens": 486658,
+          "cached_tokens": 474367,
+          "completion_tokens": 14776,
+          "cost": 0.08088234,
+          "patch_sha256": "1fc83822b6acc84927540256b88dafaa505032946e661c767838d4afba691557",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 2,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": true,
+          "turns": 40,
+          "stop_reason": "max_turns",
+          "budget_reminders_sent": 2,
+          "prompt_tokens": 666785,
+          "cached_tokens": 650624,
+          "completion_tokens": 22899,
+          "cost": 0.12076948,
+          "patch_sha256": "13d5f58e6e1fd1f9ea536f2e061e7166ec06da6719b811bdf69a0cc0dc567995",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 1,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 1717,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "run_id": "x3-clean-glm-base-r1",
+      "provider": "glm",
+      "group": "base",
+      "repeat": 1,
+      "model": "glm-5.3-flash",
+      "harness_run_id": "x3-clean-glm-base-r1-1014-232639",
+      "results_path": "evals/results/x3-clean-glm-base-r1",
+      "invocation": {
+        "started_at": "2026-10-14T15:02:46.589675+00:00",
+        "finished_at": "2026-10-14T15:29:10.849484+00:00",
+        "wall_seconds": 1584.3,
+        "resumed_instances": 0,
+        "judge": true
+      },
+      "submitted": 3,
+      "tested": 3,
+      "resolved": 1,
+      "empty_patches": 0,
+      "api_errors": 0,
+      "environment_failures": 0,
+      "official_errors": 0,
+      "official_infrastructure_failures": 0,
+      "official_ambiguous_failures": 0,
+      "cost_cny_estimate": 0.80233384,
+      "tasks": [
+        {
+          "instance_id": "pydata__xarray-2905",
+          "resolved": false,
+          "turns": 40,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 923679,
+          "cached_tokens": 858176,
+          "completion_tokens": 28508,
+          "cost": 0.32960528,
+          "patch_sha256": "25a08f6e12f293d78920eb7e1877d5c74d6b08a6f48b64ce10dee3376c9466ad",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "array_valued_values_unwrapped",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 1
+            },
+            "PASS_TO_PASS": {
+              "success": 364,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-3993",
+          "resolved": true,
+          "turns": 15,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 150630,
+          "cached_tokens": 134208,
+          "completion_tokens": 9492,
+          "cost": 0.07058304000000001,
+          "patch_sha256": "2a9ed2f342111c23fb99bad0764bff1d37e4a79370f65f42590874fe303cc0c7",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": null,
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 2,
+              "failure": 0
+            },
+            "PASS_TO_PASS": {
+              "success": 2398,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        },
+        {
+          "instance_id": "pydata__xarray-4687",
+          "resolved": false,
+          "turns": 36,
+          "stop_reason": "no_tool_calls",
+          "budget_reminders_sent": 0,
+          "prompt_tokens": 1131978,
+          "cached_tokens": 1079424,
+          "completion_tokens": 39941,
+          "cost": 0.40214552000000003,
+          "patch_sha256": "e688d3ea32a0d73692ea503f9caa189d2fae38a53b2abefa757b40c9c155b25d",
+          "empty_patch": false,
+          "environment_status": "passed",
+          "failure_kind": "wrong_attribute_source",
+          "official_test_counts": {
+            "FAIL_TO_PASS": {
+              "success": 0,
+              "failure": 1
+            },
+            "PASS_TO_PASS": {
+              "success": 1717,
+              "failure": 0
+            },
+            "FAIL_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            },
+            "PASS_TO_FAIL": {
+              "success": 0,
+              "failure": 0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

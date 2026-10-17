@@ -1,0 +1,42 @@
+{
+    "total_instances": 3,
+    "submitted_instances": 3,
+    "completed_instances": 3,
+    "resolved_instances": 2,
+    "unresolved_instances": 1,
+    "infra_failure_instances": 0,
+    "ambiguous_failure_instances": 0,
+    "empty_patch_instances": 0,
+    "error_instances": 0,
+    "completed_ids": [
+        "pydata__xarray-2905",
+        "pydata__xarray-3993",
+        "pydata__xarray-4687"
+    ],
+    "incomplete_ids": [],
+    "empty_patch_ids": [],
+    "submitted_ids": [
+        "pydata__xarray-2905",
+        "pydata__xarray-3993",
+        "pydata__xarray-4687"
+    ],
+    "resolved_ids": [
+        "pydata__xarray-2905",
+        "pydata__xarray-3993"
+    ],
+    "unresolved_ids": [
+        "pydata__xarray-4687"
+    ],
+    "infra_failure_ids": [],
+    "ambiguous_failure_ids": [],
+    "failure_reasons": {},
+    "error_ids": [],
+    "schema_version": 2,
+    "unstopped_instances": 0,
+    "unstopped_containers": [],
+    "unremoved_images": [
+        "swebench/sweb.eval.x86_64.pydata_1776_xarray-2905:latest",
+        "swebench/sweb.eval.x86_64.pydata_1776_xarray-3993:latest",
+        "swebench/sweb.eval.x86_64.pydata_1776_xarray-4687:latest"
+    ]
+}

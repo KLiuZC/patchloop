@@ -2,6 +2,8 @@
 
 运行日期：2026-10-02；整理日期：2026-10-03。分支：`feat/explicit-finish`。
 
+后续审计确认历史 xarray 轨迹读取了镜像缓存中的新版源码，见[污染范围](../environment-isolation/README.md)。本文保留当时的成绩；受影响三题的隔离后结果另见[复验报告](../xarray3-isolation/README.md)，其余 27 题未在新环境重跑。
+
 ## 决定
 
 **保留 finish 作为可选实验工具，默认关闭。** CLI、循环和评测入口的 `explicit_finish` 均为 `False`；只有显式传入 `--explicit-finish` 才会启用。此次确认默认值，没有为相同设置重复修改实现。

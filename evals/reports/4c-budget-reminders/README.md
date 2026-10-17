@@ -2,6 +2,8 @@
 
 日期：2026-10-01。实验变量只有 `--budget-reminders`，默认系统提示词、工具、模型、题单、40 轮上限、命令超时、容器资源和并发配置保持不变。
 
+后续审计确认历史 xarray 轨迹读取了镜像缓存中的新版源码，见[污染范围](../environment-isolation/README.md)。本文保留当时的成绩；受影响三题的隔离后结果另见[复验报告](../xarray3-isolation/README.md)，其余 27 题未在新环境重跑。
+
 ## 实验配置
 
 - 数据集：`SWE-bench/SWE-bench_Verified` 的固定 `verified30` 题单，30 题，gold 校验 30/30。

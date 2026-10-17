@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "failed_attempts": 13,
+  "cases": [
+    {
+      "run_id": "x3-clean-ds-base-r1",
+      "instance_id": "pydata__xarray-3993",
+      "kind": "wrong_warning_type",
+      "patch_sha256": "fbd91efdda7e594a99a35fc6f37c51f2260671520390bba7e7aac25134fd79f7",
+      "report": "official/x3-clean-ds-base-r1/pydata__xarray-3993/report.json",
+      "test_output_member": "x3-clean-ds-base-r1/pydata__xarray-3993/test_output.txt",
+      "test_output_line": 1129,
+      "excerpt": "_____________________________ test_integrate[True] _____________________________\n\ndask = True\n\n    @pytest.mark.parametrize(\"dask\", [True, False])\n    def test_integrate(dask):\n        rs = np.random.RandomState(42)\n        coord = [0.2, 0.35, 0.4, 0.6, 0.7, 0.75, 0.76, 0.8]\n    \n        da = xr.DataArray(\n            rs.randn(8, 6),\n            dims=[\"x\", \"y\"],\n            coords={\n                \"x\": coord,\n                \"x2\": ((\"x\",), rs.randn(8)),\n                \"z\": 3,\n                \"x2d\": ((\"x\", \"y\"), rs.randn(8, 6)),\n            },\n        )\n        if dask and has_dask:\n            da = da.chunk({\"x\": 4})\n    \n        ds = xr.Dataset({\"var\": da})\n    \n        # along x\n        actual = da.integrate(\"x\")\n        # coordinate that contains x should be dropped.\n        expected_x = xr.DataArray(\n            np.trapz(da.compute(), da[\"x\"], axis=0),\n            dims=[\"y\"],\n            coords={k: v for k, v in da.coords.items() if \"x\" not in v.dims},\n        )\n        assert_allclose(expected_x, actual.compute())\n        assert_equal(ds[\"var\"].integrate(\"x\"), ds.integrate(\"x\")[\"var\"])\n    \n        # make sure result is also a dask array (if the source is dask array)\n        assert isinstance(actual.data, type(da.data))\n    \n        # along y\n        actual = da.integrate(\"y\")\n        expected_y = xr.DataArray(\n            np.trapz(da, da[\"y\"], axis=1),\n            dims=[\"x\"],\n            coords={k: v for k, v in da.coords.items() if \"y\" not in v.dims},\n        )\n        assert_allclose(expected_y, actual.compute())\n        assert_equal(actual, ds.integrate(\"y\")[\"var\"])\n        assert_equal(ds[\"var\"].integrate(\"y\"), ds.integrate(\"y\")[\"var\"])\n    \n        # along x and y\n        actual = da.integrate((\"y\", \"x\"))\n        assert actual.ndim == 0\n    \n        with pytest.raises(ValueError):\n            da.integrate(\"x2d\")\n    \n>       with pytest.warns(FutureWarning):\nE       Failed: DID NOT WARN. No warnings of type (<class 'FutureWarning'>,) were emitted.\nE       The list of emitted warnings is: [ DeprecationWarning('The `dim` argument to `DataArray.integrate` is deprecated. Use `coord` instead.')].\n\n/testbed/xarray/tests/test_dataset.py:6606: Failed"
+    },
+    {
+      "run_id": "x3-clean-ds-base-r1",
+      "instance_id": "pydata__xarray-4687",
+      "kind": "wrong_attribute_source",
+      "patch_sha256": "970cb795f5047ec020350b47974741830ac40c5e159374049e080386c1997aeb",
+      "report": "official/x3-clean-ds-base-r1/pydata__xarray-4687/report.json",
+      "test_output_member": "x3-clean-ds-base-r1/pydata__xarray-4687/test_output.txt",
+      "test_output_line": 676,
+      "excerpt": "_______________________________ test_where_attrs _______________________________\n\n    def test_where_attrs() -> None:\n        cond = xr.DataArray([True, False], dims=\"x\", attrs={\"attr\": \"cond\"})\n        x = xr.DataArray([1, 1], dims=\"x\", attrs={\"attr\": \"x\"})\n        y = xr.DataArray([0, 0], dims=\"x\", attrs={\"attr\": \"y\"})\n        actual = xr.where(cond, x, y, keep_attrs=True)\n        expected = xr.DataArray([1, 0], dims=\"x\", attrs={\"attr\": \"x\"})\n>       assert_identical(expected, actual)\nE       AssertionError: Left and right DataArray objects are not identical\nE       \nE       \nE       Differing attributes:\nE       L   attr: x\nE       R   attr: cond\n\n/testbed/xarray/tests/test_computation.py:1931: AssertionError"
+    },
+    {
+      "run_id": "x3-clean-ds-budget-r1",
+      "instance_id": "pydata__xarray-4687",
+      "kind": "wrong_attribute_source",
+      "patch_sha256": "5515f19d51927cf531c1969373e1f2cf1d4dd3426cad2743797696f2c2c952b6",
+      "report": "official/x3-clean-ds-budget-r1/pydata__xarray-4687/report.json",
+      "test_output_member": "x3-clean-ds-budget-r1/pydata__xarray-4687/test_output.txt",
+      "test_output_line": 705,
+      "excerpt": "_______________________________ test_where_attrs _______________________________\n\n    def test_where_attrs() -> None:\n        cond = xr.DataArray([True, False], dims=\"x\", attrs={\"attr\": \"cond\"})\n        x = xr.DataArray([1, 1], dims=\"x\", attrs={\"attr\": \"x\"})\n        y = xr.DataArray([0, 0], dims=\"x\", attrs={\"attr\": \"y\"})\n        actual = xr.where(cond, x, y, keep_attrs=True)\n        expected = xr.DataArray([1, 0], dims=\"x\", attrs={\"attr\": \"x\"})\n>       assert_identical(expected, actual)\nE       AssertionError: Left and right DataArray objects are not identical\nE       \nE       \nE       Differing attributes:\nE       L   attr: x\nE       R   attr: cond\n\n/testbed/xarray/tests/test_computation.py:1931: AssertionError"
+    },
+    {
+      "run_id": "x3-clean-ds-finish-r1",
+      "instance_id": "pydata__xarray-3993",
+      "kind": "wrong_warning_type",
+      "patch_sha256": "a2bd80d038af447223ac9ccfab8e29ed26544cc11eb0913cbdbfba3f95f7485e",
+      "report": "official/x3-clean-ds-finish-r1/pydata__xarray-3993/report.json",
+      "test_output_member": "x3-clean-ds-finish-r1/pydata__xarray-3993/test_output.txt",
+      "test_output_line": 1127,
+      "excerpt": "_____________________________ test_integrate[True] _____________________________\n\ndask = True\n\n    @pytest.mark.parametrize(\"dask\", [True, False])\n    def test_integrate(dask):\n        rs = np.random.RandomState(42)\n        coord = [0.2, 0.35, 0.4, 0.6, 0.7, 0.75, 0.76, 0.8]\n    \n        da = xr.DataArray(\n            rs.randn(8, 6),\n            dims=[\"x\", \"y\"],\n            coords={\n                \"x\": coord,\n                \"x2\": ((\"x\",), rs.randn(8)),\n                \"z\": 3,\n                \"x2d\": ((\"x\", \"y\"), rs.randn(8, 6)),\n            },\n        )\n        if dask and has_dask:\n            da = da.chunk({\"x\": 4})\n    \n        ds = xr.Dataset({\"var\": da})\n    \n        # along x\n        actual = da.integrate(\"x\")\n        # coordinate that contains x should be dropped.\n        expected_x = xr.DataArray(\n            np.trapz(da.compute(), da[\"x\"], axis=0),\n            dims=[\"y\"],\n            coords={k: v for k, v in da.coords.items() if \"x\" not in v.dims},\n        )\n        assert_allclose(expected_x, actual.compute())\n        assert_equal(ds[\"var\"].integrate(\"x\"), ds.integrate(\"x\")[\"var\"])\n    \n        # make sure result is also a dask array (if the source is dask array)\n        assert isinstance(actual.data, type(da.data))\n    \n        # along y\n        actual = da.integrate(\"y\")\n        expected_y = xr.DataArray(\n            np.trapz(da, da[\"y\"], axis=1),\n            dims=[\"x\"],\n            coords={k: v for k, v in da.coords.items() if \"y\" not in v.dims},\n        )\n        assert_allclose(expected_y, actual.compute())\n        assert_equal(actual, ds.integrate(\"y\")[\"var\"])\n        assert_equal(ds[\"var\"].integrate(\"y\"), ds.integrate(\"y\")[\"var\"])\n    \n        # along x and y\n        actual = da.integrate((\"y\", \"x\"))\n        assert actual.ndim == 0\n    \n        with pytest.raises(ValueError):\n            da.integrate(\"x2d\")\n    \n>       with pytest.warns(FutureWarning):\nE       Failed: DID NOT WARN. No warnings of type (<class 'FutureWarning'>,) were emitted.\nE       The list of emitted warnings is: [ DeprecationWarning('The `dim` argument to `integrate` is deprecated. Use `coord` instead.')].\n\n/testbed/xarray/tests/test_dataset.py:6606: Failed"
+    },
+    {
+      "run_id": "x3-clean-ds-budget-r2",
+      "instance_id": "pydata__xarray-3993",
+      "kind": "wrong_warning_type",
+      "patch_sha256": "38b604cfc73d3674620dd8c1740726ff449708c483c2d958f3ed9cfdd8e5b34c",
+      "report": "official/x3-clean-ds-budget-r2/pydata__xarray-3993/report.json",
+      "test_output_member": "x3-clean-ds-budget-r2/pydata__xarray-3993/test_output.txt",
+      "test_output_line": 1133,
+      "excerpt": "_____________________________ test_integrate[True] _____________________________\n\ndask = True\n\n    @pytest.mark.parametrize(\"dask\", [True, False])\n    def test_integrate(dask):\n        rs = np.random.RandomState(42)\n        coord = [0.2, 0.35, 0.4, 0.6, 0.7, 0.75, 0.76, 0.8]\n    \n        da = xr.DataArray(\n            rs.randn(8, 6),\n            dims=[\"x\", \"y\"],\n            coords={\n                \"x\": coord,\n                \"x2\": ((\"x\",), rs.randn(8)),\n                \"z\": 3,\n                \"x2d\": ((\"x\", \"y\"), rs.randn(8, 6)),\n            },\n        )\n        if dask and has_dask:\n            da = da.chunk({\"x\": 4})\n    \n        ds = xr.Dataset({\"var\": da})\n    \n        # along x\n        actual = da.integrate(\"x\")\n        # coordinate that contains x should be dropped.\n        expected_x = xr.DataArray(\n            np.trapz(da.compute(), da[\"x\"], axis=0),\n            dims=[\"y\"],\n            coords={k: v for k, v in da.coords.items() if \"x\" not in v.dims},\n        )\n        assert_allclose(expected_x, actual.compute())\n        assert_equal(ds[\"var\"].integrate(\"x\"), ds.integrate(\"x\")[\"var\"])\n    \n        # make sure result is also a dask array (if the source is dask array)\n        assert isinstance(actual.data, type(da.data))\n    \n        # along y\n        actual = da.integrate(\"y\")\n        expected_y = xr.DataArray(\n            np.trapz(da, da[\"y\"], axis=1),\n            dims=[\"x\"],\n            coords={k: v for k, v in da.coords.items() if \"y\" not in v.dims},\n        )\n        assert_allclose(expected_y, actual.compute())\n        assert_equal(actual, ds.integrate(\"y\")[\"var\"])\n        assert_equal(ds[\"var\"].integrate(\"y\"), ds.integrate(\"y\")[\"var\"])\n    \n        # along x and y\n        actual = da.integrate((\"y\", \"x\"))\n        assert actual.ndim == 0\n    \n        with pytest.raises(ValueError):\n            da.integrate(\"x2d\")\n    \n>       with pytest.warns(FutureWarning):\nE       Failed: DID NOT WARN. No warnings of type (<class 'FutureWarning'>,) were emitted.\nE       The list of emitted warnings is: [ DeprecationWarning('The `dim` argument to `DataArray.integrate` is deprecated. Use `coord` instead.')].\n\n/testbed/xarray/tests/test_dataset.py:6606: Failed"
+    },
+    {
+      "run_id": "x3-clean-ds-budget-r2",
+      "instance_id": "pydata__xarray-4687",
+      "kind": "wrong_attribute_source",
+      "patch_sha256": "5d1f32589fad56e1b13b228aa18a93dde6fa938e7f0277b7a78433af95a23d46",
+      "report": "official/x3-clean-ds-budget-r2/pydata__xarray-4687/report.json",
+      "test_output_member": "x3-clean-ds-budget-r2/pydata__xarray-4687/test_output.txt",
+      "test_output_line": 700,
+      "excerpt": "_______________________________ test_where_attrs _______________________________\n\n    def test_where_attrs() -> None:\n        cond = xr.DataArray([True, False], dims=\"x\", attrs={\"attr\": \"cond\"})\n        x = xr.DataArray([1, 1], dims=\"x\", attrs={\"attr\": \"x\"})\n        y = xr.DataArray([0, 0], dims=\"x\", attrs={\"attr\": \"y\"})\n        actual = xr.where(cond, x, y, keep_attrs=True)\n        expected = xr.DataArray([1, 0], dims=\"x\", attrs={\"attr\": \"x\"})\n>       assert_identical(expected, actual)\nE       AssertionError: Left and right DataArray objects are not identical\nE       \nE       \nE       Differing attributes:\nE       L   attr: x\nE       R   attr: cond\n\n/testbed/xarray/tests/test_computation.py:1931: AssertionError"
+    },
+    {
+      "run_id": "x3-clean-ds-base-r2",
+      "instance_id": "pydata__xarray-4687",
+      "kind": "wrong_attribute_source",
+      "patch_sha256": "40c15050ce2cd920b9317b8bcb284f83e5e837ae0c25cfd19beb6ef18a421e2c",
+      "report": "official/x3-clean-ds-base-r2/pydata__xarray-4687/report.json",
+      "test_output_member": "x3-clean-ds-base-r2/pydata__xarray-4687/test_output.txt",
+      "test_output_line": 689,
+      "excerpt": "_______________________________ test_where_attrs _______________________________\n\n    def test_where_attrs() -> None:\n        cond = xr.DataArray([True, False], dims=\"x\", attrs={\"attr\": \"cond\"})\n        x = xr.DataArray([1, 1], dims=\"x\", attrs={\"attr\": \"x\"})\n        y = xr.DataArray([0, 0], dims=\"x\", attrs={\"attr\": \"y\"})\n        actual = xr.where(cond, x, y, keep_attrs=True)\n        expected = xr.DataArray([1, 0], dims=\"x\", attrs={\"attr\": \"x\"})\n>       assert_identical(expected, actual)\nE       AssertionError: Left and right DataArray objects are not identical\nE       \nE       \nE       Differing attributes:\nE       L   attr: x\nE       R   attr: cond\n\n/testbed/xarray/tests/test_computation.py:1931: AssertionError"
+    },
+    {
+      "run_id": "x3-clean-ds-finish-r3",
+      "instance_id": "pydata__xarray-3993",
+      "kind": "wrong_warning_type",
+      "patch_sha256": "a69aeea86403730c0feb69a92c0c64da9dd10302212a926c6c07214fb5f50efe",
+      "report": "official/x3-clean-ds-finish-r3/pydata__xarray-3993/report.json",
+      "test_output_member": "x3-clean-ds-finish-r3/pydata__xarray-3993/test_output.txt",
+      "test_output_line": 1126,
+      "excerpt": "_____________________________ test_integrate[True] _____________________________\n\ndask = True\n\n    @pytest.mark.parametrize(\"dask\", [True, False])\n    def test_integrate(dask):\n        rs = np.random.RandomState(42)\n        coord = [0.2, 0.35, 0.4, 0.6, 0.7, 0.75, 0.76, 0.8]\n    \n        da = xr.DataArray(\n            rs.randn(8, 6),\n            dims=[\"x\", \"y\"],\n            coords={\n                \"x\": coord,\n                \"x2\": ((\"x\",), rs.randn(8)),\n                \"z\": 3,\n                \"x2d\": ((\"x\", \"y\"), rs.randn(8, 6)),\n            },\n        )\n        if dask and has_dask:\n            da = da.chunk({\"x\": 4})\n    \n        ds = xr.Dataset({\"var\": da})\n    \n        # along x\n        actual = da.integrate(\"x\")\n        # coordinate that contains x should be dropped.\n        expected_x = xr.DataArray(\n            np.trapz(da.compute(), da[\"x\"], axis=0),\n            dims=[\"y\"],\n            coords={k: v for k, v in da.coords.items() if \"x\" not in v.dims},\n        )\n        assert_allclose(expected_x, actual.compute())\n        assert_equal(ds[\"var\"].integrate(\"x\"), ds.integrate(\"x\")[\"var\"])\n    \n        # make sure result is also a dask array (if the source is dask array)\n        assert isinstance(actual.data, type(da.data))\n    \n        # along y\n        actual = da.integrate(\"y\")\n        expected_y = xr.DataArray(\n            np.trapz(da, da[\"y\"], axis=1),\n            dims=[\"x\"],\n            coords={k: v for k, v in da.coords.items() if \"y\" not in v.dims},\n        )\n        assert_allclose(expected_y, actual.compute())\n        assert_equal(actual, ds.integrate(\"y\")[\"var\"])\n        assert_equal(ds[\"var\"].integrate(\"y\"), ds.integrate(\"y\")[\"var\"])\n    \n        # along x and y\n        actual = da.integrate((\"y\", \"x\"))\n        assert actual.ndim == 0\n    \n        with pytest.raises(ValueError):\n            da.integrate(\"x2d\")\n    \n>       with pytest.warns(FutureWarning):\nE       Failed: DID NOT WARN. No warnings of type (<class 'FutureWarning'>,) were emitted.\nE       The list of emitted warnings is: [ DeprecationWarning(\"The 'dim' argument of DataArray.integrate has been renamed to 'coord' and will be removed in a future version.\")].\n\n/testbed/xarray/tests/test_dataset.py:6606: Failed"
+    },
+    {
+      "run_id": "x3-clean-ds-finish-r3",
+      "instance_id": "pydata__xarray-4687",
+      "kind": "wrong_attribute_source",
+      "patch_sha256": "2f7c3d318615869cf9f31e2f2244a8a2c6049091e16f4408e2a08c46fa428299",
+      "report": "official/x3-clean-ds-finish-r3/pydata__xarray-4687/report.json",
+      "test_output_member": "x3-clean-ds-finish-r3/pydata__xarray-4687/test_output.txt",
+      "test_output_line": 700,
+      "excerpt": "_______________________________ test_where_attrs _______________________________\n\n    def test_where_attrs() -> None:\n        cond = xr.DataArray([True, False], dims=\"x\", attrs={\"attr\": \"cond\"})\n        x = xr.DataArray([1, 1], dims=\"x\", attrs={\"attr\": \"x\"})\n        y = xr.DataArray([0, 0], dims=\"x\", attrs={\"attr\": \"y\"})\n        actual = xr.where(cond, x, y, keep_attrs=True)\n        expected = xr.DataArray([1, 0], dims=\"x\", attrs={\"attr\": \"x\"})\n>       assert_identical(expected, actual)\nE       AssertionError: Left and right DataArray objects are not identical\nE       \nE       \nE       Differing attributes:\nE       L   attr: x\nE       R   attr: cond\n\n/testbed/xarray/tests/test_computation.py:1931: AssertionError"
+    },
+    {
+      "run_id": "x3-clean-ds-base-r3",
+      "instance_id": "pydata__xarray-3993",
+      "kind": "wrong_warning_type",
+      "patch_sha256": "f451a62ec056cb05a35caad126f80ad194a29feb50e2b058838baa7708912268",
+      "report": "official/x3-clean-ds-base-r3/pydata__xarray-3993/report.json",
+      "test_output_member": "x3-clean-ds-base-r3/pydata__xarray-3993/test_output.txt",
+      "test_output_line": 1132,
+      "excerpt": "_____________________________ test_integrate[True] _____________________________\n\ndask = True\n\n    @pytest.mark.parametrize(\"dask\", [True, False])\n    def test_integrate(dask):\n        rs = np.random.RandomState(42)\n        coord = [0.2, 0.35, 0.4, 0.6, 0.7, 0.75, 0.76, 0.8]\n    \n        da = xr.DataArray(\n            rs.randn(8, 6),\n            dims=[\"x\", \"y\"],\n            coords={\n                \"x\": coord,\n                \"x2\": ((\"x\",), rs.randn(8)),\n                \"z\": 3,\n                \"x2d\": ((\"x\", \"y\"), rs.randn(8, 6)),\n            },\n        )\n        if dask and has_dask:\n            da = da.chunk({\"x\": 4})\n    \n        ds = xr.Dataset({\"var\": da})\n    \n        # along x\n        actual = da.integrate(\"x\")\n        # coordinate that contains x should be dropped.\n        expected_x = xr.DataArray(\n            np.trapz(da.compute(), da[\"x\"], axis=0),\n            dims=[\"y\"],\n            coords={k: v for k, v in da.coords.items() if \"x\" not in v.dims},\n        )\n        assert_allclose(expected_x, actual.compute())\n        assert_equal(ds[\"var\"].integrate(\"x\"), ds.integrate(\"x\")[\"var\"])\n    \n        # make sure result is also a dask array (if the source is dask array)\n        assert isinstance(actual.data, type(da.data))\n    \n        # along y\n        actual = da.integrate(\"y\")\n        expected_y = xr.DataArray(\n            np.trapz(da, da[\"y\"], axis=1),\n            dims=[\"x\"],\n            coords={k: v for k, v in da.coords.items() if \"y\" not in v.dims},\n        )\n        assert_allclose(expected_y, actual.compute())\n        assert_equal(actual, ds.integrate(\"y\")[\"var\"])\n        assert_equal(ds[\"var\"].integrate(\"y\"), ds.integrate(\"y\")[\"var\"])\n    \n        # along x and y\n        actual = da.integrate((\"y\", \"x\"))\n        assert actual.ndim == 0\n    \n        with pytest.raises(ValueError):\n            da.integrate(\"x2d\")\n    \n>       with pytest.warns(FutureWarning):\nE       Failed: DID NOT WARN. No warnings of type (<class 'FutureWarning'>,) were emitted.\nE       The list of emitted warnings is: [ DeprecationWarning('The `dim` argument to `DataArray.integrate` is deprecated as of xarray v0.15.0. Use `coord` instead.')].\n\n/testbed/xarray/tests/test_dataset.py:6606: Failed"
+    },
+    {
+      "run_id": "x3-clean-ds-base-r3",
+      "instance_id": "pydata__xarray-4687",
+      "kind": "empty_patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "run_id": "x3-clean-glm-base-r1",
+      "instance_id": "pydata__xarray-2905",
+      "kind": "array_valued_values_unwrapped",
+      "patch_sha256": "25a08f6e12f293d78920eb7e1877d5c74d6b08a6f48b64ce10dee3376c9466ad",
+      "report": "official/x3-clean-glm-base-r1/pydata__xarray-2905/report.json",
+      "test_output_member": "x3-clean-glm-base-r1/pydata__xarray-2905/test_output.txt",
+      "test_output_line": 635,
+      "excerpt": "__________________ TestAsCompatibleData.test_unsupported_type __________________\n\nself = <xarray.tests.test_variable.TestAsCompatibleData object at 0x7fff97bb87c0>\n\n    def test_unsupported_type(self):\n        # Non indexable type\n        class CustomArray(NDArrayMixin):\n            def __init__(self, array):\n                self.array = array\n    \n        class CustomIndexable(CustomArray, indexing.ExplicitlyIndexed):\n            pass\n    \n        # Type with data stored in values attribute\n        class CustomWithValuesAttr:\n            def __init__(self, array):\n                self.values = array\n    \n        array = CustomArray(np.arange(3))\n        orig = Variable(dims=(\"x\"), data=array, attrs={\"foo\": \"bar\"})\n        assert isinstance(orig._data, np.ndarray)  # should not be CustomArray\n    \n        array = CustomIndexable(np.arange(3))\n        orig = Variable(dims=(\"x\"), data=array, attrs={\"foo\": \"bar\"})\n        assert isinstance(orig._data, CustomIndexable)\n    \n        array = CustomWithValuesAttr(np.arange(3))\n>       orig = Variable(dims=(), data=array)\n\n/testbed/xarray/tests/test_variable.py:2317: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n/testbed/xarray/core/variable.py:334: in __init__\n    self._dims = self._parse_dimensions(dims)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = <[AttributeError(\"'Variable' object has no attribute '_dims'\") raised in repr()] Variable object at 0x7fff96884cc0>\ndims = ()\n\n    def _parse_dimensions(self, dims):\n        if isinstance(dims, str):\n            dims = (dims,)\n        dims = tuple(dims)\n        if len(dims) != self.ndim:\n>           raise ValueError(\n                \"dimensions %s must have the same length as the \"\n                \"number of data dimensions, ndim=%s\" % (dims, self.ndim)\n            )\nE           ValueError: dimensions () must have the same length as the number of data dimensions, ndim=1\n\n/testbed/xarray/core/variable.py:595: ValueError",
+      "self_check_evidence": {
+        "trajectory": "evals/results/x3-clean-glm-base-r1/traj/pydata__xarray-2905.jsonl",
+        "line": 23,
+        "turn": 22,
+        "tool_call_id": "call_-7180930781970162407",
+        "command": "cd /testbed && MPLCONFIGDIR=/tmp/mpl python - <<'EOF'\nimport numpy as np\nimport pandas as pd\nimport xarray as xr\nfrom xarray.core.variable import as_compatible_data\n\nclass HasValues:\n    values = 5\n\nclass HasArrayValues:\n    values = np.array([1.0, 2.0])\n\n# 1. plain object with scalar .values -> preserved\nout = as_compatible_data(HasValues())\na = np.asarray(out)\nprint(\"object preserved:\", a.dtype.kind == \"O\" and isinstance(a.item(), HasValues))\n\n# 2. pandas objects still unwrapped\nprint(\"Series:\", as_compatible_data(pd.Series([1, 2])).ndim == 1)\nprint(\"DataFrame:\", np.asarray(as_compatible_data(pd.DataFrame({\"a\": [1, 2]}))).shape == (2, 1))\nprint(\"Index:\", as_compatible_data(pd.Index([1, 2])))\n\n# 3. Variable / DataArray setitem\nv = xr.Variable(\"x\", [None])\nv[0] = HasValues()\nprint(\"Variable setitem:\", isinstance(v.values[0], HasValues))\n\nda = xr.DataArray([None])\nda[{\"dim_0\": 0}] = HasValues()\nprint(\"DataArray setitem:\", isinstance(da.values[0], HasValues))\n\nds = xr.Dataset({\"y\": (\"x\", [None])})\nds[\"y\"].loc[{\"x\": 0}] = HasValues()\nprint(\"Dataset var setitem:\", isinstance(ds[\"y\"].values[0], HasValues))\n\n# 4. object with array-valued .values still unwrapped\nprint(\"array .values unwrapped:\", np.array_equal(as_compatible_data(HasArrayValues()), np.array([1.0, 2.0])))\n\n# 5. normal scalars / sets / datetimes unchanged\nv2 = xr.Variable(\"x\", [None])\nv2[0] = set()\nprint(\"set:\", isinstance(v2.values[0], set))\nv3 = xr.Variable(\"x\", [None])\nv3[0] = np.datetime64(\"2000-01-01\")\nprint(\"datetime:\", v3.values.dtype.kind == \"M\")\nv4 = xr.Variable(\"x\", [None])\nv4[0] = pd.Timestamp(\"2000-01-01\")\nprint(\"Timestamp:\", v4.values.dtype.kind == \"M\")\nEOF",
+        "output": "object preserved: True\nSeries: True\nDataFrame: True\nIndex: PandasIndexAdapter(array=Int64Index([1, 2], dtype='int64'), dtype=dtype('int64'))\nVariable setitem: True\nDataArray setitem: True\nDataset var setitem: True\narray .values unwrapped: True\nset: True\ndatetime: False\nTimestamp: False\n",
+        "output_sha256": "c5cac7b9a5130d0ecab075707746d6e549a472f5940b2b5ce214981fbf9a1392"
+      }
+    },
+    {
+      "run_id": "x3-clean-glm-base-r1",
+      "instance_id": "pydata__xarray-4687",
+      "kind": "wrong_attribute_source",
+      "patch_sha256": "e688d3ea32a0d73692ea503f9caa189d2fae38a53b2abefa757b40c9c155b25d",
+      "report": "official/x3-clean-glm-base-r1/pydata__xarray-4687/report.json",
+      "test_output_member": "x3-clean-glm-base-r1/pydata__xarray-4687/test_output.txt",
+      "test_output_line": 715,
+      "excerpt": "_______________________________ test_where_attrs _______________________________\n\n    def test_where_attrs() -> None:\n        cond = xr.DataArray([True, False], dims=\"x\", attrs={\"attr\": \"cond\"})\n        x = xr.DataArray([1, 1], dims=\"x\", attrs={\"attr\": \"x\"})\n        y = xr.DataArray([0, 0], dims=\"x\", attrs={\"attr\": \"y\"})\n        actual = xr.where(cond, x, y, keep_attrs=True)\n        expected = xr.DataArray([1, 0], dims=\"x\", attrs={\"attr\": \"x\"})\n>       assert_identical(expected, actual)\nE       AssertionError: Left and right DataArray objects are not identical\nE       \nE       \nE       Differing attributes:\nE       L   attr: x\nE       R   attr: cond\n\n/testbed/xarray/tests/test_computation.py:1931: AssertionError",
+      "self_check_evidence": {
+        "trajectory": "evals/results/x3-clean-glm-base-r1/traj/pydata__xarray-4687.jsonl",
+        "line": 26,
+        "turn": 25,
+        "tool_call_id": "call_-7180949576747056076",
+        "command": "cd /testbed && python -c \"\nimport numpy as np\nimport xarray as xr\n\n# MCVE 1\ndata = xr.DataArray(np.ones([10,10], dtype=np.int8))\ndata.attrs['attr_1'] = 'test1'\ndata.attrs['attr_2'] = 'test2'\nout = xr.where(data == 1, 5, 0)\nprint('1:', out.attrs, out.dtype)\n\n# MCVE 2\nda = xr.DataArray(1)\nda.attrs['foo'] = 'bar'\nprint('2:', xr.where(da==0, -1, da).attrs)\n\n# attrs from cond\ncond = xr.DataArray([True, False], dims='x', attrs={'a': 'cond'})\nx = xr.DataArray([1, 2], dims='x', attrs={'b': 'x'})\ny = xr.DataArray([3, 4], dims='x', attrs={'c': 'y'})\nprint('cond attrs win:', xr.where(cond, x, y).attrs)\n\n# keep_attrs=False drops\nprint('keep_attrs=False:', xr.where(cond, x, y, keep_attrs=False).attrs)\n\n# keep_attrs=True explicit\nprint('keep_attrs=True:', xr.where(x, x, y, keep_attrs=True).attrs)\n\n# global option False\nwith xr.set_options(keep_attrs=False):\n    print('global False:', xr.where(cond, x, y).attrs)\n\n# numpy-only args -> plain array\nr = xr.where(np.array([True, False]), 1, 2)\nprint('numpy args:', type(r), r)\n\n# variable result\nv = xr.Variable('x', [1, 2], {'foo': 'bar'})\nprint('variable:', type(xr.where(v > 1, v, 0)), xr.where(v > 1, v, 0).attrs)\n\" 2>/dev/null",
+        "output": "1: {} int64\n2: {'foo': 'bar'}\ncond attrs win: {'a': 'cond'}\nkeep_attrs=False: {}\nkeep_attrs=True: {'b': 'x'}\nglobal False: {}\nnumpy args: <class 'numpy.ndarray'> [1 2]\nvariable: <class 'xarray.core.variable.Variable'> {'foo': 'bar'}\n",
+        "output_sha256": "841322abad23eee4567918f32e2b0963e899d7234b6f74ff82e7a947d954bf29"
+      }
+    }
+  ]
+}

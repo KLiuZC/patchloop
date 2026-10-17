@@ -139,16 +139,9 @@ API 负责受理、查询、审查和交付；worker 独立领取修复任务。
 
 ## 评测与验证
 
-**历史结果说明：**以下实验中已发现模型读取镜像缓存内新版 xarray 源码的情况，清洁环境复验尚未完成。受影响范围、敏感性分析和隔离验收见[环境审计报告](evals/reports/environment-isolation/README.md)。
+历史 30 题实验中发现模型读取镜像缓存内新版 xarray 源码。完成环境隔离后，已对受影响的 **3 道 xarray 题**进行 10 遍复验：DeepSeek 基线通过 4/9 次、轮数提醒 6/9 次、提醒 + finish 6/9 次；GLM 基线通过 1/3 次。官方判卷、原始日志和隔离访问证据见[三题复验报告](evals/reports/xarray3-isolation/README.md)。
 
-在 SWE-bench Verified 的**固定 30 题子集**上，DeepSeek flash 的重复对照结果如下。每个配置运行三次，每次使用同一题单和官方判卷。
-
-| 配置 | 每次解决题数 | 平均解决率 |
-| --- | --- | --- |
-| Agent 基线 | 20、19、20 / 30 | 65.6% |
-| Agent + 剩余轮数提醒 | 20、21、23 / 30 | 71.1% |
-
-该题单已用于开发和失败分析，结果不代表 Verified 全集或未见任务的表现；现有对照也不足以证明提醒机制具有稳定的提分效果。GLM、单次直出、显式 `finish` 的结果，以及费用和波动统计见[完整评测说明](docs/evaluation.md)。
+这些是同三道开发题的重复结果，不代表 Verified 全集；其余 27 题未在新环境重跑。历史成绩与污染范围保留在[完整评测说明](docs/evaluation.md)和[环境审计报告](evals/reports/environment-isolation/README.md)，不与本次结果混算。
 
 产品流程另有[真实 Issue → 草稿 PR 验收](evals/reports/github-pr-publish-demo-smoke/README.md)：专用示例任务的测试从 1 项失败变为 11 项通过，批准补丁与远端提交核对一致。该记录用于验证修复交付流程，不计入 SWE-bench 成绩。
 

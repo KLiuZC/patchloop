@@ -1,10 +1,12 @@
 # xarray 三题隔离后复验配置
 
-状态：**已准备，尚未运行模型**。固定题目为 xarray-2905、3993、4687；三题的环境与 gold 预检已完成，见[验收报告](../../reports/environment-isolation/README.md)。本配置用于重新求解已发现污染访问的题目，不是新的留出集。
+状态：**10 遍全部完成**。运行日期为 2026-10-13～14，结果与官方证据已于 2026-10-17 整理到[复验报告](../../reports/xarray3-isolation/README.md)。固定题目为 xarray-2905、3993、4687；三题的环境与 gold 预检见[验收报告](../../reports/environment-isolation/README.md)。本配置用于重新求解已发现污染访问的题目，不是新的留出集。
 
 ## 固定配置
 
 机器可读配置见 [plan.json](plan.json)，题单见 [xarray3-isolation.txt](../../subsets/xarray3-isolation.txt)。准备时的实现提交为 `b116843`，源码、依赖锁、题单、预检报告和历史摘要按 SHA-256 固定；各题 image ID 也与已验收环境绑定。
+
+原 `plan.json` 保留准备时的 `status=planned`，实际完成状态在报告中维护。配置及结果首次一并提交于运行结束后的 `0ddf276`；运行版本以每次保存的 `run_config.json` 哈希核对，不追认为运行前已经提交配置。
 
 | 配置 | 值 |
 | --- | --- |
@@ -39,14 +41,14 @@ uv run python evals/profiles/xarray3-isolation/run.py
 
 ## 逐遍执行
 
-先提交本配置，再手动运行第一遍：
+以下保留当时的启动方式；十个编号均已完成，现有工作区不需要再次执行。以第一遍为例：
 
 ```bash
 caffeinate -i uv run python evals/profiles/xarray3-isolation/run.py \
   --run x3-clean-ds-base-r1
 ```
 
-该命令只启动一次三题评测，结束后自动进行官方判卷。后续每次只替换 `--run` 后的编号，按下表顺序逐遍运行，不同时启动多遍。DeepSeek 各轮交替顺序，减少组别与运行先后的固定关联；它不等同于随机化试验。
+该命令只启动一次三题评测，结束后自动进行官方判卷。当时按下表顺序逐遍运行，未同时启动多遍。DeepSeek 各轮交替顺序，减少组别与运行先后的固定关联；它不等同于随机化试验。继续研究时另建计划和编号，已有目录会被脚本拒绝。
 
 | 顺序 | 运行编号 | 组别 | 对应历史运行 |
 | --- | --- | --- | --- |
