@@ -15,7 +15,7 @@ from .environment import EnvironmentCheckError, inspect_image, policy_metadata, 
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DRAFT = ROOT / "evals/profiles/command-policy-ab6/draft.json"
+DEFAULT_DRAFT = ROOT / "evals/profiles/command-policy-ab6/draft-r2.json"
 
 
 def digest(content):

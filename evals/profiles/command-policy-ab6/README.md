@@ -4,7 +4,7 @@
 
 日期：2026-10-19。状态：**准备草案，尚未完成六题真实预检，不可作为已冻结运行配置**。规模为 6 道不同题、off／enforce 两组、各 3 遍，共 36 次求解。无模型验收入口和评测保护已实现；本轮开发未调用真实模型、构建候选镜像或执行六题官方判卷。
 
-机器可读草案见 [draft.json](draft.json)，候选列表见 [command-policy-ab6-candidates.txt](../../subsets/command-policy-ab6-candidates.txt)。其中的 pending、空 image ID 及未授权标记只是状态记录；[prepare.py](prepare.py)只做准备检查或显式无模型验收，不执行 A/B 求解。模型启动器和最终冻结配置仍需另行实现。
+当前为第二版草案：[draft-r2.json](draft-r2.json)与[第二版候选列表](../../subsets/command-policy-ab6-candidates-r2.txt)，准备入口默认读取这一版。[原草案](draft.json)、[原候选列表](../../subsets/command-policy-ab6-candidates.txt)及首题失败证据保留不变；替换依据见[第二版修订记录](revision-r2.md)。其中的 pending、空 image ID 及未授权标记只是状态记录；[prepare.py](prepare.py)只做准备检查或显式无模型验收，不执行 A/B 求解。模型启动器和最终冻结配置仍需另行实现。
 
 ## 研究问题
 
@@ -19,7 +19,7 @@
 
 | 仓库 | 题号 | 数据集难度 | 镜像与预检 |
 | --- | --- | --- | --- |
-| Requests | `psf__requests-1724` | <15 min fix | 已构建；Python 2.7 阻断完整预检 |
+| Requests | `psf__requests-5414` | <15 min fix | 替换原 1724；待构建与预检 |
 | Requests | `psf__requests-6028` | 15 min – 1 hour | 待准备；需核对非 editable 安装副本 |
 | pytest | `pytest-dev__pytest-5262` | <15 min fix | 待准备 |
 | pytest | `pytest-dev__pytest-5840` | 15 min – 1 hour | 待准备 |
@@ -32,6 +32,8 @@
 
 限定 pytest、Requests、Sphinx 三个已有隔离配置的仓库，每仓库在两个难度档各取一题。符合上述排除与分层条件的候选共有 33 道；每层按 `SHA256("20261019:" + instance_id)` 从小到大排序，再按题号处理同分，选择第一项。全部排序及排除依据保存在草案中，不能重试种子挑选结果。
 
+第二版按已登记的环境替换规则，将 Python 2.7 不兼容的 `requests-1724` 替换为同层紧邻的 `requests-5414`，其余五题不变；不调整种子、原排名或排除快照。数据记录哈希、题单和配对已同步更新，新配对与 run-id 使用 `cp6-plan2-` 前缀，与原草案分开。模型预算仍未授权。
+
 这是轻量、跨三个仓库的先导对照，不代表 Verified 整体难度分布。这里的“新题”指未出现在本项目保存的开发使用记录中，不保证模型训练数据未见过，也不能证明所有人工接触都已完整记录。排除集合包含保守的文本命中，复算使用保存的集合，而不是扫描后来新增了本计划的工作区。
 
 ## 准备与冻结门槛
@@ -43,7 +45,7 @@
 5. 核对模型计费与预算，准备带默认 dry-run、输入哈希检查及新 run-id 保护的启动器。运行前必须补齐后文的官方判卷完整性检查和异常用量恢复，验证缺报告、判卷异常、API 中断及费用未知等错误路径。
 6. 所有题目通过后，另建最终执行配置并在首个模型请求前提交：固定题号、完整数据记录哈希、镜像 ID、实现／启动器／依赖哈希、环境与命令策略、判卷工具和任务仓库版本。
 
-六题的本地任务定义目录均存在。首题镜像已构建，独立基线规范化通过，完整预检被目标 Python 2.7 阻断；其余五题镜像尚未准备，六题均无官方 baseline／gold 验收结果。主机可用空间约 142 GiB 是创建草案时的快照，不等于镜像容量承诺。后续按实际 Docker 磁盘增长逐题构建，不自动清理其他项目。
+第二版六题的本地任务定义目录均存在，但镜像及真实预检尚未就绪，六题均无官方 baseline／gold 验收结果。原 `requests-1724` 镜像与独立基线规范化证据保留，不计入当前六题，也未删除该镜像。主机可用空间约 142 GiB 是创建原草案时的快照，不等于镜像容量承诺。后续按实际 Docker 磁盘增长逐题构建，不自动清理其他项目。
 
 只有在首个模型运行前，遇到有证据的构建、依赖、环境隔离或判卷基线问题，才允许替换候选：沿草案中同仓库、同难度的排序选择下一题，保留原候选及失败原因，重算题单和数据哈希。该层耗尽则暂停重新评审，不跨层随意补题。开始模型对照后，不因失败、费用或没有策略命中而换题。
 
@@ -121,22 +123,25 @@
 uv run python evals/profiles/command-policy-ab6/prepare.py
 ```
 
-缺图时输出 `check_only`、`ready_for_model_run=false` 并返回 2，这是未满足前提，不是模型实验失败。以下保留首题构建与检查的历史命令；首题已经确认 Python 2.7 不兼容，当前不要重复构建或执行这组命令。后续以新候选修订和新的产物目录为准。
+缺图时输出 `check_only`、`ready_for_model_run=false` 并返回 2，这是未满足前提，不是模型实验失败。当前先由人工构建第二版首题，暂不批量准备其余五题；不再构建已排除的 `requests-1724`。
 
 准备入口同时识别数据集标签和本地构建器的 `sweb.eval.x86_64.<instance_id>:latest` 标签，记录实际匹配名称并固定 image ID，不重新打标签或复制镜像。若已存在的候选标签指向不同 image ID，必须先显式处理冲突，不能静默挑一个。
 
 ```bash
 cd ~/code/swebench-work
+docker info >/dev/null && \
 caffeinate -i swebench images build ./swe-bench-tasks \
-  -i psf__requests-1724 -j 1
+  -i psf__requests-5414 -j 1
 ```
 
-构建会下载镜像层及依赖，由人工发起。首次构建后的无模型检查命令如下；该产物目录已存在，不能覆盖：
+构建会下载镜像层及依赖，由人工发起。构建完成并核对日志后，再回到项目根目录执行一次无模型检查；产物目录必须全新，已有目录不能覆盖：
 
 ```bash
+cd ~/code/python/patchloop
 caffeinate -i uv run python evals/profiles/command-policy-ab6/prepare.py \
-  --execute --instance psf__requests-1724 \
-  --artifacts /tmp/patchloop-ab6-preflight/requests-1724-r1
+  --draft evals/profiles/command-policy-ab6/draft-r2.json \
+  --execute --instance psf__requests-5414 \
+  --artifacts /tmp/patchloop-ab6-preflight/requests-5414-r1
 ```
 
 默认可见健康命令仅为 `python -m pytest --version`，确认 pytest 可启动，不作为修复成功证据。随后分别检查 v2 求解环境，以及固定原始镜像上的 baseline／gold 官方测试；控制容器使用无网络、2 CPU、3GB、移除 capabilities 和禁止提权，但**没有 solver 的缓存遮蔽及 Git 裁剪**。两轨通过不等于完整隐藏测试套件已经在 v2 隔离环境执行通过。
@@ -145,7 +150,7 @@ caffeinate -i uv run python evals/profiles/command-policy-ab6/prepare.py \
 
 规范化前后提交、tree、权限变化数量和 helper 哈希写入证据，并与隔离后 solver 的 HEAD/tree 比较；原始镜像保持不变。此兼容处理不更改 v2 缓存与材料隔离规则，也不把构建器提交直接当成任务基线。
 
-2026-10-19 首题实际检查：`requests-1724` 的本地镜像已构建，标签映射和独立基线规范化通过，但完整预检被 Python 2.7.18 与现有 v2 Python 3 探针不兼容阻断，未进入官方 baseline／gold。见[首题检查记录](../../reports/command-policy-ab6-preflight/README.md)。不能通过改用另一解释器导入目标项目来冒充原运行环境通过；是否兼容旧解释器或按已保存排序替换候选另行决定。本轮不修改六题候选、排序、分母及模型授权。
+2026-10-19 原首题实际检查：`requests-1724` 的本地镜像已构建，标签映射和独立基线规范化通过，但完整预检被 Python 2.7.18 与现有 v2 Python 3 探针不兼容阻断，未进入官方 baseline／gold。见[首题检查记录](../../reports/command-policy-ab6-preflight/README.md)。第二版选择按已保存排序替换候选，不通过改用另一解释器导入目标项目来冒充原运行环境通过；分母及模型授权不变。
 
 桥接层只支持已经核对的 swebench 5.0.2；版本或接口变化、带额外 image assets、缺图、身份不符、测试证据不足或清理失败均拒绝验收，不自动拉取、构建或删除镜像。可以用 `--harness-python` 指定已安装 harness 的虚拟环境 Python，保留其 venv 路径。
 
@@ -155,4 +160,4 @@ caffeinate -i uv run python evals/profiles/command-policy-ab6/prepare.py \
 
 已完成原排序全部 33 道候选的[构建前环境筛查](../../reports/command-policy-ab6-environment-screening/README.md)，未查看隐藏答案或运行模型。第一备用 `requests-5414` 声明使用 Python 3.9.20，但 Requests 的非 editable 安装可能留下仓库外副本；18 道 Sphinx 候选均声明改写 `tox.ini`，部分另改依赖配置，不能假设仅有权限变化。静态发现不等于已执行预检失败，也不等于换题后可运行。
 
-下一步先修订 Requests 候选并逐题确认实际环境，再处理 Sphinx 构建适配与精确基线之间的兼容问题，不批量构建所有备用题。当前草案和题单保持原样，替换时须同步记录哈希与配对、保留旧版证据。正式模型命令应在全部预检、运行保护、预算和提交检查完成后生成；本草案不提供可直接开始求解的命令。
+候选修订已完成，下一步由人工单独构建 `requests-5414`，再检查实际安装副本、导入路径和隔离结果。任何预检阻断都先保留证据并排查，不跳过扫描继续官方测试或模型求解；之后再处理 Sphinx 的构建兼容问题。正式模型命令应在全部预检、运行保护、预算和提交检查完成后生成；本草案不提供可直接开始求解的命令。

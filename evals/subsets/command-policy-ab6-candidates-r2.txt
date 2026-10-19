@@ -1,0 +1,10 @@
+# Draft revision 2; not a frozen execution plan or model authorization.
+# Same saved strata and seed; requests-1724 replaced by next-ranked requests-5414.
+# Reason and parent hashes: evals/profiles/command-policy-ab6/draft-r2.json.
+
+psf__requests-5414
+psf__requests-6028
+pytest-dev__pytest-5262
+pytest-dev__pytest-5840
+sphinx-doc__sphinx-10449
+sphinx-doc__sphinx-9673

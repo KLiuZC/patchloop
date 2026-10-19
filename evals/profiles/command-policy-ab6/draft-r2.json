@@ -1,0 +1,1264 @@
+{
+  "schema_version": 1,
+  "status": "draft_preflight_required",
+  "model_execution_authorized": false,
+  "preparation_implementation": {
+    "entrypoint": "evals/profiles/command-policy-ab6/prepare.py",
+    "default_mode": "check_only",
+    "explicit_execute": "environment health plus separate baseline/gold controls; never model solving",
+    "supported_harness_version": "5.0.2",
+    "implemented_guards": [
+      "official evidence integrity",
+      "partial usage recovery",
+      "HTTP retry observation",
+      "local images only",
+      "container cleanup errors"
+    ],
+    "readiness_note": "Implementation and mock checks do not satisfy real candidate preflight or authorize the model campaign; readiness gates remain false until end-to-end evidence is available."
+  },
+  "created_date": "2026-10-19",
+  "design_base_commit": "fe239bee8f364ca9c2b3f7fda452439d353fb09d",
+  "dataset": {
+    "name": "SWE-bench/SWE-bench_Verified",
+    "split": "test",
+    "rows": 500,
+    "cache_snapshot": "78f471bf655a3137b2e8a75af1501690ec009ec3",
+    "arrow_sha256": "dac1b34d5d92454c90d41ac9876448ffd2585463a70b98b204da83034c3ccab6",
+    "selected_records_sha256": "06ece9e17b836a67dae8bc60e8454c6ca186f12884a5e0a14b97ebde56b6e286",
+    "selected_records_hash_order": [
+      "psf__requests-5414",
+      "psf__requests-6028",
+      "pytest-dev__pytest-5262",
+      "pytest-dev__pytest-5840",
+      "sphinx-doc__sphinx-10449",
+      "sphinx-doc__sphinx-9673"
+    ],
+    "selection_columns": [
+      "instance_id",
+      "repo",
+      "difficulty",
+      "version",
+      "base_commit"
+    ],
+    "gold_fields_used_for_selection": false
+  },
+  "selection": {
+    "seed": 20261019,
+    "method": "Within each repo/difficulty stratum, sort ascending by SHA256(UTF-8 decimal seed + colon + instance_id), then instance_id; take the first.",
+    "repositories": [
+      "pytest-dev/pytest",
+      "psf/requests",
+      "sphinx-doc/sphinx"
+    ],
+    "difficulty_strata": [
+      "<15 min fix",
+      "15 min - 1 hour"
+    ],
+    "per_stratum": 1,
+    "candidate_count": 33,
+    "excluded_snapshot_ids": [
+      "django__django-11066",
+      "django__django-11087",
+      "django__django-11099",
+      "django__django-11133",
+      "django__django-11179",
+      "django__django-11206",
+      "django__django-11239",
+      "django__django-11276",
+      "django__django-11433",
+      "django__django-11451",
+      "django__django-11555",
+      "django__django-11815",
+      "django__django-11999",
+      "django__django-12050",
+      "django__django-12125",
+      "django__django-12143",
+      "django__django-12406",
+      "django__django-15380",
+      "django__django-15731",
+      "django__django-16136",
+      "django__django-16139",
+      "pallets__flask-5014",
+      "psf__requests-2317",
+      "pydata__xarray-2905",
+      "pydata__xarray-3095",
+      "pydata__xarray-3151",
+      "pydata__xarray-3677",
+      "pydata__xarray-3993",
+      "pydata__xarray-4094",
+      "pydata__xarray-4356",
+      "pydata__xarray-4629",
+      "pydata__xarray-4687",
+      "pydata__xarray-4966",
+      "pydata__xarray-6461",
+      "pydata__xarray-6599",
+      "pydata__xarray-6721",
+      "pydata__xarray-6744",
+      "pydata__xarray-6938",
+      "pydata__xarray-6992",
+      "pydata__xarray-7229",
+      "pydata__xarray-7393",
+      "pylint-dev__pylint-4551",
+      "pylint-dev__pylint-4604",
+      "pylint-dev__pylint-4661",
+      "pylint-dev__pylint-4970",
+      "pylint-dev__pylint-6386",
+      "pylint-dev__pylint-6528",
+      "pylint-dev__pylint-6903",
+      "pylint-dev__pylint-7080",
+      "pylint-dev__pylint-7277",
+      "pylint-dev__pylint-8898",
+      "pytest-dev__pytest-6197",
+      "pytest-dev__pytest-6202",
+      "pytest-dev__pytest-7205",
+      "pytest-dev__pytest-7236",
+      "pytest-dev__pytest-7324",
+      "pytest-dev__pytest-7432",
+      "pytest-dev__pytest-7521",
+      "pytest-dev__pytest-7982",
+      "pytest-dev__pytest-8399",
+      "sphinx-doc__sphinx-11445",
+      "sphinx-doc__sphinx-11510",
+      "sphinx-doc__sphinx-7590",
+      "sphinx-doc__sphinx-7748",
+      "sphinx-doc__sphinx-7757",
+      "sphinx-doc__sphinx-7910",
+      "sphinx-doc__sphinx-7985",
+      "sphinx-doc__sphinx-8035",
+      "sphinx-doc__sphinx-8056",
+      "sphinx-doc__sphinx-8120",
+      "sphinx-doc__sphinx-8265",
+      "sphinx-doc__sphinx-8269",
+      "sphinx-doc__sphinx-8459",
+      "sphinx-doc__sphinx-8475",
+      "sphinx-doc__sphinx-8548",
+      "sphinx-doc__sphinx-8551",
+      "sphinx-doc__sphinx-8593",
+      "sphinx-doc__sphinx-8595",
+      "sphinx-doc__sphinx-8621",
+      "sphinx-doc__sphinx-8638",
+      "sphinx-doc__sphinx-8721",
+      "sphinx-doc__sphinx-9281",
+      "sphinx-doc__sphinx-9367",
+      "sphinx-doc__sphinx-9698",
+      "sympy__sympy-13480",
+      "sympy__sympy-13647",
+      "sympy__sympy-17655",
+      "sympy__sympy-18189",
+      "sympy__sympy-18199",
+      "sympy__sympy-18211",
+      "sympy__sympy-18698",
+      "sympy__sympy-18763",
+      "sympy__sympy-24066",
+      "sympy__sympy-24562"
+    ],
+    "manual_exclusions": {
+      "psf__requests-2317": "Previously used for gold validation and failure diagnosis; excluded even though the current saved subset no longer contains it.",
+      "pallets__flask-6146": "Previously used for a GitHub issue repair smoke test; not present in this cached Verified snapshot."
+    },
+    "exclusion_scan_file_count": 865,
+    "exclusion_evidence": {
+      "django__django-11066": {
+        "path": "evals/results/v30-deepseek-r2/traj/django__django-12406.jsonl",
+        "sha256": "f9640cc6963e332fbac0eac1836ca3933869dfb6fd127443f76d8ae8d0443a22",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11087": {
+        "path": "evals/results/v30-deepseek-r2/traj/django__django-12406.jsonl",
+        "sha256": "f9640cc6963e332fbac0eac1836ca3933869dfb6fd127443f76d8ae8d0443a22",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11099": {
+        "path": "evals/results/v30-budget-r3/traj/django__django-12406.jsonl",
+        "sha256": "6679cb6cd49aee48b3467027596761300821d46764ac4f5ba283222be40094d4",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11133": {
+        "path": "evals/results/v30-deepseek-r3/traj/django__django-12406.jsonl",
+        "sha256": "8bf86c55efb414c50c3663756676e3e0bac89087b3a7e7bc4f85a1b32d174988",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11179": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "django__django-11206": {
+        "path": "evals/results/v30-deepseek-r3/traj/django__django-12406.jsonl",
+        "sha256": "8bf86c55efb414c50c3663756676e3e0bac89087b3a7e7bc4f85a1b32d174988",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11239": {
+        "path": "evals/results/v30-deepseek-r3/traj/django__django-12406.jsonl",
+        "sha256": "8bf86c55efb414c50c3663756676e3e0bac89087b3a7e7bc4f85a1b32d174988",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11276": {
+        "path": "evals/results/v30-deepseek-r3/traj/django__django-12406.jsonl",
+        "sha256": "8bf86c55efb414c50c3663756676e3e0bac89087b3a7e7bc4f85a1b32d174988",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11433": {
+        "path": "evals/results/v30-glm/traj/django__django-12406.jsonl",
+        "sha256": "1f38714f788fe3f8f4d9dfd03284f9d6c64ea644b3ad6960ea6bf37dcaae3d5b",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11451": {
+        "path": "evals/results/v30-deepseek-r2/traj/django__django-12406.jsonl",
+        "sha256": "f9640cc6963e332fbac0eac1836ca3933869dfb6fd127443f76d8ae8d0443a22",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11555": {
+        "path": "evals/results/v30-finish-r1/traj/django__django-12406.jsonl",
+        "sha256": "a658c772c554fa0180c8c330d4a8ad2865795eaaa16640fc6bcbdbd7fc1a81a0",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11815": {
+        "path": "evals/results/v30-deepseek-r2/traj/django__django-12406.jsonl",
+        "sha256": "f9640cc6963e332fbac0eac1836ca3933869dfb6fd127443f76d8ae8d0443a22",
+        "tracked_at_design_commit": false
+      },
+      "django__django-11999": {
+        "path": "evals/results/v30-glm/traj/django__django-12406.jsonl",
+        "sha256": "1f38714f788fe3f8f4d9dfd03284f9d6c64ea644b3ad6960ea6bf37dcaae3d5b",
+        "tracked_at_design_commit": false
+      },
+      "django__django-12050": {
+        "path": "evals/results/v30-finish-r1/traj/django__django-12406.jsonl",
+        "sha256": "a658c772c554fa0180c8c330d4a8ad2865795eaaa16640fc6bcbdbd7fc1a81a0",
+        "tracked_at_design_commit": false
+      },
+      "django__django-12125": {
+        "path": "evals/results/v30-budget-r1-retry/traj/django__django-12406.jsonl",
+        "sha256": "81dd1b60865647e61c5e8ae8cccdb2d8555b257512bb40c0506df43d0221cf26",
+        "tracked_at_design_commit": false
+      },
+      "django__django-12143": {
+        "path": "evals/results/v30-budget-r1-retry/traj/django__django-12406.jsonl",
+        "sha256": "81dd1b60865647e61c5e8ae8cccdb2d8555b257512bb40c0506df43d0221cf26",
+        "tracked_at_design_commit": false
+      },
+      "django__django-12406": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "django__django-15380": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "django__django-15731": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "django__django-16136": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "django__django-16139": {
+        "path": "evals/results/v30-glm/traj/django__django-16136.jsonl",
+        "sha256": "7a8ca35d74f641616c83e7b3f60da96447a594d47e34e5c598757607192f16af",
+        "tracked_at_design_commit": false
+      },
+      "pallets__flask-5014": {
+        "path": "docs/history/experiments-through-2026-10-09.md",
+        "sha256": "f605e32e0dac2c619399e3f074fc4732295efc175606090b8da84b2cd78204f3",
+        "tracked_at_design_commit": true
+      },
+      "pydata__xarray-2905": {
+        "path": "evals/profiles/command-policy/cases.json",
+        "sha256": "722ab14617e30d28c965ae9d3c8dada9d5fbefa78f2af0a4c0062efbece6fbc5",
+        "tracked_at_design_commit": true
+      },
+      "pydata__xarray-3095": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pydata__xarray-3151": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-3677": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-3993": {
+        "path": "evals/profiles/xarray3-isolation/plan.json",
+        "sha256": "327e70a0ba56fbbe948cb7596f26418eade59a49f33a2445109393dbb7d15c56",
+        "tracked_at_design_commit": true
+      },
+      "pydata__xarray-4094": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-4356": {
+        "path": "evals/results/v30-glm/traj/pydata__xarray-2905.jsonl",
+        "sha256": "3ef299a32bd1dca202689ff44506ba09361efb81555312afa12514d03162d465",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-4629": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pydata__xarray-4687": {
+        "path": "evals/profiles/command-policy/cases.json",
+        "sha256": "722ab14617e30d28c965ae9d3c8dada9d5fbefa78f2af0a4c0062efbece6fbc5",
+        "tracked_at_design_commit": true
+      },
+      "pydata__xarray-4966": {
+        "path": "evals/results/v30-deepseek-r1/traj/pydata__xarray-3993.jsonl",
+        "sha256": "475bceb1a1c8dfecbe27a67c8f367df15c5aff64d6a3017ed30c4e94f32f1036",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-6461": {
+        "path": "evals/results/v30-deepseek-r3/traj/pydata__xarray-4687.jsonl",
+        "sha256": "25e226eafc507272764236f8d648664632dfa6c1081a05e951a6745ed4f521c7",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-6599": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-6721": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-6744": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-6938": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-6992": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-7229": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pydata__xarray-7393": {
+        "path": "evals/results/x3-clean-ds-base-r2/traj/pydata__xarray-4687.jsonl",
+        "sha256": "e1b2985aa3bc29357dd644795a82491b7bf404446df223b5aeec698392f34065",
+        "tracked_at_design_commit": false
+      },
+      "pylint-dev__pylint-4551": {
+        "path": "evals/results/v30-budget-r1-retry/traj/pylint-dev__pylint-4661.jsonl",
+        "sha256": "c806bc2b6de225baa3531efef0c6930a563b0da83468b6f740403d2622d9ae23",
+        "tracked_at_design_commit": false
+      },
+      "pylint-dev__pylint-4604": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pylint-dev__pylint-4661": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pylint-dev__pylint-4970": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pylint-dev__pylint-6386": {
+        "path": "evals/results/v30-budget-r1-retry/traj/pylint-dev__pylint-4661.jsonl",
+        "sha256": "c806bc2b6de225baa3531efef0c6930a563b0da83468b6f740403d2622d9ae23",
+        "tracked_at_design_commit": false
+      },
+      "pylint-dev__pylint-6528": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pylint-dev__pylint-6903": {
+        "path": "evals/results/v30-budget-r2/traj/pylint-dev__pylint-4661.jsonl",
+        "sha256": "3d72247d801d3d954976a0713d8229e72654ea1ff0a0f0494da924bc5d570d9e",
+        "tracked_at_design_commit": false
+      },
+      "pylint-dev__pylint-7080": {
+        "path": "evals/results/v30-budget-r2/traj/pylint-dev__pylint-4661.jsonl",
+        "sha256": "3d72247d801d3d954976a0713d8229e72654ea1ff0a0f0494da924bc5d570d9e",
+        "tracked_at_design_commit": false
+      },
+      "pylint-dev__pylint-7277": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pylint-dev__pylint-8898": {
+        "path": "evals/results/v30-budget-r2/traj/pylint-dev__pylint-4661.jsonl",
+        "sha256": "3d72247d801d3d954976a0713d8229e72654ea1ff0a0f0494da924bc5d570d9e",
+        "tracked_at_design_commit": false
+      },
+      "pytest-dev__pytest-6197": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pytest-dev__pytest-6202": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pytest-dev__pytest-7205": {
+        "path": "docs/evaluation.md",
+        "sha256": "689a9c32fb8de3ff6af8012483dc4d51246932906d635da6e9a246c5122ea717",
+        "tracked_at_design_commit": true
+      },
+      "pytest-dev__pytest-7236": {
+        "path": "evals/results/probe-single-shot/predictions.jsonl",
+        "sha256": "ddd7c6b9ffd46a8690b5569dd6278b47c4b112681dc22144dd5cfbe74a4a6c08",
+        "tracked_at_design_commit": true
+      },
+      "pytest-dev__pytest-7324": {
+        "path": "evals/results/smoke5-budget-deepseek/predictions.jsonl",
+        "sha256": "175422484231f2d6b3668fa6d38e89aef8ee16a33e965503d1e3c397265e2950",
+        "tracked_at_design_commit": true
+      },
+      "pytest-dev__pytest-7432": {
+        "path": "evals/reports/repair-real-task-smoke2/README.md",
+        "sha256": "ddeb741c812cde9cd5bb2692ecba38641dcfc8c5a68762773ed4cd656a8e369e",
+        "tracked_at_design_commit": true
+      },
+      "pytest-dev__pytest-7521": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pytest-dev__pytest-7982": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "pytest-dev__pytest-8399": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sphinx-doc__sphinx-11445": {
+        "path": "evals/results/v30-budget-r2/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "7cfd67de8e2155017c54a4ed336bcfb5d8d92946191a002908fa7198e0e88284",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-11510": {
+        "path": "evals/results/v30-budget-r2/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "7cfd67de8e2155017c54a4ed336bcfb5d8d92946191a002908fa7198e0e88284",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-7590": {
+        "path": "evals/results/v30-budget-r2/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "7cfd67de8e2155017c54a4ed336bcfb5d8d92946191a002908fa7198e0e88284",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-7748": {
+        "path": "evals/results/v30-budget-r2/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "7cfd67de8e2155017c54a4ed336bcfb5d8d92946191a002908fa7198e0e88284",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-7757": {
+        "path": "evals/results/v30-budget-r2/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "7cfd67de8e2155017c54a4ed336bcfb5d8d92946191a002908fa7198e0e88284",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-7910": {
+        "path": "evals/results/v30-finish-r2/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "10f89e6e4d03df499fe8556b874ea898a2fa49d1d586a5a6ecac04240c95dbc5",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-7985": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sphinx-doc__sphinx-8035": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sphinx-doc__sphinx-8056": {
+        "path": "evals/results/v30-budget-r2/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "7cfd67de8e2155017c54a4ed336bcfb5d8d92946191a002908fa7198e0e88284",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8120": {
+        "path": "evals/results/v30-budget-r2/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "7cfd67de8e2155017c54a4ed336bcfb5d8d92946191a002908fa7198e0e88284",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8265": {
+        "path": "evals/results/v30-budget-r3/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "c39392113e1e350dcaf88d16fb0638bb8b7fe3487f3bb49ac1bab144d4783f1f",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8269": {
+        "path": "evals/results/v30-deepseek-r3/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "f0e7a068fa7263c2a7822dc1ba10fd7a84074acd9a8a0db4af2d30b467c4a238",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8459": {
+        "path": "evals/results/v30-finish-r1/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "c18673693e5a8458ff5d4717b6c91957d0c2538866716c428326a8e1da946bfb",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8475": {
+        "path": "evals/results/v30-finish-r1/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "c18673693e5a8458ff5d4717b6c91957d0c2538866716c428326a8e1da946bfb",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8548": {
+        "path": "evals/results/v30-finish-r1/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "c18673693e5a8458ff5d4717b6c91957d0c2538866716c428326a8e1da946bfb",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8551": {
+        "path": "evals/results/v30-finish-r1/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "c18673693e5a8458ff5d4717b6c91957d0c2538866716c428326a8e1da946bfb",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8593": {
+        "path": "evals/results/v30-finish-r1/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "c18673693e5a8458ff5d4717b6c91957d0c2538866716c428326a8e1da946bfb",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8595": {
+        "path": "evals/results/v30-finish-r1/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "c18673693e5a8458ff5d4717b6c91957d0c2538866716c428326a8e1da946bfb",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8621": {
+        "path": "evals/results/v30-finish-r1/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "c18673693e5a8458ff5d4717b6c91957d0c2538866716c428326a8e1da946bfb",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-8638": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sphinx-doc__sphinx-8721": {
+        "path": "evals/results/v30-finish-r1/traj/sphinx-doc__sphinx-7985.jsonl",
+        "sha256": "c18673693e5a8458ff5d4717b6c91957d0c2538866716c428326a8e1da946bfb",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-9281": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sphinx-doc__sphinx-9367": {
+        "path": "evals/results/v30-deepseek-r1/traj/sphinx-doc__sphinx-9281.jsonl",
+        "sha256": "c49d3364072efa63d92e0f5623709b0823c24caaeefa468d143747c7eb76ff42",
+        "tracked_at_design_commit": false
+      },
+      "sphinx-doc__sphinx-9698": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sympy__sympy-13480": {
+        "path": "evals/results/v30-glm/traj/sympy__sympy-18211.jsonl",
+        "sha256": "aa2b6709b884da8860b5b10e6b1ccaad4d2ee9c6d50710c3d768edeb3df1cab3",
+        "tracked_at_design_commit": false
+      },
+      "sympy__sympy-13647": {
+        "path": "evals/results/v30-glm/traj/sympy__sympy-18211.jsonl",
+        "sha256": "aa2b6709b884da8860b5b10e6b1ccaad4d2ee9c6d50710c3d768edeb3df1cab3",
+        "tracked_at_design_commit": false
+      },
+      "sympy__sympy-17655": {
+        "path": "evals/results/v30-glm/traj/sympy__sympy-18211.jsonl",
+        "sha256": "aa2b6709b884da8860b5b10e6b1ccaad4d2ee9c6d50710c3d768edeb3df1cab3",
+        "tracked_at_design_commit": false
+      },
+      "sympy__sympy-18189": {
+        "path": "evals/results/v30-budget-r3/traj/sympy__sympy-18211.jsonl",
+        "sha256": "1206151dadbf7f808bb54c4208f19b2ad8da88ffe191bf372c9cde60c1aeda16",
+        "tracked_at_design_commit": false
+      },
+      "sympy__sympy-18199": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sympy__sympy-18211": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sympy__sympy-18698": {
+        "path": "evals/results/v30-budget-r2/traj/sympy__sympy-18763.jsonl",
+        "sha256": "671d0d05203804059264183e3500146bfdaca0f450626d2658711ab02fcda4ae",
+        "tracked_at_design_commit": false
+      },
+      "sympy__sympy-18763": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sympy__sympy-24066": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      },
+      "sympy__sympy-24562": {
+        "path": "evals/reports/4b-baseline/evidence.json",
+        "sha256": "35790c6e35bf1753cb49e598106bb8d958a8eb632e7934df30723ddf4ce3e537",
+        "tracked_at_design_commit": true
+      }
+    },
+    "ranked_strata": [
+      {
+        "repo": "pytest-dev/pytest",
+        "difficulty": "<15 min fix",
+        "ordered_instance_ids": [
+          "pytest-dev__pytest-5262",
+          "pytest-dev__pytest-10081",
+          "pytest-dev__pytest-5809"
+        ]
+      },
+      {
+        "repo": "pytest-dev/pytest",
+        "difficulty": "15 min - 1 hour",
+        "ordered_instance_ids": [
+          "pytest-dev__pytest-5840",
+          "pytest-dev__pytest-5631",
+          "pytest-dev__pytest-10051",
+          "pytest-dev__pytest-7490",
+          "pytest-dev__pytest-7571"
+        ]
+      },
+      {
+        "repo": "psf/requests",
+        "difficulty": "<15 min fix",
+        "ordered_instance_ids": [
+          "psf__requests-1724",
+          "psf__requests-5414",
+          "psf__requests-1142",
+          "psf__requests-1921",
+          "psf__requests-1766"
+        ]
+      },
+      {
+        "repo": "psf/requests",
+        "difficulty": "15 min - 1 hour",
+        "ordered_instance_ids": [
+          "psf__requests-6028",
+          "psf__requests-2931"
+        ]
+      },
+      {
+        "repo": "sphinx-doc/sphinx",
+        "difficulty": "<15 min fix",
+        "ordered_instance_ids": [
+          "sphinx-doc__sphinx-10449",
+          "sphinx-doc__sphinx-7440",
+          "sphinx-doc__sphinx-10435",
+          "sphinx-doc__sphinx-7889",
+          "sphinx-doc__sphinx-7462",
+          "sphinx-doc__sphinx-9320",
+          "sphinx-doc__sphinx-9591",
+          "sphinx-doc__sphinx-9711",
+          "sphinx-doc__sphinx-9230",
+          "sphinx-doc__sphinx-7454",
+          "sphinx-doc__sphinx-9258",
+          "sphinx-doc__sphinx-10323"
+        ]
+      },
+      {
+        "repo": "sphinx-doc/sphinx",
+        "difficulty": "15 min - 1 hour",
+        "ordered_instance_ids": [
+          "sphinx-doc__sphinx-9673",
+          "sphinx-doc__sphinx-9602",
+          "sphinx-doc__sphinx-9658",
+          "sphinx-doc__sphinx-10614",
+          "sphinx-doc__sphinx-10466",
+          "sphinx-doc__sphinx-10673"
+        ]
+      }
+    ],
+    "exclusion_rule": "Conservative snapshot of exact IDs found in tracked text at the design commit and saved local results/trajectories, plus explicit prior-use exclusions. Reproduce selection from this saved exclusion list, not from an evolving worktree.",
+    "candidate_file": "evals/subsets/command-policy-ab6-candidates-r2.txt",
+    "replacement_policy": "Before any model solve, an infrastructure-ineligible candidate may be replaced only by the next unselected ID in the same saved stratum, with evidence and an amended selection hash. No replacement based on model outcomes."
+  },
+  "instances": [
+    {
+      "instance_id": "psf__requests-5414",
+      "repo": "psf/requests",
+      "difficulty": "<15 min fix",
+      "version": "2.26",
+      "base_commit": "39d0fdd9096f7dceccbc8f82e1eda7dd64717a8e",
+      "rank_sha256": "4e643b50a4f495e37cb387ba80ac39cfda73a319ff733072d46ca9014fc401a1",
+      "image": "swebench/sweb.eval.x86_64.psf_1776_requests-5414:latest",
+      "task_definition_present": true,
+      "image_id": null,
+      "environment_preflight": "pending",
+      "gold_preflight": "pending"
+    },
+    {
+      "instance_id": "psf__requests-6028",
+      "repo": "psf/requests",
+      "difficulty": "15 min - 1 hour",
+      "version": "2.27",
+      "base_commit": "0192aac24123735b3eaf9b08df46429bb770c283",
+      "rank_sha256": "826419c7efce6747f52b607a7454309938966a1842c93f97bca7b78e3aa12e83",
+      "image": "swebench/sweb.eval.x86_64.psf_1776_requests-6028:latest",
+      "task_definition_present": true,
+      "image_id": null,
+      "environment_preflight": "pending",
+      "gold_preflight": "pending"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5262",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "<15 min fix",
+      "version": "4.5",
+      "base_commit": "58e6a09db49f34886ff13f3b7520dd0bcd7063cd",
+      "rank_sha256": "c71e01df9d35d3afbdeecc64522f0fb211d5a01682f9c48be044a2001035c460",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5262:latest",
+      "task_definition_present": true,
+      "image_id": null,
+      "environment_preflight": "pending",
+      "gold_preflight": "pending"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5840",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "15 min - 1 hour",
+      "version": "5.1",
+      "base_commit": "73c5b7f4b11a81e971f7d1bb18072e06a87060f4",
+      "rank_sha256": "4bdf36d90ca641a1986cc293094d99d65615c9ece3c06c9f81708ad633dbc51f",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5840:latest",
+      "task_definition_present": true,
+      "image_id": null,
+      "environment_preflight": "pending",
+      "gold_preflight": "pending"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10449",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "version": "5.1",
+      "base_commit": "36367765fe780f962bba861bf368a765380bbc68",
+      "rank_sha256": "08c436f3d02a5deb988bc2449f8703062ce6a7264d9dfdc9ae99edc63024072f",
+      "image": "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-10449:latest",
+      "task_definition_present": true,
+      "image_id": null,
+      "environment_preflight": "pending",
+      "gold_preflight": "pending"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9673",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "15 min - 1 hour",
+      "version": "4.3",
+      "base_commit": "5fb51fb1467dc5eea7505402c3c5d9b378d3b441",
+      "rank_sha256": "367041fff793a426828799326703d2bc528ccf5427918eb7e25ef7428104c674",
+      "image": "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-9673:latest",
+      "task_definition_present": true,
+      "image_id": null,
+      "environment_preflight": "pending",
+      "gold_preflight": "pending"
+    }
+  ],
+  "arms": {
+    "A": "off",
+    "B": "enforce"
+  },
+  "settings": {
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "mode": "agent",
+    "max_turns": 40,
+    "command_timeout_seconds": 180,
+    "workers": 1,
+    "memory": "3g",
+    "cpus": 2,
+    "platform": "linux/amd64",
+    "network": "none",
+    "budget_reminders": true,
+    "explicit_finish": false,
+    "judge": true,
+    "judge_workers": 1,
+    "api_timeout_seconds": 120,
+    "sdk_max_retries": 3,
+    "task_retries": 0
+  },
+  "generation_settings": {
+    "temperature": "omitted; provider default",
+    "max_tokens": "omitted; provider default",
+    "thinking": "omitted; provider default",
+    "reasoning_effort": "omitted; provider default",
+    "model_version": "request alias only; server weights not pinned"
+  },
+  "environment_policy": {
+    "version": "swebench-isolation-v2",
+    "hidden_paths": [
+      "/opt/miniconda3/pkgs",
+      "/opt/conda/pkgs",
+      "/root/.cache",
+      "/root/.conda/pkgs",
+      "/home"
+    ],
+    "scan_roots": [
+      "/opt",
+      "/usr/local/lib",
+      "/usr/lib",
+      "/root",
+      "/home",
+      "/tmp",
+      "/var/tmp"
+    ],
+    "probe_sha256": "982bcd4436456b0db030f9015d0e73fcadd511abd71aff7e321944e6604571dc"
+  },
+  "command_policy": {
+    "off": {
+      "mode": "off",
+      "policy_version": "command-policy-v3",
+      "parser_version": "tree-sitter/0.26.0 tree-sitter-bash/0.25.1",
+      "parser_packages": {
+        "tree-sitter": "0.26.0",
+        "tree-sitter-bash": "0.25.1"
+      },
+      "profile_version": "swebench-command-context-v2",
+      "development_cases_version": 2,
+      "limits": {
+        "command_bytes": 32768,
+        "tree_nodes": 4096,
+        "tree_depth": 64,
+        "heredoc_passes": 16,
+        "git_log_metadata_commits": 10
+      },
+      "context_defaults": {
+        "cache_roots": [
+          "/opt/miniconda3/pkgs",
+          "/opt/conda/pkgs",
+          "/root/.cache",
+          "/root/.conda/pkgs",
+          "/home"
+        ],
+        "scratch_roots": [
+          "/tmp"
+        ],
+        "safe_environment_variables": [
+          "MPLCONFIGDIR",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD",
+          "PYTHONDONTWRITEBYTECODE"
+        ],
+        "dependency_origin_markers": [
+          "site-packages",
+          "dist-packages"
+        ]
+      }
+    },
+    "enforce": {
+      "mode": "enforce",
+      "policy_version": "command-policy-v3",
+      "parser_version": "tree-sitter/0.26.0 tree-sitter-bash/0.25.1",
+      "parser_packages": {
+        "tree-sitter": "0.26.0",
+        "tree-sitter-bash": "0.25.1"
+      },
+      "profile_version": "swebench-command-context-v2",
+      "development_cases_version": 2,
+      "limits": {
+        "command_bytes": 32768,
+        "tree_nodes": 4096,
+        "tree_depth": 64,
+        "heredoc_passes": 16,
+        "git_log_metadata_commits": 10
+      },
+      "context_defaults": {
+        "cache_roots": [
+          "/opt/miniconda3/pkgs",
+          "/opt/conda/pkgs",
+          "/root/.cache",
+          "/root/.conda/pkgs",
+          "/home"
+        ],
+        "scratch_roots": [
+          "/tmp"
+        ],
+        "safe_environment_variables": [
+          "MPLCONFIGDIR",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD",
+          "PYTHONDONTWRITEBYTECODE"
+        ],
+        "dependency_origin_markers": [
+          "site-packages",
+          "dist-packages"
+        ]
+      }
+    }
+  },
+  "pairs": [
+    {
+      "pair_id": "cp6-plan2-r1-p01",
+      "repeat": 1,
+      "instance_id": "psf__requests-5414",
+      "arms": [
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r1-p01-off"
+        },
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r1-p01-enforce"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r1-p02",
+      "repeat": 1,
+      "instance_id": "psf__requests-6028",
+      "arms": [
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r1-p02-enforce"
+        },
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r1-p02-off"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r1-p03",
+      "repeat": 1,
+      "instance_id": "pytest-dev__pytest-5262",
+      "arms": [
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r1-p03-off"
+        },
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r1-p03-enforce"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r1-p04",
+      "repeat": 1,
+      "instance_id": "pytest-dev__pytest-5840",
+      "arms": [
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r1-p04-enforce"
+        },
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r1-p04-off"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r1-p05",
+      "repeat": 1,
+      "instance_id": "sphinx-doc__sphinx-10449",
+      "arms": [
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r1-p05-off"
+        },
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r1-p05-enforce"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r1-p06",
+      "repeat": 1,
+      "instance_id": "sphinx-doc__sphinx-9673",
+      "arms": [
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r1-p06-enforce"
+        },
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r1-p06-off"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r2-p01",
+      "repeat": 2,
+      "instance_id": "pytest-dev__pytest-5262",
+      "arms": [
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r2-p01-enforce"
+        },
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r2-p01-off"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r2-p02",
+      "repeat": 2,
+      "instance_id": "pytest-dev__pytest-5840",
+      "arms": [
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r2-p02-off"
+        },
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r2-p02-enforce"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r2-p03",
+      "repeat": 2,
+      "instance_id": "sphinx-doc__sphinx-10449",
+      "arms": [
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r2-p03-enforce"
+        },
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r2-p03-off"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r2-p04",
+      "repeat": 2,
+      "instance_id": "sphinx-doc__sphinx-9673",
+      "arms": [
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r2-p04-off"
+        },
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r2-p04-enforce"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r2-p05",
+      "repeat": 2,
+      "instance_id": "psf__requests-5414",
+      "arms": [
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r2-p05-enforce"
+        },
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r2-p05-off"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r2-p06",
+      "repeat": 2,
+      "instance_id": "psf__requests-6028",
+      "arms": [
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r2-p06-off"
+        },
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r2-p06-enforce"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r3-p01",
+      "repeat": 3,
+      "instance_id": "sphinx-doc__sphinx-10449",
+      "arms": [
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r3-p01-off"
+        },
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r3-p01-enforce"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r3-p02",
+      "repeat": 3,
+      "instance_id": "sphinx-doc__sphinx-9673",
+      "arms": [
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r3-p02-enforce"
+        },
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r3-p02-off"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r3-p03",
+      "repeat": 3,
+      "instance_id": "psf__requests-5414",
+      "arms": [
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r3-p03-off"
+        },
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r3-p03-enforce"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r3-p04",
+      "repeat": 3,
+      "instance_id": "psf__requests-6028",
+      "arms": [
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r3-p04-enforce"
+        },
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r3-p04-off"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r3-p05",
+      "repeat": 3,
+      "instance_id": "pytest-dev__pytest-5262",
+      "arms": [
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r3-p05-off"
+        },
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r3-p05-enforce"
+        }
+      ]
+    },
+    {
+      "pair_id": "cp6-plan2-r3-p06",
+      "repeat": 3,
+      "instance_id": "pytest-dev__pytest-5840",
+      "arms": [
+        {
+          "command_policy": "enforce",
+          "run_id": "cp6-plan2-v3-r3-p06-enforce"
+        },
+        {
+          "command_policy": "off",
+          "run_id": "cp6-plan2-v3-r3-p06-off"
+        }
+      ]
+    }
+  ],
+  "budget": {
+    "unique_instances": 6,
+    "arms": 2,
+    "repeats": 3,
+    "planned_solves": 36,
+    "agent_call_limit_per_solve": 40,
+    "total_agent_call_limit": 1440,
+    "historical_cost_sources": [
+      "evals/results/x3-clean-ds-budget-r1/summary.json",
+      "evals/results/x3-clean-ds-budget-r2/summary.json",
+      "evals/results/x3-clean-ds-budget-r3/summary.json"
+    ],
+    "historical_mean_per_solve_cny": 0.07277841111111111,
+    "historical_max_per_solve_cny": 0.12076948,
+    "projection_36_mean_cny": 2.6200228,
+    "projection_36_sample_max_cny": 4.34770128,
+    "proposed_review_threshold_cny": 10,
+    "approved_spend_cny": null,
+    "hard_cost_cap_implemented": false,
+    "pricing_note": "Historical local estimator, not current provider pricing or an upper bound; console billing must be checked before approval."
+  },
+  "readiness": {
+    "selection_candidate_only": true,
+    "images_pinned": false,
+    "environment_preflight_passed": false,
+    "gold_preflight_passed": false,
+    "execution_launcher_ready": false,
+    "final_plan_committed": false,
+    "next_action": "Prepare images and complete no-model preflight before freezing a separate execution plan.",
+    "baseline_reproduction_preflight_passed": false,
+    "official_result_integrity_gate_ready": false,
+    "abnormal_usage_recovery_ready": false
+  },
+  "preflight_task_repository_commit": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "metrics": {
+    "primary": "Official resolved at fixed per-arm denominator 18; retain all planned attempts and report 6 independent task clusters.",
+    "paired": "Per task, compare resolved counts out of 3; also list all 18 within-task/repeat pair outcomes without treating repetitions as independent new tasks.",
+    "secondary": [
+      "prompt/cached/completion tokens",
+      "estimated cost with recorded price basis",
+      "model turns",
+      "empty patches",
+      "stop reasons",
+      "unknown/blocked/execution request counts",
+      "manual false-block review",
+      "official report/test-log integrity and unknown billing state"
+    ],
+    "not_available_by_default": [
+      "first edit turn based on actual workspace snapshots"
+    ],
+    "off_classification": "Off produces no live policy events; classify its saved tool calls offline under the same v3 context. Do not compare off zero counters with enforce live counts as behavioral evidence.",
+    "abnormal_usage": "Use complete trajectory result counters cross-checked against per-turn usage when summary counters are incomplete; missing response usage and retry charges remain unknown."
+  },
+  "freeze_required": [
+    "All candidate images built and pinned by image ID, including harness task definitions and runtime versions.",
+    "Every selected task passes v2 environment checks and a benign visible health check.",
+    "Gold passes official grading, and a genuine no-fix baseline test run confirms the issue is detectable; empty predictions skipped by the harness do not count as this check.",
+    "Price basis and spending threshold are confirmed; no hard cost cap is claimed.",
+    "Official grading integrity checks distinguish empty candidate patches from infrastructure errors, missing reports and unexecuted tests; failures pause the campaign instead of becoming ordinary unresolved results.",
+    "Interrupted-run token/turn usage is recovered from trajectory evidence without double counting; unknown charges pause the campaign for billing review instead of being treated as zero.",
+    "An execution launcher has dry-run/fail-closed tests and source/image/config checks; code and final execution plan are committed before the first model call."
+  ],
+  "revision": {
+    "number": 2,
+    "date": "2026-10-19",
+    "parent_path": "evals/profiles/command-policy-ab6/draft.json",
+    "parent_sha256": "2ded67b3ad26e84f70932d3150c7e198a52c0d0959801741a7cc718eea4f69a7",
+    "recorded_after_commit": "e57d172864f2170d4d222bf5d621cd5499293036",
+    "replacements": [
+      {
+        "removed": "psf__requests-1724",
+        "added": "psf__requests-5414",
+        "reason": "Target Python 2.7.18 cannot run the current v2 environment probe; use the next saved candidate in the same repo/difficulty stratum before any model solve.",
+        "evidence_path": "evals/reports/command-policy-ab6-preflight/requests-1724.json",
+        "evidence_sha256": "96f0fd7bab44e97020c433715bef63ee14953d197d47b2eae4c36f59c4e5d7b3"
+      }
+    ],
+    "run_id_namespace": "cp6-plan2",
+    "readiness_note": "Candidate replacement only. Requests installation-copy checks, all real preflights, model budget approval and execution-plan freezing remain required."
+  }
+}
