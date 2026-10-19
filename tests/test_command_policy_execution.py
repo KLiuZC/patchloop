@@ -312,3 +312,19 @@ def test_allowed_metadata_does_not_unblock_a_forbidden_tail(tmp_path):
     context = replace(PolicyContext("/testbed", "/testbed"), isolated_history=True)
     result = run("fix", model, runner, max_turns=1, traj_dir=tmp_path, command_policy=CommandPolicy("enforce", context))
     assert runner.commands == [] and result.command_policy_counts["blocked"] == 1
+
+
+@pytest.mark.parametrize("command", [
+    "printf touched > /tmp/marker; cat <<'EOF' && pip download xarray\nexample\nEOF",
+    "printf touched > /tmp/marker; git diff origin/main --",
+    "printf touched > /tmp/marker; cd /tmp; git -C /testbed log --all",
+])
+def test_boundary_violations_block_the_entire_tool_request(tmp_path, command):
+    model = ScriptedModel([reply(call("boundary", command)), reply(content="done")])
+    runner = RecordingRunner()
+    result = run("fix", model, runner, traj_dir=tmp_path,
+                 command_policy=CommandPolicy("enforce", PolicyContext("/testbed", "/testbed")))
+    assert runner.commands == []
+    assert result.command_policy_counts["blocked"] == 1
+    assert model.requests[1][-1]["tool_call_id"] == "boundary"
+    assert "Command blocked" in model.requests[1][-1]["content"]

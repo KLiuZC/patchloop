@@ -11,7 +11,13 @@ from patchloop.sandbox import DockerRunner
 
 
 @pytest.mark.parametrize("explicit_finish", [False, True])
-def test_docker_blocks_whole_command_and_still_repairs(tmp_path, explicit_finish):
+@pytest.mark.parametrize("blocked_command", [
+    "git log --all",
+    "cat <<'EOF' && git log --all\nexample\nEOF",
+    "git diff origin/main --",
+    "cd /tmp; git -C /work log --all",
+])
+def test_docker_blocks_whole_command_and_still_repairs(tmp_path, explicit_finish, blocked_command):
     try:
         image = subprocess.run(["docker", "image", "inspect", "patchloop-toy"],
                                capture_output=True, text=True, timeout=15)
@@ -33,7 +39,7 @@ def test_docker_blocks_whole_command_and_still_repairs(tmp_path, explicit_finish
         subprocess.run(["git", "-C", str(repo), *arguments], capture_output=True, text=True, check=True)
     commands = [
         "cat calc.py",
-        "printf touched > policy-marker; git log --all",
+        f"printf touched > policy-marker; {blocked_command}",
         "python - <<'PY'\nfrom pathlib import Path\npath = Path('calc.py')\n"
         "path.write_text(path.read_text().replace(\"value.split('.')\", \"value.removeprefix('v').split('.')\"))\nPY",
         "python -m pytest -q",

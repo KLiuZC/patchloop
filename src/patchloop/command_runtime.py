@@ -7,7 +7,7 @@ import posixpath
 import re
 
 from .command_policy import (
-    BLOCK_RULES, MAX_COMMAND_BYTES, MAX_TREE_DEPTH, MAX_TREE_NODES, MAX_LOG_METADATA_COMMITS,
+    BLOCK_RULES, MAX_COMMAND_BYTES, MAX_TREE_DEPTH, MAX_TREE_NODES, MAX_LOG_METADATA_COMMITS, MAX_HEREDOC_PASSES,
     PARSER_VERSION, POLICY_VERSION, PolicyContext, assess_command,
 )
 from .environment import EnvironmentCheckError, HIDDEN_PATHS, MODULES
@@ -36,6 +36,7 @@ def command_policy_metadata(mode):
         "parser_packages": {name: version(name) for name in ("tree-sitter", "tree-sitter-bash")},
         "profile_version": PROFILE_VERSION, "development_cases_version": CASE_SUITE_VERSION,
         "limits": {"command_bytes": MAX_COMMAND_BYTES, "tree_nodes": MAX_TREE_NODES, "tree_depth": MAX_TREE_DEPTH,
+                   "heredoc_passes": MAX_HEREDOC_PASSES,
                    "git_log_metadata_commits": MAX_LOG_METADATA_COMMITS},
         "context_defaults": {"cache_roots": list(HIDDEN_PATHS), "scratch_roots": list(SCRATCH_ROOTS),
                              "safe_environment_variables": list(SAFE_ENVIRONMENT_VARIABLES),

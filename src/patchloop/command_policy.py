@@ -8,11 +8,12 @@ from tree_sitter import Language, Parser
 import tree_sitter_bash
 
 
-POLICY_VERSION = "command-policy-v2"
+POLICY_VERSION = "command-policy-v3"
 PARSER_VERSION = "tree-sitter/0.26.0 tree-sitter-bash/0.25.1"
 MAX_COMMAND_BYTES = 32768
 MAX_TREE_NODES = 4096
 MAX_TREE_DEPTH = 64
+MAX_HEREDOC_PASSES = 16
 MAX_LOG_METADATA_COMMITS = 10
 BLOCK_RULES = frozenset({"network_or_install", "filesystem_search", "extra_project_source",
                          "evaluation_material", "history_search"})
@@ -105,6 +106,118 @@ def _value(node):
 
 def _join_cwd(first, second):
     return first if first == second else None
+
+
+def _parse_shell(source):
+    root = Parser(Language(tree_sitter_bash.language())).parse(source).root_node
+    if root.has_error:
+        return None, "unparsed_shell"
+    pending = [(root, 0)]
+    count = 0
+    while pending:
+        node, depth = pending.pop()
+        count += 1
+        if count > MAX_TREE_NODES or depth > MAX_TREE_DEPTH:
+            return None, "input_limit"
+        pending.extend((child, depth + 1) for child in node.children)
+    return root, None
+
+
+def _heredoc_body_start(source, node, start):
+    pending = list(node.named_children)
+    quoted = []
+    comments = []
+    while pending:
+        child = pending.pop()
+        if child.type in {"heredoc_body", "heredoc_end"}:
+            continue
+        if child.type == "comment":
+            comments.append((child.start_byte, child.end_byte))
+        elif child.type in {"raw_string", "string", "ansi_c_string", "expansion", "command_substitution",
+                            "process_substitution", "arithmetic_expansion"}:
+            quoted.append((child.start_byte, child.end_byte))
+        else:
+            pending.extend(child.named_children)
+    newline = source.find(b"\n", start.end_byte)
+    while newline != -1:
+        enclosing = next((end for begin, end in quoted if begin < newline < end), None)
+        if enclosing is not None:
+            newline = source.find(b"\n", enclosing)
+            continue
+        if any(begin < newline <= end for begin, end in comments):
+            return newline + 1
+        position = newline - 1
+        while position >= start.end_byte and source[position] == ord("\\"):
+            position -= 1
+        if (newline - position - 1) % 2 == 0:
+            return newline + 1
+        newline = source.find(b"\n", newline + 1)
+    return None
+
+
+def _heredoc_end(source, node, start, body_start):
+    word = start.text.decode()
+    if re.fullmatch(r"'[^']*'", word):
+        delimiter, quoted = word[1:-1].encode(), True
+    elif re.fullmatch(r'"(?:[^"\\]|\\.)*"', word, re.S):
+        delimiter = re.sub(r'\\([$`"\\\n])', lambda match: "" if match[1] == "\n" else match[1], word[1:-1]).encode()
+        quoted = True
+    elif re.fullmatch(r"[^\s'\"\\]+", word):
+        delimiter, quoted = start.text, False
+    else:
+        return None, False
+    strip_tabs = any(child.type == "<<-" for child in node.children)
+    logical = b""
+    position = body_start
+    while position < len(source):
+        newline = source.find(b"\n", position)
+        end = newline if newline != -1 else len(source)
+        line = source[position:end]
+        slashes = len(line) - len(line.rstrip(b"\\"))
+        if not quoted and newline != -1 and slashes % 2:
+            logical += line[:-1]
+        else:
+            logical += line
+            if (logical.lstrip(b"\t") if strip_tabs else logical) == delimiter:
+                return end, quoted
+            logical = b""
+        position = end + 1
+    return None, quoted
+
+
+def _heredoc_headers(source, root):
+    pending = [root]
+    ranges = []
+    data_ranges = []
+    rules = set()
+    while pending:
+        node = pending.pop()
+        if node.type == "heredoc_body" or any(begin <= node.start_byte < end for begin, end in data_ranges):
+            continue
+        if node.type == "heredoc_redirect":
+            parts = {child.type: child for child in node.named_children}
+            if not {"heredoc_start", "heredoc_body", "heredoc_end"} <= parts.keys():
+                return source, {"unparsed_shell"}
+            start = parts["heredoc_start"]
+            body_start = _heredoc_body_start(source, node, start)
+            if body_start is None:
+                return source, {"unparsed_shell"}
+            end, quoted = _heredoc_end(source, node, start, body_start)
+            if end is None:
+                return source, {"unparsed_shell"}
+            rules.add("literal_data" if quoted else "dynamic_shell")
+            ranges.extend(((node.start_byte, start.end_byte), (body_start, end)))
+            data_ranges.append((body_start, end))
+        pending.extend(node.named_children)
+    pieces = []
+    position = 0
+    for start, end in sorted(ranges):
+        if start < position:
+            return source, {"unparsed_shell"}
+        pieces.extend((source[position:start], b" "))
+        position = end
+    pieces.append(source[position:])
+    return b"".join(pieces), rules
 
 
 def _options(arguments, flags, valued):
@@ -221,13 +334,6 @@ class _Assessment:
         return None, None
 
     def redirect(self, node, cwd):
-        if node.type == "heredoc_redirect":
-            start = next(child for child in node.named_children if child.type == "heredoc_start")
-            if not re.fullmatch(r"'[^']*'|\"[^\"$`]*\"", start.text.decode()):
-                self.rules.add("dynamic_shell")
-            else:
-                self.rules.add("literal_data")
-            return
         destination = node.child_by_field_name("destination")
         if node.type != "file_redirect" or destination is None:
             self.rules.add("dynamic_shell")
@@ -340,12 +446,41 @@ class _Assessment:
                 self.rules.add("unsupported_command")
                 break
 
+    def git_diff(self, arguments, cwd):
+        separator = arguments.index("--") if "--" in arguments else len(arguments)
+        parsed = _options(arguments[:separator],
+                          {"p", "u", "s", "w", "b", "patch", "no-patch", "raw", "stat", "numstat", "shortstat",
+                           "name-only", "name-status", "check", "summary", "cached", "staged", "exit-code", "quiet",
+                           "no-color", "no-ext-diff", "no-textconv", "binary", "full-index", "minimal", "patience",
+                           "histogram", "ignore-all-space", "ignore-space-change", "ignore-space-at-eol",
+                           "ignore-cr-at-eol", "ignore-blank-lines", "color", "word-diff"},
+                          {"U", "unified", "color", "diff-filter", "word-diff", "word-diff-regex"})
+        if parsed is None:
+            self.rules.add("unsupported_command")
+            return
+        revisions, _ = parsed
+        for value in revisions:
+            if value == "HEAD":
+                continue
+            if separator == len(arguments) and value.startswith(("./", "../", "/")):
+                self.rules.add("unresolved_path")
+            elif separator < len(arguments) or value.startswith("refs/") or re.fullmatch(r"[0-9a-f]{7,40}", value) or any(
+                marker in value for marker in ("~", "^", "..")
+            ):
+                self.rules.add("history_search")
+            else:
+                self.rules.add("unresolved_path")
+        for path in arguments[separator + 1:]:
+            self.path(path, cwd)
+        self.rules.add("baseline_git")
+
     def git_command(self, arguments, cwd):
         while arguments and arguments[0] == "-C":
             if len(arguments) < 3:
                 self.rules.add("unsupported_command")
                 return
-            cwd = _normal_path(posixpath.join(cwd, arguments[1])) if cwd else None
+            directory = arguments[1]
+            cwd = _normal_path(posixpath.join(cwd or "/", directory)) if cwd or directory.startswith("/") else None
             arguments = arguments[2:]
         if not arguments or arguments[0].startswith("-"):
             self.rules.add("dynamic_shell")
@@ -372,13 +507,10 @@ class _Assessment:
             self.rules.add("history_search")
         elif operation in {"branch", "tag", "remote"}:
             self.rules.add("history_search")
-        elif operation in {"status", "diff", "stash", "count-objects"}:
-            revisions = options[:options.index("--")] if "--" in options else options
-            if operation == "diff" and any(
-                re.fullmatch(r"HEAD[~^].*|[0-9a-f]{7,40}|[^/]+\.\.[^/]+", value) for value in revisions
-            ):
-                self.rules.add("history_search")
-            elif any(option.startswith(("--output", "--ext-diff", "--textconv", "--no-index")) for option in options):
+        elif operation == "diff":
+            self.git_diff(options, cwd)
+        elif operation in {"status", "stash", "count-objects"}:
+            if any(option.startswith(("--output", "--ext-diff", "--textconv", "--no-index")) for option in options):
                 self.rules.add("unsupported_command")
             else:
                 self.rules.add("baseline_git")
@@ -475,17 +607,24 @@ def assess_command(command: str, context: PolicyContext) -> PolicyDecision:
         return _decision({"unparsed_shell"})
     if len(source) > MAX_COMMAND_BYTES:
         return _decision({"input_limit"})
-    root = Parser(Language(tree_sitter_bash.language())).parse(source).root_node
-    if root.has_error:
-        return _decision({"unparsed_shell"})
-    pending = [(root, 0)]
-    count = 0
-    while pending:
-        node, depth = pending.pop()
-        count += 1
-        if count > MAX_TREE_NODES or depth > MAX_TREE_DEPTH:
+    root, error = _parse_shell(source)
+    if error:
+        return _decision({error})
+    rules = set()
+    for pass_number in range(MAX_HEREDOC_PASSES + 1):
+        headers, header_rules = _heredoc_headers(source, root)
+        rules.update(header_rules)
+        if "unparsed_shell" in rules:
+            return _decision(rules)
+        if headers == source:
+            break
+        if pass_number == MAX_HEREDOC_PASSES:
             return _decision({"input_limit"})
-        pending.extend((child, depth + 1) for child in node.children)
+        source = headers
+        root, error = _parse_shell(source)
+        if error:
+            return _decision({error})
     assessment = _Assessment(context)
+    assessment.rules.update(rules)
     assessment.walk(root, context.cwd)
     return _decision(assessment.rules)

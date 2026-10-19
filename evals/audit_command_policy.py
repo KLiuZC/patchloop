@@ -5,9 +5,11 @@ from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
+import posixpath
 
 from patchloop.command_policy import assess_command
 from patchloop.command_runtime import command_policy_metadata, swebench_command_policy
+from patchloop.environment import MODULES
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,14 +32,42 @@ def safe_id(value):
     return value
 
 
+def json_object(value, label):
+    require(isinstance(value, dict), f"invalid {label}: expected an object")
+    return value
+
+
+def object_rows(value, label):
+    require(isinstance(value, list) and all(isinstance(row, dict) for row in value),
+            f"invalid {label}: expected a list of objects")
+    return value
+
+
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        require(key not in result, f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def invalid_constant(value):
+    raise ValueError(f"invalid JSON constant: {value}")
+
+
+def parse_json(value):
+    return json.loads(value, object_pairs_hook=unique_object, parse_constant=invalid_constant)
+
+
 def read_input(root, relative, hashes, *, jsonl=False):
     path = root / relative
     require(path.resolve().is_relative_to(root.resolve()), f"input escapes results directory: {relative}")
     raw = path.read_bytes()
     hashes[str(relative)] = sha256(raw)
     try:
-        return [(number, json.loads(line)) for number, line in enumerate(raw.decode().splitlines(), 1)
-                if line.strip()] if jsonl else json.loads(raw)
+        return [(number, json_object(parse_json(line), f"event at {relative}:{number}"))
+                for number, line in enumerate(raw.decode().splitlines(), 1)
+                if line.strip()] if jsonl else json_object(parse_json(raw), relative)
     except (ValueError, UnicodeError) as exc:
         raise ValueError(f"invalid saved JSON: {relative}") from exc
 
@@ -60,11 +90,113 @@ def summarize(records, non_bash):
     }
 
 
+def validate_turns(events, result, trajectory_path):
+    require(all(event.get("type") in ("turn", "budget_reminder", "finish_required", "command_policy")
+                for event in events[1:-1]), f"unexpected trajectory event: {trajectory_path}")
+    next_turn = 1
+    for event in events[1:-1]:
+        require(type(event.get("turn")) is int and event["turn"] == next_turn,
+                f"invalid event turn: {trajectory_path}")
+        if event["type"] == "turn":
+            next_turn += 1
+        else:
+            require(event["turn"] <= events[0]["max_turns"], f"auxiliary turn exceeds budget: {trajectory_path}")
+    turns = [event for event in events if event.get("type") == "turn"]
+    require(all(type(source.get("turns")) is int and source["turns"] == len(turns)
+                for source in (events[-1], result)), f"turn count mismatch: {trajectory_path}")
+
+
+def matching_fields(fields, *sources):
+    require(all(isinstance(source, dict) for source in sources), "invalid metadata object")
+    for field in fields:
+        values = [source[field] for source in sources if field in source]
+        require(all(type(value) is type(values[0]) and value == values[0] for value in values),
+                f"metadata mismatch: {field}")
+
+
+def source_command_policy(source):
+    if "command_policy" not in source:
+        return {}
+    policy = source["command_policy"]
+    policy = {"mode": policy} if isinstance(policy, str) else json_object(policy, "command policy")
+    require(policy.get("mode") in ("off", "audit", "enforce"), "invalid source command policy mode")
+    return policy
+
+
+def validate_run(plan, planned, config, summary, instances):
+    run_id = planned["run_id"]
+    require(summary.get("run_id") == run_id, f"summary run_id mismatch: {run_id}")
+    selected = config.get("instance_ids")
+    require(isinstance(selected, list) and all(isinstance(value, str) for value in selected) and
+            len(selected) == len(instances) and set(selected) == set(instances),
+            f"config task mismatch: {run_id}")
+    if "instances" in summary:
+        require(type(summary["instances"]) is int and summary["instances"] == len(instances),
+                f"summary instance count mismatch: {run_id}")
+    aliases = {"command_timeout_seconds": "timeout", "cpus": "container_cpus", "network": "container_network",
+               "sdk_max_retries": "api_max_retries"}
+    settings = {aliases.get(key, key): value for key, value in json_object(plan.get("settings", {}), "plan settings").items()}
+    matching_fields(("provider", "model", "mode", "max_turns", "timeout", "budget_reminders", "explicit_finish",
+                     "platform", "container_cpus", "container_network", "workers", "memory", "judge_workers",
+                     "api_timeout_seconds", "api_max_retries"), config, summary, planned, settings)
+    matching_fields(("dataset", "selected_instances_sha256"), config, plan)
+    matching_fields(("mode", "policy_version", "profile_version", "parser_version"),
+                    *(source_command_policy(source) for source in (config, summary, planned)))
+    require(config.get("mode") == "agent", f"unsupported audit mode: {run_id}")
+    for field in ("provider", "model"):
+        require(isinstance(config.get(field), str) and bool(config[field]), f"invalid {field}: {run_id}")
+    for field in ("max_turns", "timeout"):
+        require(type(config.get(field)) is int and config[field] > 0, f"invalid {field}: {run_id}")
+
+
+def validate_metadata(plan, instance, config, summary, environment, events, trajectory_path, *, run_sources=()):
+    meta, terminal = events[0], events[-1]
+    iid = instance["instance_id"]
+    require(terminal.get("run_id") == iid, f"trajectory result.run_id mismatch: {trajectory_path}")
+    json_object(environment.get("image"), "environment image")
+    checks = json_object(environment.get("checks"), "environment checks")
+    imports = json_object(checks.get("imports"), "import origins")
+    require(all(isinstance(imported, dict) for imported in imports.values()), f"invalid import origins: {iid}")
+    require(environment.get("status") == checks.get("status") == "passed", f"environment preflight did not pass: {iid}")
+    modules = MODULES.get(instance.get("repo"), ())
+    require(bool(modules) and set((*modules, "pytest")) <= imports.keys(), f"missing required import origins: {iid}")
+    for module, imported in imports.items():
+        origin = imported.get("origin")
+        require("error" not in imported and isinstance(origin, str) and origin.startswith("/") and "\0" not in origin,
+                f"invalid import origin: {iid}:{module}")
+        if module in modules:
+            require(posixpath.normpath(origin).startswith("/testbed/"), f"external target import: {iid}:{module}")
+    require(environment["instance_id"] == iid and environment["base_commit"] == instance["base_commit"] and
+            environment["image"]["id"] == instance["image_id"] and meta.get("image") == instance["image_id"],
+            f"environment/trajectory task/image mismatch: {iid}")
+    matching_fields(("instance_id", "base_commit", "repo", "task"), instance, environment, meta, terminal)
+    matching_fields(("requested",), environment["image"], {"requested": instance["image"]} if "image" in instance else {})
+    matching_fields(("platform",), config, environment["image"], meta)
+    require(meta.get("workdir") == "/testbed" and meta.get("sandbox", "docker") == "docker",
+            f"unexpected trajectory workspace: {iid}")
+    for field in ("provider", "model", "max_turns", "timeout"):
+        require(field in meta, f"missing trajectory {field}: {iid}")
+    matching_fields(("provider", "model", "mode", "max_turns", "timeout", "budget_reminders", "explicit_finish",
+                     "temperature", "max_tokens"), config, meta, summary)
+    for source in (config, meta):
+        for field in ("budget_reminders", "explicit_finish"):
+            if field in source:
+                require(type(source[field]) is bool, f"invalid {field}: {iid}")
+    require(type(terminal.get("turns")) is int and terminal["turns"] <= config["max_turns"],
+            f"invalid terminal turns: {iid}")
+    policies = (plan.get("environment_policy", {}), config.get("environment_policy", {}), environment.get("policy", {}))
+    matching_fields(("version", "hidden_paths", "scan_roots", "probe_sha256"), *policies)
+    matching_fields(("hidden_paths",), meta, *policies)
+    matching_fields(("mode", "policy_version", "profile_version", "parser_version"),
+                    *(source_command_policy(source) for source in (config, meta, *run_sources)))
+
+
 def build_audit(results_root, plan, development_cases):
     root = Path(results_root)
-    instances = {safe_id(row["instance_id"]): row for row in plan["instances"]}
+    json_object(plan, "plan")
+    instances = {safe_id(row.get("instance_id")): row for row in object_rows(plan.get("instances"), "plan instances")}
     require(len(instances) == len(plan["instances"]) and bool(instances), "duplicate or empty instance list")
-    run_ids = [safe_id(row["run_id"]) for row in plan["runs"]]
+    run_ids = [safe_id(row.get("run_id")) for row in object_rows(plan.get("runs"), "plan runs")]
     require(len(run_ids) == len(set(run_ids)) and bool(run_ids), "duplicate or empty run list")
     matches = {}
     for case in development_cases:
@@ -79,10 +211,13 @@ def build_audit(results_root, plan, development_cases):
         run_path = Path(run_id)
         summary = read_input(root, run_path / "summary.json", hashes)
         config = read_input(root, run_path / "run_config.json", hashes)
-        require({row["instance_id"] for row in summary["results"]} == set(instances) and
+        json_object(config.get("config"), "run config")
+        object_rows(summary.get("results"), "summary results")
+        require({safe_id(row.get("instance_id")) for row in summary["results"]} == set(instances) and
                 len(summary["results"]) == len(instances), f"summary task mismatch: {run_id}")
         require(config["config"]["model"] == summary["model"] and
                 config["config"]["provider"] == summary["provider"], f"provider/model mismatch: {run_id}")
+        validate_run(plan, planned, config["config"], summary, instances)
         for iid, instance in instances.items():
             trajectory_path = run_path / "traj" / f"{iid}.jsonl"
             environment = read_input(root, run_path / "environment" / f"{iid}.json", hashes)
@@ -90,8 +225,10 @@ def build_audit(results_root, plan, development_cases):
             events = [event for _, event in indexed_events]
             require(events and events[0].get("type") == "meta" and events[-1].get("type") == "result",
                     f"incomplete trajectory: {trajectory_path}")
-            require(environment["instance_id"] == iid and environment["base_commit"] == instance["base_commit"] and
-                    environment["image"]["id"] == instance["image_id"], f"environment task/image mismatch: {iid}")
+            result = next(row for row in summary["results"] if row["instance_id"] == iid)
+            validate_metadata(plan, instance, config["config"], result, environment, events, trajectory_path,
+                              run_sources=(summary, planned))
+            validate_turns(events, result, trajectory_path)
             require(isinstance(environment.get("checks", {}).get("imports"), dict), f"missing import origins: {iid}")
             policy = swebench_command_policy("enforce", instance, environment, events[0]["workdir"])
             context = asdict(policy.context)
@@ -106,28 +243,34 @@ def build_audit(results_root, plan, development_cases):
             for line_number, event in indexed_events:
                 if event.get("type") != "turn":
                     continue
-                calls = event["assistant"].get("tool_calls") or []
-                returned = event.get("tools", [])
+                assistant = json_object(event.get("assistant"), "turn assistant")
+                calls = assistant.get("tool_calls")
+                calls = object_rows([] if calls is None else calls, "tool calls")
+                returned = object_rows(event.get("tools", []), "tool results")
+                require(all(isinstance(item.get("id"), str) and bool(item["id"]) for item in [*calls, *returned]),
+                        f"invalid tool ID: {attempt_key}:{line_number}")
                 require(len({tool["id"] for tool in returned}) == len(returned), f"duplicate tool results: {attempt_key}:{line_number}")
                 require(len({call["id"] for call in calls}) == len(calls), f"duplicate tool calls: {attempt_key}:{line_number}")
                 require({tool["id"] for tool in returned} <= {call["id"] for call in calls}, f"orphan tool result: {attempt_key}:{line_number}")
                 outputs = {tool["id"]: tool for tool in returned}
                 for call_index, call in enumerate(calls):
-                    function = call["function"]
+                    function = json_object(call.get("function"), "tool function")
+                    require(isinstance(function.get("name"), str) and bool(function["name"]), "invalid tool name")
+                    arguments = function.get("arguments")
                     identifier = f"{attempt_key}:{line_number}:{call_index}"
+                    output = outputs.get(call["id"])
+                    if output is not None:
+                        require(output.get("name") == function["name"] and output.get("arguments") == arguments and
+                                isinstance(output.get("output"), str), f"tool result does not match request: {identifier}")
                     if function["name"] != "bash":
                         non_bash.append({"id": identifier, "attempt_id": attempt_key, "run_id": run_id,
                                          "tool_call_id": call["id"], "tool": function["name"]})
                         continue
-                    output = outputs.get(call["id"])
-                    if output is not None:
-                        require(output["name"] == function["name"] and output["arguments"] == function["arguments"],
-                                f"tool result does not match request: {identifier}")
                     row = {
                         "id": identifier, "attempt_id": attempt_key, "run_id": run_id,
                         "instance_id": iid, "trajectory": str(trajectory_path), "line": line_number,
                         "turn": event["turn"], "tool_call_id": call["id"],
-                        "arguments_sha256": sha256(json.dumps(function["arguments"], ensure_ascii=False).encode()),
+                        "arguments_sha256": sha256(json.dumps(arguments, ensure_ascii=False).encode()),
                         "recorded_result": output is not None,
                         "output_sha256": sha256(output["output"].encode()) if output is not None else None,
                         "command": None, "command_sha256": None, "classification": None,
@@ -135,7 +278,7 @@ def build_audit(results_root, plan, development_cases):
                         "development_case_ids": [],
                     }
                     try:
-                        args = json.loads(function["arguments"])
+                        args = json.loads(arguments)
                         command = args.get("cmd", args.get("command"))
                         if not isinstance(command, str):
                             raise ValueError("command is not a string")
@@ -189,7 +332,7 @@ def main(argv=None):
         require(not args.output.exists(), "output already exists; use a new file")
         plan_bytes = args.plan.read_bytes()
         case_bytes = args.cases.read_bytes()
-        report = build_audit(args.results_root, json.loads(plan_bytes), json.loads(case_bytes)["cases"])
+        report = build_audit(args.results_root, parse_json(plan_bytes), parse_json(case_bytes)["cases"])
         report["plan_sha256"] = sha256(plan_bytes)
         report["development_cases_sha256"] = sha256(case_bytes)
         args.output.parent.mkdir(parents=True, exist_ok=True)

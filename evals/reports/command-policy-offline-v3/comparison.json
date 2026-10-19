@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "comparison_date": "2026-10-19",
+  "baseline": {
+    "policy_version": "command-policy-v2",
+    "audit": "../command-policy-offline-v2/audit.json",
+    "audit_sha256": "a371cd2a3904c93d8d750b3ede13e7e85e171c86bc6152abd72a386c176f63de"
+  },
+  "candidate": {
+    "policy_version": "command-policy-v3",
+    "audit": "audit.json",
+    "audit_sha256": "ad22938dfd159fd81f5bddd761ce6558f2364fa41430c03cc9199679a55168af"
+  },
+  "source_input_hashes_identical": true,
+  "source_plan_hash_identical": true,
+  "development_cases_hash_identical": true,
+  "commands_and_locations_identical": true,
+  "contexts_identical": true,
+  "non_bash_records_identical": true,
+  "before_counts": {
+    "allow": 711,
+    "block": 66,
+    "unknown": 208
+  },
+  "after_counts": {
+    "allow": 711,
+    "block": 66,
+    "unknown": 208
+  },
+  "unchanged_requests": 985,
+  "changed_requests": 0,
+  "preserved_blocks": 66,
+  "transitions": [
+    {
+      "before": "allow",
+      "after": "allow",
+      "count": 711
+    },
+    {
+      "before": "block",
+      "after": "block",
+      "count": 66
+    },
+    {
+      "before": "unknown",
+      "after": "unknown",
+      "count": 208
+    }
+  ],
+  "changes": [],
+  "replayed_commands": 0,
+  "model_requests": 0
+}

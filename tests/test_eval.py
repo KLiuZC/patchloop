@@ -160,7 +160,7 @@ def test_eval_records_policy_and_rejects_mixed_modes(tmp_path, monkeypatch, poli
     assert summary["command_policy_counts"]["blocked"] == 1
     config = json.loads((tmp_path / "run_config.json").read_text())["config"]
     assert config["command_policy"]["mode"] == policy
-    assert config["command_policy"]["policy_version"] == "command-policy-v2"
+    assert config["command_policy"]["policy_version"] == "command-policy-v3"
     assert config["command_policy"]["limits"]["git_log_metadata_commits"] == 10
     assert config["command_policy"]["parser_packages"]["tree-sitter"]
     evaluation.evaluate(**arguments)
