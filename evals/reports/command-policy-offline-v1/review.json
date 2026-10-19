@@ -1,0 +1,1241 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-19",
+  "classifier_commit": "b7acacf",
+  "audit_sha256": "9dba4b45944be8baebfd6334c5ace8d1cd53970ea4a684c064425a3bcf0f0a31",
+  "method": "逐条复核全部拟拦截命令（88 种、95 次），按既定范围与潜在正常操作干扰分开判断；非独立盲审、非全体命令真实意图标注。",
+  "blocked_review_counts": {
+    "scope_tradeoff": 29,
+    "intended_block": 66
+  },
+  "reviewed_block_occurrences": 95,
+  "unique_blocked_commands": 88,
+  "confirmed_parser_misclassifications_within_review": 0,
+  "unknown_review_selection": "复核全部不是仅 opaque_script 的 unknown 请求；仅 opaque_script 的 176 次未逐条做真实意图标注。",
+  "unknown_reviewed_occurrences": 25,
+  "blocked_reviews": [
+    {
+      "command_sha256": "c58258ef9a50170e985457dc3d8074d6b0c9aa6960e787d6ed50a1984d25412e",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-2905:2:0",
+        "x3-clean-ds-finish-r3/pydata__xarray-2905:2:0",
+        "x3-clean-ds-budget-r3/pydata__xarray-2905:2:0"
+      ],
+      "occurrences": 3,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "b93fefa79841fccb02b121a60cb76400e046da59d62903c98e3a16d4611f92d8",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-2905:13:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "49ee9e52713e0f35c982f933f1a972bf5b2ccc6fb7bc3a94509177003c6b3e09",
+      "rule_ids": [
+        "dynamic_shell",
+        "filesystem_search",
+        "network_or_install"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-2905:16:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "8f2c25e1eca5c769389d05e8393a50f292ab891e22d8be7ff34fc3e41bc2b607",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-3993:2:1",
+        "x3-clean-ds-finish-r3/pydata__xarray-4687:2:1",
+        "x3-clean-glm-base-r1/pydata__xarray-2905:2:1"
+      ],
+      "occurrences": 3,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "85842a2a9bf47ee26ee79c51c096740c0bed6c696cdc26d836749f237d009982",
+      "rule_ids": [
+        "history_search",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-4687:7:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "225cff15639500d378b462d1fac2bb5a4fa1a1a1492232bf4010676ff83fd490",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-4687:15:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "afed057393e791c93a78364b600fe4d9afe3f2f5e0e0dac106dec3377262bcb3",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-4687:19:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "b854309e8fdadba73016e3f7cc048519f731e9d5bb8b32ea2d2bbb6a63f9f1b3",
+      "rule_ids": [
+        "filesystem_search",
+        "network_or_install"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-4687:20:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "4cd9189fc7fa122c33cd6404f8d93da453cca4751b337781e940b60a01569f16",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-4687:27:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "e0c6d9c464b365cda833ba107ce5683f36caebebeaf38a7338b982189e36bd60",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-4687:28:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "094f86bdbaaf4b1e7f8500dda28cf8da14545c14450be0c3e403788109a24bdc",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-4687:38:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "f3a2f88c8c496b36013ed2e4467faec68d2cd22dbd555d24f7e2e193300091a0",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r1/pydata__xarray-4687:40:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "548fab7651bfb462a9283b31c131d89f99551cb141eda9b7db604a8292e350e1",
+      "rule_ids": [
+        "history_search",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r1/pydata__xarray-4687:27:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "fcb0f042eb1b32d89b8d047f15456a14b55bd7cb7c9461981a2d9a283b9d8c57",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r1/pydata__xarray-4687:29:0",
+        "x3-clean-ds-budget-r3/pydata__xarray-4687:34:0"
+      ],
+      "occurrences": 2,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "9ad9c84dd3fedac63c79420e19d0584e83053a576d7c6b0c55c320a9f600fff6",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r1/pydata__xarray-2905:2:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "7a6c80c172eea954eddeb55a2947fa548ae27237621691ab4b98c0e9c3fc266e",
+      "rule_ids": [
+        "filesystem_search",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r1/pydata__xarray-2905:13:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "71d0f255bc794c28246ef9aab361967130d6448d1f48d3af6d7036a95ad8ea56",
+      "rule_ids": [
+        "filesystem_search",
+        "network_or_install"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r1/pydata__xarray-2905:15:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "1083c04888176932a3071262a6ea200b60acb85465f1e30a9db26022d86ce44e",
+      "rule_ids": [
+        "history_search",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r1/pydata__xarray-3993:6:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "8d02bee129f526f85d098ce73583891d0d113eb66956ecc96f9a4c0ba0c5b57b",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r1/pydata__xarray-4687:10:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "ae147eef288dd7bccb63bee8871189f204b66aaa43a5a7e30b84e93df8081d93",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r1/pydata__xarray-4687:15:0",
+        "x3-clean-ds-base-r3/pydata__xarray-4687:24:0"
+      ],
+      "occurrences": 2,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "f19904566a9edde92833172ba063152405d7ec3ab67bbf0d5878aa454b6df250",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r1/pydata__xarray-4687:18:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "3a6468e79aefe1f9002bad7358516786df1ec45770eb4e6520fb417eddfe1546",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r1/pydata__xarray-4687:34:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "3d0c055caa2fc54e003a32c4f1b44537a6f2d3a0b963279718d67a60af29d456",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r2/pydata__xarray-2905:7:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "2b7ec24b8a3011ae3301dba30754a56bcfe058f1da3bda4f65a00023fd0fe3d3",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r2/pydata__xarray-3993:6:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "64c6587d24917c208767835f8601d7ab244b8e713e770f92e72b03bb99813ee8",
+      "rule_ids": [
+        "history_search",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r2/pydata__xarray-4687:10:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "226bbae22faecfe2ae386d7652c744f1accccdeda40a494b2db48d02084fc08d",
+      "rule_ids": [
+        "filesystem_search",
+        "network_or_install"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r2/pydata__xarray-4687:13:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "abccc1ea8f7e7ef65e2b41274d9a983cc8248032ee219e3b2936e2fe26c8b219",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-2905:2:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "3e54be4dc7fa79501220b2bcb856b12c959974587919d6a0da20a2f2b9d73156",
+      "rule_ids": [
+        "network_or_install"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-2905:15:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "00618c66a630372ecd90bac097817c92321197994fbe28fd58605f440aa69f53",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-2905:18:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "8ea2ed747ca7f98f0d20a79f85adc8c0ce6905a68b4c60c46a61149267f81a8b",
+      "rule_ids": [
+        "history_search",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-3993:4:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "dc4c185f72d60ded9f7c8e8324050a551c23ad8157aa8939669aae0448b8a026",
+      "rule_ids": [
+        "network_or_install",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-3993:10:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "9af54c063e822b30aaffc84dfa73cc84aff3eb3faa43f40de673ebe1d779bdcf",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:2:1"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "8d50bb605fc8bbd15e1dacb81d1f6f6fa6a558c6b1195b217c7d83859e2ed29b",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:11:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "d9283728ea92930c69922f9700537d8a535bdb9b1f3f6bde290aa79111270c27",
+      "rule_ids": [
+        "filesystem_search",
+        "network_or_install"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:12:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "b5d30a48b3c8cf70cc48bae6aa4c9e7404e4d69d4a114fe6dea2f0bb39c19759",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:16:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "a18694f8c9d94b81c2d8612fd6d151172e04de1daf2b1cbe9ec7a09ce62dd46e",
+      "rule_ids": [
+        "dynamic_shell",
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:16:1"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "afc68befbd874b9302045ced8b7d3d32dabc39077134655c0bb6f5ab816a0614",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:17:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "767ba125cd9fd30b7613a4bea95d08d9e8273ddff2e00cc92745fc97323f9e4c",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:26:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "ad926e17017324fff5f18fe4d40efd9b13457a626df70c33e619d4708502c253",
+      "rule_ids": [
+        "filesystem_search",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:27:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "3bd84ecfac3fad60c7b6d9a24132a27688826982f0e6562f3c0e7b781aab90b2",
+      "rule_ids": [
+        "extra_project_source"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:28:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "45f197cab18e46fe402e3d6ce635c8a90684cbac98d9d7ae02bf51ac083a7b2e",
+      "rule_ids": [
+        "extra_project_source"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:28:1"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "9fa615349b497d58defd721cf8d883af6ffee97bc4d281606cb572de7ed9d962",
+      "rule_ids": [
+        "extra_project_source"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:29:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "b3ad344964e79f5e43e3d8e4a465c86297fba4111b44029f64c923e1b81d8369",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:31:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "7e872ad273d31be58f23f22e7174fc3b3b743db445d67a03f142fe32d55e6d43",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:31:1"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "121ac900b744814c70ef8adccc1b2f610a71c232ba937f6a0ad395674b91ac06",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:33:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "9eb587b9be9640ffca6c14a13ecc01bfe996e5a0e4119749a058030eea590660",
+      "rule_ids": [
+        "dynamic_shell",
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:34:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "67438c7add300ae8800ad6fa7d311983ef652d3972bf7210805c62e1bcfcb44d",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r2/pydata__xarray-4687:37:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "d6b4d7872372906f1ab76b45cc2788b48fe740ae775a78a25da99ef26687d138",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-2905:2:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "f6ecd69b3b964228c3f46db7b25c959129ad2942e0fc5dee169dffd25d4d9fc8",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-2905:16:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "cf65d03f562168c06540be57335d8f7a69ae9544134d0cdcb8ce4366800242e8",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-2905:28:0",
+        "x3-clean-ds-budget-r3/pydata__xarray-2905:32:0"
+      ],
+      "occurrences": 2,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "40411d5c2ac89af00a582f56acc51baabd43a4b1b4bac6ddec7b290c70b3e046",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-3993:2:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "35c9ec7039728096b155a4e7310b2c471966fcdeaa4a5d9d645dd0b643990b1c",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-3993:31:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "9dad375d8b2dc93af22d0df602c105892e3a907b1f1c89307597c281bd382723",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-4687:8:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "df447dc08cc767b3aba26a84e99d0deeeab8e2d918466cf6f057aab95a53a6a4",
+      "rule_ids": [
+        "filesystem_search",
+        "network_or_install"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-4687:14:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "eea139d96f82eee3783d5587455aef453eda44bf78798fcab20e9207dcba1c08",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-4687:22:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "6bc198dd56a3b7120483c5ee9c47cb08ba59e3655930efa26e4488b5e8e067db",
+      "rule_ids": [
+        "dynamic_shell",
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-4687:24:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "c9a36c7bf90fad84ba64f5681a44e50a1cb98479116a844424fdf5d0b33e2371",
+      "rule_ids": [
+        "history_search",
+        "unsupported_command"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-4687:29:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "25357d56f8f4fba7942372cd1f06134827fce3a556f8048929ea9a53c4264c6c",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-4687:30:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "533d85603343e6d3e079a920fbe451771c473b39501aa4379785d891e0545225",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r2/pydata__xarray-4687:32:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "596d5b341ad29a56b0cae02d53285d1d34bbfc7e594047cc12f87f7b25ac4001",
+      "rule_ids": [
+        "network_or_install",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r3/pydata__xarray-2905:13:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "beb1827975a902ad20ed484794cdf6c7aa8b11a6728d2df15f4ddcdc6265b0b9",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r3/pydata__xarray-2905:16:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "48cd4b38d224b67079290c897c3987d711c0d5233b47d6acb6cd2e12c12bf752",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r3/pydata__xarray-2905:18:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "fdcaa6b066439921b50716485563eede40ad482f2b9dc77e67771007ba919706",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r3/pydata__xarray-3993:6:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "dd0e99468daf57f479e082f554c35d133c5c5ddd6003b7f38fb5726740d9aa02",
+      "rule_ids": [
+        "filesystem_search",
+        "network_or_install",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r3/pydata__xarray-3993:15:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "627f8580d5d4ea0d93b017d858576185d9166e0735f2954548d166d8cbf06bfa",
+      "rule_ids": [
+        "filesystem_search",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r3/pydata__xarray-4687:13:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "6ffeb92bc47bec8739cd2a03fee4ebfd52c8520e73345aa9fb7ff540a6c70bcc",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-finish-r3/pydata__xarray-4687:24:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "74382f3df963e5a2440bc7fc16ec918b42bf68022b8eaa607f1cccdcb3a65b2e",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r3/pydata__xarray-3993:7:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "fa208bf1a4cc097eb26e2fb609dcd47849556ce6e1c043fcf0015ad115baec5a",
+      "rule_ids": [
+        "history_search",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r3/pydata__xarray-4687:18:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "356f4fc6913a497f5b30bd101056138b1e6e0397cd0c34aa949fe064bfcdc421",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r3/pydata__xarray-4687:19:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "805965c4cf29ff4702dbb27e85d70652914a885868fd08ef9affcd8d615ca458",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r3/pydata__xarray-4687:23:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "fe7e68c53f1efa31b185a88cf8180ed46dd781e8a7f86c9efc08e08255ba5851",
+      "rule_ids": [
+        "dynamic_shell",
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r3/pydata__xarray-4687:25:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "250d85610b2c9848bf24a18595cfe2ba28161eca4927e5b2c4676c9cffb9ea73",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r3/pydata__xarray-4687:32:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "486d605efd8287dc59fdcdba84351941eba560cee65a06089aa3e8fddcab6972",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-base-r3/pydata__xarray-4687:33:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "73cb5eaccb534cba8fdbb4679e5777b202491d6e1d551dbd89bf2b4910c5727e",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r3/pydata__xarray-2905:12:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "19bad220cd32fe44fcfff64180bec68f877edc1d51fffb378650266c410c639d",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r3/pydata__xarray-3993:9:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "721dca7f3f2dd9c8b7d9d6ef9a506e0c7eac1943986c3d016588d9888c3562de",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r3/pydata__xarray-3993:13:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "53b3eebb9938f91a948292bc16466d60a580f61cc1b9f7ebdf6ce862cec89eae",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r3/pydata__xarray-3993:14:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "73a1a79bc8ea1f903822366145317ad1550cdcfd2a35fa7caedf89bd76fb1c72",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r3/pydata__xarray-3993:17:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "7d77a9ce0412ac3a6a6f43ff9c62a0691e87b9238fef27361d878f96da053b10",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r3/pydata__xarray-4687:11:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "007c5cbb0e6917f76de576d00e2a21746c4b077d0d74dde754e4500934dba9bf",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r3/pydata__xarray-4687:33:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "6f58736b6884f22302e6ec4d5f704830c8e8086a1e856202aa8c1b6641c2ce84",
+      "rule_ids": [
+        "filesystem_search",
+        "network_or_install"
+      ],
+      "record_ids": [
+        "x3-clean-ds-budget-r3/pydata__xarray-4687:37:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "50acccb6e7275c9a8fd52379571e75dc5362d67af36b5ad7f96ee09f629a06c5",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-glm-base-r1/pydata__xarray-2905:7:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "5c41b89177addff9f9cc4c235ebfac30bf489b3cce55ec164c6b9fcf0929be59",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-glm-base-r1/pydata__xarray-2905:14:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "30237528887ddb0aadd5282a0ccaeafbc6837690e4fd8d0c6393814a568e2cb1",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-glm-base-r1/pydata__xarray-2905:18:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "04b044990dfd116b877f4c78685e40c2f19b2fe1e49cf23144091de1b4532c58",
+      "rule_ids": [
+        "network_or_install",
+        "opaque_script"
+      ],
+      "record_ids": [
+        "x3-clean-glm-base-r1/pydata__xarray-3993:5:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    },
+    {
+      "command_sha256": "122b3a098a966d27d3d98bb4a69d2b40a6adffa443779a4930e500957896c97f",
+      "rule_ids": [
+        "history_search"
+      ],
+      "record_ids": [
+        "x3-clean-glm-base-r1/pydata__xarray-3993:5:1"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "edcfd4c3b7ed565deaaea5b1c5123ac14ebe4038af8051e59657236256590e8f",
+      "rule_ids": [
+        "history_search",
+        "unsupported_command"
+      ],
+      "record_ids": [
+        "x3-clean-glm-base-r1/pydata__xarray-4687:7:0"
+      ],
+      "occurrences": 1,
+      "label": "scope_tradeoff",
+      "rationale": "有限 Git 历史/版本查询符合当前拒绝规则，但在单提交求解环境中未提供额外提交；整条拒绝还可能连带阻断源码阅读或版本检查。需单独收窄规则，不当作确定的执行收益。"
+    },
+    {
+      "command_sha256": "fb12be22b1058c335fcd99054eef517de88a71f36e3673492d865e8ff2cbfd48",
+      "rule_ids": [
+        "filesystem_search"
+      ],
+      "record_ids": [
+        "x3-clean-glm-base-r1/pydata__xarray-4687:12:0"
+      ],
+      "occurrences": 1,
+      "label": "intended_block",
+      "rationale": "已核对整条命令包含明确的仓库外递归搜索、包下载、额外版本源码读取或全历史/恢复查询，符合本阶段限制范围；不据此推断恶意意图或本来一定会获得答案。"
+    }
+  ],
+  "unknown_reviews": [
+    {
+      "record_id": "x3-clean-ds-base-r1/pydata__xarray-2905:31:0",
+      "command_sha256": "3db183e9d6e59ff01307ab150c795992e1230cfdd79d5ee9bdcee43498facdde",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-budget-r1/pydata__xarray-4687:19:0",
+      "command_sha256": "fa761757ae63eb034e678fe9daa47e445bbf56a8f4fa1c2dd23fdd643a9e227b",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-budget-r1/pydata__xarray-4687:33:0",
+      "command_sha256": "39f46b3faab8b12ef15b2129747a11c18e5accbe13f4eb541ff1d52360638c8d",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-budget-r1/pydata__xarray-4687:34:0",
+      "command_sha256": "ef39c71b6dc960775960a7dd687f4ee10d163e6a39b3329cf05dff99ef26632d",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-finish-r1/pydata__xarray-2905:27:0",
+      "command_sha256": "aa17ebe9a4be82bee9ae5a3760290ec99f43763682bd8edbad5d3baa6a5b627f",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-ds-budget-r2/pydata__xarray-4687:16:0",
+      "command_sha256": "493b26552f7bacb9b6457df414387b6b3148b2275676f6cc1f8ca1dbda8afbae",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-budget-r2/pydata__xarray-4687:42:0",
+      "command_sha256": "0db5b7bc2cf9a50832133fe11b71b4a5448a58705dcdce62000971e98efc78d1",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-ds-finish-r2/pydata__xarray-2905:29:0",
+      "command_sha256": "4216a7174c8ef6bca81ebd65b49aab5efc0a27e762037fc8033ebc679bef4d31",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-ds-finish-r2/pydata__xarray-3993:7:0",
+      "command_sha256": "13e9aa947288c29e531fedc80f9a30d1e6d67bcfd9b0d874dca1f5e881d384c7",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-ds-finish-r2/pydata__xarray-4687:12:1",
+      "command_sha256": "65e2b21876b24a49d498db89980fe3cb72e819449782b0e86fbad4711dbca66c",
+      "rationale": "缓存列表或 Git 元数据探查的未支持形式；不返回源码内容。记录覆盖边界，不把 unknown 视作允许证明或可计算的漏拦率。"
+    },
+    {
+      "record_id": "x3-clean-ds-finish-r2/pydata__xarray-4687:17:1",
+      "command_sha256": "bd156918627a45c75cf7b383b2a477082668a8f8110b8369216d4d75c3995379",
+      "rationale": "缓存列表或 Git 元数据探查的未支持形式；不返回源码内容。记录覆盖边界，不把 unknown 视作允许证明或可计算的漏拦率。"
+    },
+    {
+      "record_id": "x3-clean-ds-base-r2/pydata__xarray-2905:27:0",
+      "command_sha256": "69d2a1786d0791d90ec3c9818bd76a99a680f7752ec14703200a8e9e935399a9",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-ds-base-r2/pydata__xarray-3993:8:0",
+      "command_sha256": "3d2b9895e425e3b556452718b91242be13974cac05e494995a1a319f60f2c60c",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-ds-base-r2/pydata__xarray-4687:16:0",
+      "command_sha256": "44cf09a4e4dc4bd2e820efe8175016ffb784ffa555197648e13604b5b354bf35",
+      "rationale": "引号、反引号与嵌入脚本使语法无法完整识别；原输出也包含 shell 命令错误，不应为分类而执行或修补原串。"
+    },
+    {
+      "record_id": "x3-clean-ds-base-r2/pydata__xarray-4687:20:0",
+      "command_sha256": "fa761757ae63eb034e678fe9daa47e445bbf56a8f4fa1c2dd23fdd643a9e227b",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-base-r2/pydata__xarray-4687:25:0",
+      "command_sha256": "6593487fbd9b26baa92815857ad1e4c90df9baa968a2bba1d6620f154f4d890f",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-ds-base-r2/pydata__xarray-4687:31:0",
+      "command_sha256": "6403bccc064ea693b27598a96c0ee461ea2ad9e2c081b18f5b534999afb96755",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-finish-r3/pydata__xarray-4687:8:0",
+      "command_sha256": "1da7e99f007a80450cc95302a9699ba3d598277c454bfa6d550c28162300a27d",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-finish-r3/pydata__xarray-4687:20:0",
+      "command_sha256": "854d45c50285793a724775053e448c89a34590c1814938042c2431ce7a48cc87",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-finish-r3/pydata__xarray-4687:28:0",
+      "command_sha256": "1560ad1a734693905112451488163aa6eeed6c3255dcc6ed9f668c3c8b241e1a",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-ds-budget-r3/pydata__xarray-3993:27:0",
+      "command_sha256": "d7126863883c3c3cd7f13115f33598c3cc879a1ced10ececaa81d09e02a5371d",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-ds-budget-r3/pydata__xarray-3993:28:0",
+      "command_sha256": "129b67ac845ec2cc28587a191f7457b3663845cd3e250d46ec4931c67f3cc5cb",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-glm-base-r1/pydata__xarray-2905:35:0",
+      "command_sha256": "2ac5035549ed517a379ba7ccc2cbd784363b424219c54256fc7b20d0634a851a",
+      "rationale": "命令替换/变量与组合命令未被静态求值，所见用途包括定位当前仓库行号和比较测试输出；不执行展开来降低未知率。"
+    },
+    {
+      "record_id": "x3-clean-glm-base-r1/pydata__xarray-2905:39:0",
+      "command_sha256": "92f207b42a41a43976162d6517cad2ea94b62cd13790648d087b051d02283646",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    },
+    {
+      "record_id": "x3-clean-glm-base-r1/pydata__xarray-2905:40:0",
+      "command_sha256": "fca8bd360f016239a0434a6139b00ffa17ea4bce28035eb77833538cfd4d3ee8",
+      "rationale": "未支持的工具或选项，所见用途包括 awk 定位、临时目录清理、输出比较、格式检查或当前提交元数据读取；不是一律应拒绝的请求。"
+    }
+  ],
+  "limitations": [
+    "没有为全部正常命令或全部应拒绝命令建立独立真值，不能计算总体误拦截率、漏拦率或准确率。",
+    "scope_tradeoff 是过度限制风险，不是已经观测到模型收到拒绝后修复失败。",
+    "未知请求仍会执行；不承诺策略可防止任意程序绕过。"
+  ]
+}

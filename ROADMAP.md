@@ -34,7 +34,7 @@ DeepSeek 基线 4/9、提醒 6/9、提醒 + finish 6/9；GLM 基线 1/3。后续
 
 `feat/command-policy` 分支已实现独立判定器及执行层，`agent eval` 的 Agent 模式支持 `--command-policy off|audit|enforce`，默认关闭。策略启用时保存逐次判定、实际拦截与未知请求计数，并将版本和上下文纳入记录；拒绝反馈不增加模型预算。网页、worker 与其他 CLI 修复入口没有开放此开关。支持范围、[56 条开发样例](evals/profiles/command-policy/cases.json)及执行层验收见[策略说明](docs/command-policy.md)。
 
-纯判定测试、执行层和轨迹测试及 Docker 冒烟已完成。下一步只读已保存轨迹，离线分析误拦截和未知命令，不执行轨迹命令；通过后再固定 v2 环境下的新题 A/B 计划。未知命令仍执行并记录，策略不替代 Docker 隔离；结构化工具另做后续对照。本阶段不启动真实模型实验。
+纯判定测试、执行层和轨迹测试及 Docker 冒烟已完成。[首轮离线检查](evals/reports/command-policy-offline-v1/README.md)覆盖旧十遍轨迹的 985 条 bash 请求：689 允许、95 拟拦截、201 未知；拟拦截中 29 次有限 Git 查询有过度限制风险。本次没有执行轨迹命令，也未修改分类器。下一步先收窄 Git 元数据查询边界并另存离线对照，通过后再固定 v2 环境下的新题 A/B 计划。未知命令仍执行并记录，策略不替代 Docker 隔离；结构化工具另做后续对照。
 
 ## 后续阶段：任务控制
 

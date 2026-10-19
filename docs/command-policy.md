@@ -153,6 +153,8 @@ Work within /testbed or a specific dependency directory. Use the prepared enviro
 
 通过开发测试后，可在保留的轨迹上只做离线分类，逐条复核误拦截与未知命令。离线分析只说明哪些历史命令会被策略识别，不能模拟模型收到拒绝后的行为，也不能直接预测成功率变化。
 
+2026-10-19 已完成[首轮离线检查](../evals/reports/command-policy-offline-v1/README.md)：十遍三题轨迹的 985 条 bash 请求中，689 allow、95 block、201 unknown。拟拦截中有 29 次有限 Git 历史查询的过度限制风险，不能将命中规则等同于有效阻断。当前先保留 v1 分类器与本次报告，再收窄元数据查询边界；暂不启动真实模型 A/B。离线脚本为 `evals/audit_command_policy.py`，与仍会执行工具的 `agent eval --command-policy audit` 不同。
+
 真实模型 A/B 另建计划：两组都使用 v2 环境、相同实现、相同模型、题单、预算、并发、提醒开启且 finish 关闭；A 为 off，B 为 enforce。不在这次同时修改系统提示或加入结构化工具。分别记录官方解决率、空补丁、模型轮数、费用、命令判定分布、实际拦截、误拦截及未知率。
 
 首次编辑轮次应按工作区变更或补丁证据确认，不能只看命令包含 `sed` 或 `python`。被拒绝次数不是收益指标，搜索次数下降也不自动代表修复能力提高。现有三道 xarray 题只作开发回归；新题效果评估先固定范围和验收规则，模型预算另行确认。
@@ -161,6 +163,6 @@ Work within /testbed or a specific dependency directory. Use the prepared enviro
 
 1. 已完成纯判定器与参数化测试；支持的 shell 结构与未知降级以测试和上述范围为准。
 2. 已接入 off／audit／enforce 的工具执行与轨迹，默认关闭；执行器与模式行为由模拟模型和 Docker 冒烟验证。
-3. 下一步只对已保存轨迹做离线分类与人工核对，统计覆盖范围、误拦截和未知命令，再决定是否进入新题模型对照。
+3. 已完成十遍旧轨迹的首轮离线分类与拟拦截复核；下一步先处理有限 Git 查询的范围风险，保留前后版本，复核通过后再考虑新题模型对照。
 
 本分支不创建 GitHub Issue、不更改发布权限、不合并旧实验成绩。每个实现阶段通过检查后提交；是否启用新策略以对照结果决定。
