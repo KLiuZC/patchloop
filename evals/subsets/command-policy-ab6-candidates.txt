@@ -1,0 +1,10 @@
+# Candidate subset only: 6 tasks, pending image/environment/gold/baseline preflight.
+# Selection: SHA256-ranked within 3 repositories x 2 difficulty strata; seed 20261019.
+# This is not a frozen execution plan or authorization to call models.
+
+psf__requests-1724
+psf__requests-6028
+pytest-dev__pytest-5262
+pytest-dev__pytest-5840
+sphinx-doc__sphinx-10449
+sphinx-doc__sphinx-9673
