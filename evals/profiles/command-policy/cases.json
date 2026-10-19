@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "suite_version": 1,
+  "suite_version": 2,
   "status": "runtime_integrated_not_model_evaluated",
   "purpose": "Development cases for the proposed SWE-bench command policy; commands are data, never executed by fixture validation.",
-  "policy_version": "command-policy-v1",
+  "policy_version": "command-policy-v2",
   "environment_policy": "swebench-isolation-v2",
   "context": {
     "repository_root": "/testbed",

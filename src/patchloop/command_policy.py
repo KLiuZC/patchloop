@@ -8,11 +8,12 @@ from tree_sitter import Language, Parser
 import tree_sitter_bash
 
 
-POLICY_VERSION = "command-policy-v1"
+POLICY_VERSION = "command-policy-v2"
 PARSER_VERSION = "tree-sitter/0.26.0 tree-sitter-bash/0.25.1"
 MAX_COMMAND_BYTES = 32768
 MAX_TREE_NODES = 4096
 MAX_TREE_DEPTH = 64
+MAX_LOG_METADATA_COMMITS = 10
 BLOCK_RULES = frozenset({"network_or_install", "filesystem_search", "extra_project_source",
                          "evaluation_material", "history_search"})
 UNKNOWN_RULES = frozenset({"opaque_script", "dynamic_shell", "unresolved_path", "unparsed_shell",
@@ -36,8 +37,11 @@ class PolicyContext:
     scratch_roots: tuple[str, ...] = ("/tmp",)
     cache_roots: tuple[str, ...] = ()
     safe_environment_variables: tuple[str, ...] = ()
+    isolated_history: bool = False
 
     def __post_init__(self):
+        if not isinstance(self.isolated_history, bool):
+            raise ValueError("isolated_history must be a boolean")
         for name in ("repository_root", "cwd"):
             value = getattr(self, name)
             if not isinstance(value, str) or not value.startswith("/") or "\0" in value:
@@ -146,6 +150,33 @@ def _options(arguments, flags, valued):
             else:
                 return None
     return operands, options
+
+
+def _bounded_metadata_log(options, isolated_history):
+    normalized = []
+    position = 0
+    while position < len(options):
+        option = options[position]
+        position += 1
+        if option in {"--", "--format", "--pretty"}:
+            return False
+        if option in {"-n", "--max-count"}:
+            if position == len(options):
+                return False
+            normalized.extend((option, options[position]))
+            position += 1
+        elif re.fullmatch(r"-\d+", option):
+            normalized.append("--max-count=" + option[1:])
+        else:
+            normalized.append(option)
+    parsed = _options(normalized, {"oneline", "no-decorate"}, {"n", "max-count", "format", "pretty"})
+    if parsed is None or parsed[0] not in ([], ["HEAD"]):
+        return False
+    counts = parsed[1].get("n", []) + parsed[1].get("max-count", [])
+    if len(counts) != 1 or not re.fullmatch(r"[1-9][0-9]?", counts[0]):
+        return False
+    limit = MAX_LOG_METADATA_COMMITS if isolated_history else 1
+    return int(counts[0]) <= limit
 
 
 class _Assessment:
@@ -324,13 +355,7 @@ class _Assessment:
             return
         operation, *options = arguments
         if operation in {"log", "reflog", "fsck", "rev-list"}:
-            parsed = _options(options, {"oneline", "no-decorate"}, {"n", "max-count", "format", "pretty"}) if operation == "log" else None
-            if operation == "log" and "-1" in options:
-                parsed = _options(["--max-count=1" if value == "-1" else value for value in options],
-                                  {"oneline", "no-decorate"}, {"n", "max-count", "format", "pretty"})
-            if parsed is not None and parsed[0] in ([], ["HEAD"]) and (
-                parsed[1].get("n", []) + parsed[1].get("max-count", []) == ["1"]
-            ):
+            if operation == "log" and _bounded_metadata_log(options, self.context.isolated_history):
                 self.rules.add("baseline_git")
             else:
                 self.rules.add("history_search")

@@ -1,0 +1,615 @@
+{
+  "schema_version": 1,
+  "comparison_date": "2026-10-19",
+  "baseline": {
+    "policy_version": "command-policy-v1",
+    "audit": "../command-policy-offline-v1/audit.json",
+    "audit_sha256": "9dba4b45944be8baebfd6334c5ace8d1cd53970ea4a684c064425a3bcf0f0a31",
+    "review": "../command-policy-offline-v1/review.json",
+    "review_sha256": "b9bff4c76f36c464ec1819fbbeff1c6ccbaa54cfcfb27eb4496ea3287a27ce65"
+  },
+  "candidate": {
+    "policy_version": "command-policy-v2",
+    "audit": "audit.json",
+    "audit_sha256": "a371cd2a3904c93d8d750b3ede13e7e85e171c86bc6152abd72a386c176f63de"
+  },
+  "source_input_hashes_identical": true,
+  "source_plan_hash_identical": true,
+  "commands_and_locations_identical": true,
+  "changes_limited_to_v1_scope_tradeoffs": true,
+  "initial_isolation_proof_available_attempts": 30,
+  "before_counts": {
+    "allow": 689,
+    "block": 95,
+    "unknown": 201
+  },
+  "after_counts": {
+    "allow": 711,
+    "block": 66,
+    "unknown": 208
+  },
+  "transitions": [
+    {
+      "before": "allow",
+      "after": "allow",
+      "count": 689
+    },
+    {
+      "before": "block",
+      "after": "allow",
+      "count": 22
+    },
+    {
+      "before": "block",
+      "after": "block",
+      "count": 66
+    },
+    {
+      "before": "block",
+      "after": "unknown",
+      "count": 7
+    },
+    {
+      "before": "unknown",
+      "after": "unknown",
+      "count": 201
+    }
+  ],
+  "unchanged_requests": 956,
+  "changed_requests": 29,
+  "preserved_intended_blocks": 66,
+  "changes": [
+    {
+      "id": "x3-clean-ds-base-r1/pydata__xarray-2905:2:0",
+      "run_id": "x3-clean-ds-base-r1",
+      "instance_id": "pydata__xarray-2905",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -5 && sed -n '600,700p' xarray/core/variable.py",
+      "command_sha256": "c58258ef9a50170e985457dc3d8074d6b0c9aa6960e787d6ed50a1984d25412e",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-base-r1/pydata__xarray-3993:2:1",
+      "run_id": "x3-clean-ds-base-r1",
+      "instance_id": "pydata__xarray-3993",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -3",
+      "command_sha256": "8f2c25e1eca5c769389d05e8393a50f292ab891e22d8be7ff34fc3e41bc2b607",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-base-r1/pydata__xarray-4687:7:0",
+      "run_id": "x3-clean-ds-base-r1",
+      "instance_id": "pydata__xarray-4687",
+      "line": 7,
+      "turn": 6,
+      "command": "cd /testbed && python -c \"import xarray; print(xarray.__version__)\" && git log --oneline -3",
+      "command_sha256": "85842a2a9bf47ee26ee79c51c096740c0bed6c696cdc26d836749f237d009982",
+      "before": "block",
+      "after": "unknown",
+      "before_rules": [
+        "history_search",
+        "opaque_script"
+      ],
+      "after_rules": [
+        "opaque_script"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-base-r1/pydata__xarray-4687:15:0",
+      "run_id": "x3-clean-ds-base-r1",
+      "instance_id": "pydata__xarray-4687",
+      "line": 15,
+      "turn": 14,
+      "command": "cd /testbed && git log -1 --format='%ci %s' && git log --oneline -8",
+      "command_sha256": "225cff15639500d378b462d1fac2bb5a4fa1a1a1492232bf4010676ff83fd490",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-budget-r1/pydata__xarray-4687:27:0",
+      "run_id": "x3-clean-ds-budget-r1",
+      "instance_id": "pydata__xarray-4687",
+      "line": 27,
+      "turn": 25,
+      "command": "cd /testbed && python -c \"import xarray; print(xarray.__version__)\" 2>/dev/null; git log --oneline -3",
+      "command_sha256": "548fab7651bfb462a9283b31c131d89f99551cb141eda9b7db604a8292e350e1",
+      "before": "block",
+      "after": "unknown",
+      "before_rules": [
+        "history_search",
+        "opaque_script"
+      ],
+      "after_rules": [
+        "opaque_script"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-finish-r1/pydata__xarray-2905:2:0",
+      "run_id": "x3-clean-ds-finish-r1",
+      "instance_id": "pydata__xarray-2905",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -3 && sed -n '600,700p' xarray/core/variable.py",
+      "command_sha256": "9ad9c84dd3fedac63c79420e19d0584e83053a576d7c6b0c55c320a9f600fff6",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-finish-r1/pydata__xarray-3993:6:0",
+      "run_id": "x3-clean-ds-finish-r1",
+      "instance_id": "pydata__xarray-3993",
+      "line": 6,
+      "turn": 5,
+      "command": "cd /testbed && git log --oneline -5 && cat xarray/__init__.py | grep -i version | head && python -c \"import xarray; print(xarray.__version__)\"",
+      "command_sha256": "1083c04888176932a3071262a6ea200b60acb85465f1e30a9db26022d86ce44e",
+      "before": "block",
+      "after": "unknown",
+      "before_rules": [
+        "history_search",
+        "opaque_script"
+      ],
+      "after_rules": [
+        "opaque_script"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-finish-r1/pydata__xarray-4687:10:0",
+      "run_id": "x3-clean-ds-finish-r1",
+      "instance_id": "pydata__xarray-4687",
+      "line": 10,
+      "turn": 9,
+      "command": "cd /testbed && git log --oneline -5 && grep -rn \"keep_attrs\" xarray/core/dataarray.py | grep -i where",
+      "command_sha256": "8d02bee129f526f85d098ce73583891d0d113eb66956ecc96f9a4c0ba0c5b57b",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-budget-r2/pydata__xarray-2905:7:0",
+      "run_id": "x3-clean-ds-budget-r2",
+      "instance_id": "pydata__xarray-2905",
+      "line": 7,
+      "turn": 6,
+      "command": "cd /testbed && git log --oneline -5 && grep -rn \"getattr(data, \\\"values\\\"\\|\\.values\" xarray/core/variable.py | grep -i \"getattr\" ",
+      "command_sha256": "3d0c055caa2fc54e003a32c4f1b44537a6f2d3a0b963279718d67a60af29d456",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-budget-r2/pydata__xarray-3993:6:0",
+      "run_id": "x3-clean-ds-budget-r2",
+      "instance_id": "pydata__xarray-3993",
+      "line": 6,
+      "turn": 5,
+      "command": "cd /testbed && cat xarray/__init__.py | grep -i version; git log --oneline -5",
+      "command_sha256": "2b7ec24b8a3011ae3301dba30754a56bcfe058f1da3bda4f65a00023fd0fe3d3",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-budget-r2/pydata__xarray-4687:10:0",
+      "run_id": "x3-clean-ds-budget-r2",
+      "instance_id": "pydata__xarray-4687",
+      "line": 10,
+      "turn": 9,
+      "command": "cd /testbed && git log --oneline -5 && cat xarray/__init__.py | grep version && python -c \"import xarray; print(xarray.__version__)\"",
+      "command_sha256": "64c6587d24917c208767835f8601d7ab244b8e713e770f92e72b03bb99813ee8",
+      "before": "block",
+      "after": "unknown",
+      "before_rules": [
+        "history_search",
+        "opaque_script"
+      ],
+      "after_rules": [
+        "opaque_script"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-finish-r2/pydata__xarray-2905:2:0",
+      "run_id": "x3-clean-ds-finish-r2",
+      "instance_id": "pydata__xarray-2905",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -3 && sed -n '620,680p' xarray/core/variable.py",
+      "command_sha256": "abccc1ea8f7e7ef65e2b41274d9a983cc8248032ee219e3b2936e2fe26c8b219",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-finish-r2/pydata__xarray-3993:4:0",
+      "run_id": "x3-clean-ds-finish-r2",
+      "instance_id": "pydata__xarray-3993",
+      "line": 4,
+      "turn": 3,
+      "command": "cd /testbed && git log --oneline -3 && python -c \"import xarray; print(xarray.__version__)\" && grep -rn \"integrate\" xarray/tests/test_dataarray.py | head -30",
+      "command_sha256": "8ea2ed747ca7f98f0d20a79f85adc8c0ce6905a68b4c60c46a61149267f81a8b",
+      "before": "block",
+      "after": "unknown",
+      "before_rules": [
+        "history_search",
+        "opaque_script"
+      ],
+      "after_rules": [
+        "opaque_script"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-finish-r2/pydata__xarray-4687:2:1",
+      "run_id": "x3-clean-ds-finish-r2",
+      "instance_id": "pydata__xarray-4687",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -5",
+      "command_sha256": "9af54c063e822b30aaffc84dfa73cc84aff3eb3faa43f40de673ebe1d779bdcf",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-base-r2/pydata__xarray-2905:2:0",
+      "run_id": "x3-clean-ds-base-r2",
+      "instance_id": "pydata__xarray-2905",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -3 && sed -n '600,720p' xarray/core/variable.py",
+      "command_sha256": "d6b4d7872372906f1ab76b45cc2788b48fe740ae775a78a25da99ef26687d138",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-base-r2/pydata__xarray-3993:2:0",
+      "run_id": "x3-clean-ds-base-r2",
+      "instance_id": "pydata__xarray-3993",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && grep -rn \"def integrate\" xarray/ && git log --oneline -3",
+      "command_sha256": "40411d5c2ac89af00a582f56acc51baabd43a4b1b4bac6ddec7b290c70b3e046",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-base-r2/pydata__xarray-4687:8:0",
+      "run_id": "x3-clean-ds-base-r2",
+      "instance_id": "pydata__xarray-4687",
+      "line": 8,
+      "turn": 7,
+      "command": "cd /testbed && git log --oneline -3 && grep -rn \"def test_where\" xarray/tests/test_computation.py",
+      "command_sha256": "9dad375d8b2dc93af22d0df602c105892e3a907b1f1c89307597c281bd382723",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-finish-r3/pydata__xarray-2905:2:0",
+      "run_id": "x3-clean-ds-finish-r3",
+      "instance_id": "pydata__xarray-2905",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -5 && sed -n '600,700p' xarray/core/variable.py",
+      "command_sha256": "c58258ef9a50170e985457dc3d8074d6b0c9aa6960e787d6ed50a1984d25412e",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-finish-r3/pydata__xarray-3993:6:0",
+      "run_id": "x3-clean-ds-finish-r3",
+      "instance_id": "pydata__xarray-3993",
+      "line": 6,
+      "turn": 5,
+      "command": "cd /testbed && git log --oneline -5 && cat xarray/_version.py 2>/dev/null | head; grep -rn \"version\" setup.py | head",
+      "command_sha256": "fdcaa6b066439921b50716485563eede40ad482f2b9dc77e67771007ba919706",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-finish-r3/pydata__xarray-4687:2:1",
+      "run_id": "x3-clean-ds-finish-r3",
+      "instance_id": "pydata__xarray-4687",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -3",
+      "command_sha256": "8f2c25e1eca5c769389d05e8393a50f292ab891e22d8be7ff34fc3e41bc2b607",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-base-r3/pydata__xarray-3993:7:0",
+      "run_id": "x3-clean-ds-base-r3",
+      "instance_id": "pydata__xarray-3993",
+      "line": 7,
+      "turn": 6,
+      "command": "cd /testbed && cat xarray/__init__.py | grep -i version | head; grep -rn \"version\" setup.py | head; git log --oneline -3",
+      "command_sha256": "74382f3df963e5a2440bc7fc16ec918b42bf68022b8eaa607f1cccdcb3a65b2e",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-base-r3/pydata__xarray-4687:18:0",
+      "run_id": "x3-clean-ds-base-r3",
+      "instance_id": "pydata__xarray-4687",
+      "line": 18,
+      "turn": 17,
+      "command": "cd /testbed && git log --oneline -5 && cat xarray/__init__.py | grep -i version ; python -c \"import xarray; print(xarray.__version__)\" 2>/dev/null",
+      "command_sha256": "fa208bf1a4cc097eb26e2fb609dcd47849556ce6e1c043fcf0015ad115baec5a",
+      "before": "block",
+      "after": "unknown",
+      "before_rules": [
+        "history_search",
+        "opaque_script"
+      ],
+      "after_rules": [
+        "opaque_script"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-budget-r3/pydata__xarray-2905:2:0",
+      "run_id": "x3-clean-ds-budget-r3",
+      "instance_id": "pydata__xarray-2905",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -5 && sed -n '600,700p' xarray/core/variable.py",
+      "command_sha256": "c58258ef9a50170e985457dc3d8074d6b0c9aa6960e787d6ed50a1984d25412e",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-budget-r3/pydata__xarray-3993:9:0",
+      "run_id": "x3-clean-ds-budget-r3",
+      "instance_id": "pydata__xarray-3993",
+      "line": 9,
+      "turn": 8,
+      "command": "cd /testbed && git log --oneline -5; echo ---; grep -rn \"deprecat\" xarray/core/dataarray.py | head -20",
+      "command_sha256": "19bad220cd32fe44fcfff64180bec68f877edc1d51fffb378650266c410c639d",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-budget-r3/pydata__xarray-4687:11:0",
+      "run_id": "x3-clean-ds-budget-r3",
+      "instance_id": "pydata__xarray-4687",
+      "line": 11,
+      "turn": 10,
+      "command": "cd /testbed && git log --oneline -5 && grep -n \"__version__\" xarray/__init__.py",
+      "command_sha256": "7d77a9ce0412ac3a6a6f43ff9c62a0691e87b9238fef27361d878f96da053b10",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git",
+        "repository_operation"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-ds-budget-r3/pydata__xarray-4687:33:0",
+      "run_id": "x3-clean-ds-budget-r3",
+      "instance_id": "pydata__xarray-4687",
+      "line": 33,
+      "turn": 31,
+      "command": "cd /testbed && git log -1 --format='%ci %s' && git log --oneline -3",
+      "command_sha256": "007c5cbb0e6917f76de576d00e2a21746c4b077d0d74dde754e4500934dba9bf",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-glm-base-r1/pydata__xarray-2905:2:1",
+      "run_id": "x3-clean-glm-base-r1",
+      "instance_id": "pydata__xarray-2905",
+      "line": 2,
+      "turn": 1,
+      "command": "cd /testbed && git log --oneline -3",
+      "command_sha256": "8f2c25e1eca5c769389d05e8393a50f292ab891e22d8be7ff34fc3e41bc2b607",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-glm-base-r1/pydata__xarray-3993:5:1",
+      "run_id": "x3-clean-glm-base-r1",
+      "instance_id": "pydata__xarray-3993",
+      "line": 5,
+      "turn": 4,
+      "command": "git log --oneline -5 && git status",
+      "command_sha256": "122b3a098a966d27d3d98bb4a69d2b40a6adffa443779a4930e500957896c97f",
+      "before": "block",
+      "after": "allow",
+      "before_rules": [
+        "history_search"
+      ],
+      "after_rules": [
+        "baseline_git"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    },
+    {
+      "id": "x3-clean-glm-base-r1/pydata__xarray-4687:7:0",
+      "run_id": "x3-clean-glm-base-r1",
+      "instance_id": "pydata__xarray-4687",
+      "line": 7,
+      "turn": 6,
+      "command": "cd /testbed && git log --oneline -3 && head -40 xarray/core/computation.py | grep -n version; cat xarray/_version.py 2>/dev/null | head -20; git describe --tags 2>/dev/null",
+      "command_sha256": "edcfd4c3b7ed565deaaea5b1c5123ac14ebe4038af8051e59657236256590e8f",
+      "before": "block",
+      "after": "unknown",
+      "before_rules": [
+        "history_search",
+        "unsupported_command"
+      ],
+      "after_rules": [
+        "unsupported_command"
+      ],
+      "v1_review_label": "scope_tradeoff"
+    }
+  ],
+  "model_requests": 0,
+  "replayed_commands": 0,
+  "limitations": [
+    "这不是开启策略后的模型 A/B；不推算成功率、费用或节省轮次。",
+    "这 29 条请求已用于确定规则边界；对照不是独立留出检验。",
+    "block 变为 unknown 的 7 条仍按运行约定执行，但没有被静态证明为允许。",
+    "初始隔离证明来自原预检快照，不保证未知程序执行后 Git 状态仍不变。"
+  ]
+}

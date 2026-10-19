@@ -4,17 +4,18 @@ import hashlib
 from importlib.metadata import version
 import json
 import posixpath
+import re
 
 from .command_policy import (
-    BLOCK_RULES, MAX_COMMAND_BYTES, MAX_TREE_DEPTH, MAX_TREE_NODES,
+    BLOCK_RULES, MAX_COMMAND_BYTES, MAX_TREE_DEPTH, MAX_TREE_NODES, MAX_LOG_METADATA_COMMITS,
     PARSER_VERSION, POLICY_VERSION, PolicyContext, assess_command,
 )
 from .environment import EnvironmentCheckError, HIDDEN_PATHS, MODULES
 
 
 MODES = ("off", "audit", "enforce")
-PROFILE_VERSION = "swebench-command-context-v1"
-CASE_SUITE_VERSION = 1
+PROFILE_VERSION = "swebench-command-context-v2"
+CASE_SUITE_VERSION = 2
 COUNT_FIELDS = ("checked", "allow", "block", "unknown", "would_block", "blocked", "execution_requests")
 SCRATCH_ROOTS = ("/tmp",)
 SAFE_ENVIRONMENT_VARIABLES = ("MPLCONFIGDIR", "PYTEST_DISABLE_PLUGIN_AUTOLOAD", "PYTHONDONTWRITEBYTECODE")
@@ -34,7 +35,8 @@ def command_policy_metadata(mode):
         "mode": mode, "policy_version": POLICY_VERSION, "parser_version": PARSER_VERSION,
         "parser_packages": {name: version(name) for name in ("tree-sitter", "tree-sitter-bash")},
         "profile_version": PROFILE_VERSION, "development_cases_version": CASE_SUITE_VERSION,
-        "limits": {"command_bytes": MAX_COMMAND_BYTES, "tree_nodes": MAX_TREE_NODES, "tree_depth": MAX_TREE_DEPTH},
+        "limits": {"command_bytes": MAX_COMMAND_BYTES, "tree_nodes": MAX_TREE_NODES, "tree_depth": MAX_TREE_DEPTH,
+                   "git_log_metadata_commits": MAX_LOG_METADATA_COMMITS},
         "context_defaults": {"cache_roots": list(HIDDEN_PATHS), "scratch_roots": list(SCRATCH_ROOTS),
                              "safe_environment_variables": list(SAFE_ENVIRONMENT_VARIABLES),
                              "dependency_origin_markers": list(DEPENDENCY_MARKERS)},
@@ -49,6 +51,22 @@ def count_policy_event(counts, event):
     counts["would_block"] += int(event["would_block"])
     counts["blocked"] += int(event["action"] == "block")
     counts["execution_requests"] += int(event["action"] == "execute")
+
+
+def _isolated_history(instance, report):
+    base = instance.get("base_commit")
+    instance_id = instance.get("instance_id")
+    history = report["checks"].get("git", {})
+    return (
+        isinstance(base, str) and re.fullmatch(r"[0-9a-f]{40}", base) is not None
+        and isinstance(instance_id, str) and bool(instance_id)
+        and report.get("instance_id") == instance_id
+        and report.get("base_commit") == base and isinstance(history, dict)
+        and history.get("head") == base and type(history.get("commit_objects")) is int
+        and history["commit_objects"] == 1 and history.get("remotes") == ""
+        and history.get("reflog") == [] and history.get("alternates_present") is False
+        and history.get("tracked_changes") == ""
+    )
 
 
 def swebench_command_policy(mode, instance, report, workdir):
@@ -70,6 +88,7 @@ def swebench_command_policy(mode, instance, report, workdir):
         repository_root=workdir, cwd=workdir, target_modules=MODULES[instance["repo"]],
         dependency_roots=tuple(sorted(roots)), scratch_roots=SCRATCH_ROOTS, cache_roots=HIDDEN_PATHS,
         safe_environment_variables=SAFE_ENVIRONMENT_VARIABLES,
+        isolated_history=_isolated_history(instance, report),
     )
     return CommandPolicy(mode, context)
 

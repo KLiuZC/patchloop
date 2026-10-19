@@ -35,7 +35,7 @@
 | 规则 ID | 拟定行为 | 边界 |
 | --- | --- | --- |
 | `repository_operation` | 允许当前仓库的读取、搜索、简单编辑和测试 | 不因为路径包含 `tests`、`gold` 等词自动拒绝；补丁路径限制仍由原机制处理 |
-| `baseline_git` | 允许 `status`、`diff`、当前 HEAD 元数据、`show HEAD:<path>`、常用 stash 对照 | 不扩展为所有 Git 命令都允许；已有单提交环境仍保留 |
+| `baseline_git` | 允许 `status`、`diff`、当前 HEAD 元数据、`show HEAD:<path>`、常用 stash 对照；有初始隔离证明时允许最多 10 条 HEAD 元数据 | 不允许其他引用、范围、补丁或内容搜索；没有证明时只允许单条元数据 |
 | `dependency_read` | 允许明确依赖包目录内的读取与有界检索 | 如 numpy；被测项目的额外安装源码优先命中拒绝规则，不允许递归搜索整个 site-packages |
 | `environment_metadata` | 允许 `pwd`、版本查询、`pip show/list`、简单目录列表 | 安装信息不等于源码内容暴露，不将所有 `/opt` 访问都归为违规 |
 | `scratch_operation` | 允许明确临时文件的读取、写入和清理 | 不将任意 `rm` 或临时目录全盘搜索归为允许 |
@@ -44,7 +44,7 @@
 | `filesystem_search` | 拒绝从 `/`、整个 `/opt`、`/root`、整个 site-packages 等位置递归搜索 | 静态 `cd / && find .` 也应识别；指定正常依赖包的局部搜索允许 |
 | `extra_project_source` | 拒绝明确读取或搜索被测模块的缓存源码、额外安装源码及测试 | 已遮蔽缓存仍保留规则反馈以减少重复尝试；不能据路径断言某次已经成功读取 |
 | `evaluation_material` | 拒绝明确读取仓库外的判卷材料路径 | 如 `/tmp/gold.patch`；普通复现脚本不受影响，仓库内未跟踪材料由预检检查 |
-| `history_search` | 拒绝查找基线外提交、全历史搜索、reflog、fsck 恢复和批量枚举历史对象 | `log -1 HEAD` 等只查当前元数据的形式不拒绝；自定义 Git 配置或别名不能简单当作安全操作 |
+| `history_search` | 拒绝基线外引用、全历史和内容搜索、reflog、fsck 恢复、批量枚举历史对象及不满足元数据例外的 log 形式 | 元数据例外依赖可信上下文，未知包装不冒充普通 Git 读取 |
 
 `opaque_script`、`dynamic_shell`、`unresolved_path`、`unparsed_shell` 是未知原因。Python `-c`、Python heredoc、动态变量、命令替换、嵌套 shell、无法确定的符号链接和解析失败均需保留这种区分。`python -m pytest` 是明确测试入口，不因 Python 可执行程序名而判为未知；测试本身的运行行为仍不由静态策略证明。
 
@@ -60,7 +60,9 @@
 
 当前使用 [Tree-sitter Python bindings](https://github.com/tree-sitter/py-tree-sitter) 0.26.0 和 [Bash grammar](https://github.com/tree-sitter/tree-sitter-bash) 0.25.1，版本锁定在 `pyproject.toml` 与 `uv.lock`。解析器只生成语法树，不调用 Bash。实现不依赖关键词分割，也不使用宿主机路径解析容器路径。
 
-当前上限为 32,768 UTF-8 字节、4,096 个语法树节点及 64 层深度；超限返回 `unknown/input_limit`。语法错误、NUL 或无法编码的输入返回 `unknown/unparsed_shell`。这些是输入及遍历限制，不是硬实时保证；原有工具超时也不会限制尚未接入的纯判定器。
+当前上限为 32,768 UTF-8 字节、4,096 个语法树节点及 64 层深度；超限返回 `unknown/input_limit`。语法错误、NUL 或无法编码的输入返回 `unknown/unparsed_shell`。这些是输入及遍历限制，不是硬实时保证；工具超时针对 runner 命令，不等于分类器的独立超时。
+
+`command-policy-v2` 为有限 Git 查询增加窄例外：初始预检证明任务／基线匹配、只有一个 commit、无远端/reflog/alternates 和已跟踪修改时，`isolated_history=True`，允许显式限制到 1～10 条的 HEAD 元数据查询。缺少证明时仍最多一条。仅接受一次数量选项和白名单格式选项，`--all`、`-S/-G`、diff 输出、额外引用、路径或历史筛选仍受限。该标记不是实时 Git 状态检查，也不作为模型工具参数开放；详情见[v2 对照](../evals/reports/command-policy-offline-v2/README.md)。
 
 支持简单命令、管道、重定向、`&&`／`||`／顺序语句和静态目录流转。目录可能因分支或 `cd` 失败而不确定时，相对路径返回未知；管道里的 `cd` 不改变后续父 shell 的目录。quoted heredoc 内容视为数据；未加引号的 heredoc、循环、函数、后台执行和嵌套 shell 保守返回未知。
 
@@ -122,7 +124,7 @@ Work within /testbed or a specific dependency directory. Use the prepared enviro
 
 ## 开发样例
 
-[cases.json](../evals/profiles/command-policy/cases.json) 包含 **56 条判定开发样例**：10 条从已保存轨迹提取，46 条构造对照；预期为 23 条允许、23 条拦截、10 条未知。命令及来源哈希保持原样，`suite_version=1` 与执行元数据中的开发样例版本对应。
+[cases.json](../evals/profiles/command-policy/cases.json) 保留原有 **56 条判定开发样例**：10 条从已保存轨迹提取，46 条构造对照；预期仍为 23 条允许、23 条拦截、10 条未知。命令、标签和来源哈希保持原样，当前 `suite_version=2` 对应执行元数据；新增的有限 Git 查询与证明边界由 [Git 回归测试](../tests/test_command_policy_git.py)覆盖。
 
 - 原始命令保存 run-id、题号、turn、轨迹行号、tool_call_id 和哈希；未运行这些命令，也未改写旧轨迹。
 - 构造样例包含正常依赖读取、关键词纯文本、Python 编辑、网络获取、全盘搜索、路径归一化、动态包装和“前半条有副作用、后半条应拒绝”。
@@ -153,7 +155,7 @@ Work within /testbed or a specific dependency directory. Use the prepared enviro
 
 通过开发测试后，可在保留的轨迹上只做离线分类，逐条复核误拦截与未知命令。离线分析只说明哪些历史命令会被策略识别，不能模拟模型收到拒绝后的行为，也不能直接预测成功率变化。
 
-2026-10-19 已完成[首轮离线检查](../evals/reports/command-policy-offline-v1/README.md)：十遍三题轨迹的 985 条 bash 请求中，689 allow、95 block、201 unknown。拟拦截中有 29 次有限 Git 历史查询的过度限制风险，不能将命中规则等同于有效阻断。当前先保留 v1 分类器与本次报告，再收窄元数据查询边界；暂不启动真实模型 A/B。离线脚本为 `evals/audit_command_policy.py`，与仍会执行工具的 `agent eval --command-policy audit` 不同。
+2026-10-19 的[v1 离线检查](../evals/reports/command-policy-offline-v1/README.md)在 985 条 bash 请求中得到 689 allow、95 block、201 unknown，并识别 29 次有限 Git 查询的范围风险。随后[v2 同输入对照](../evals/reports/command-policy-offline-v2/README.md)得到 711 allow、66 block、208 unknown；仅这 29 次改变，22 次变为允许、7 次因其他不透明操作变为未知，原 66 条明确限制全部保留。v1 报告不覆盖，数据不是独立留出集，暂不据此宣称模型提分。离线脚本为 `evals/audit_command_policy.py`，与仍会执行工具的 `agent eval --command-policy audit` 不同。
 
 真实模型 A/B 另建计划：两组都使用 v2 环境、相同实现、相同模型、题单、预算、并发、提醒开启且 finish 关闭；A 为 off，B 为 enforce。不在这次同时修改系统提示或加入结构化工具。分别记录官方解决率、空补丁、模型轮数、费用、命令判定分布、实际拦截、误拦截及未知率。
 
@@ -163,6 +165,6 @@ Work within /testbed or a specific dependency directory. Use the prepared enviro
 
 1. 已完成纯判定器与参数化测试；支持的 shell 结构与未知降级以测试和上述范围为准。
 2. 已接入 off／audit／enforce 的工具执行与轨迹，默认关闭；执行器与模式行为由模拟模型和 Docker 冒烟验证。
-3. 已完成十遍旧轨迹的首轮离线分类与拟拦截复核；下一步先处理有限 Git 查询的范围风险，保留前后版本，复核通过后再考虑新题模型对照。
+3. 已完成有限 Git 查询修订与 v1/v2 离线对照，原报告均保留；下一步先做分支合并前检查，再单独准备新题模型对照和预算。
 
 本分支不创建 GitHub Issue、不更改发布权限、不合并旧实验成绩。每个实现阶段通过检查后提交；是否启用新策略以对照结果决定。

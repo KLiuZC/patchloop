@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-19",
+  "implementation_base_commit": "54d25623419d015877034c91712e8b56bb248130",
+  "implementation_note": "v2 source fingerprints describe the tested working tree before its commit; the base commit contains the unchanged v1 archive.",
+  "policy_version": "command-policy-v2",
+  "source_sha256": {
+    "evals/audit_command_policy.py": "c9533824cafbda208741781abc6e6ed68235ef22a8e08fbae5bb1b2eb03ad677",
+    "src/patchloop/command_policy.py": "9c07dd34d0a4773e0a3b4d34061b3069e1a0733549c786a07498e7d06fc137e7",
+    "src/patchloop/command_runtime.py": "1062181120c655d90a43713bf6566cb9ea52d160d64a7033331bba4454cf92d5",
+    "src/patchloop/environment.py": "74c1ac8cdbe8cf51bb5f96287ff543b1cb8ebaafe3c9e5738a78db0200e7c408",
+    "uv.lock": "c2d279bcc5d1ba22a3750f202c0149388b717f4fc098a2f92297d3e711dd85f2"
+  },
+  "test_sha256": {
+    "tests/test_command_policy_git.py": "74690d41a59455071c0b9e13452e90d320e90dc9740d19dabfa81ca372c05e31",
+    "tests/test_command_policy_execution.py": "5f5824ad40f144c6021d4cfdec49593e3d301013333eb8305c68f382c3036208",
+    "tests/test_eval.py": "d9261976d1faac32cedcbd7e8119b59667250f0488b7fbdc37cebbc8baba8f6a"
+  },
+  "artifact_sha256": {
+    "README.md": "3e82d23d3eaef30ee66f576bb791d97d50af39d21dfb14f52d1267018d27f1f8",
+    "audit.json": "a371cd2a3904c93d8d750b3ede13e7e85e171c86bc6152abd72a386c176f63de",
+    "comparison.json": "f62e5a007597632c0ec551c842ac70f05cb218a6e680ff122b5790163d166b12"
+  },
+  "baseline_artifact_sha256": {
+    "../command-policy-offline-v1/README.md": "ec78ed404846e34287c4d918284b99cefae6eb6a145a0bd2d32445f0b4eb00f3",
+    "../command-policy-offline-v1/audit.json": "9dba4b45944be8baebfd6334c5ace8d1cd53970ea4a684c064425a3bcf0f0a31",
+    "../command-policy-offline-v1/review.json": "b9bff4c76f36c464ec1819fbbeff1c6ccbaa54cfcfb27eb4496ea3287a27ce65",
+    "../command-policy-offline-v1/manifest.json": "17b1e17ba77809e59a3859a00406781faa4b54e81bae833dee2bd3d608c8f3ee"
+  },
+  "development_cases_sha256": "722ab14617e30d28c965ae9d3c8dada9d5fbefa78f2af0a4c0062efbece6fbc5",
+  "plan_sha256": "327e70a0ba56fbbe948cb7596f26418eade59a49f33a2445109393dbb7d15c56",
+  "path_roots": {
+    "source_sha256": "repository root",
+    "test_sha256": "repository root",
+    "artifact_sha256": "this report directory",
+    "baseline_artifact_sha256": "this report directory"
+  },
+  "validation": {
+    "git_policy_tests": 76,
+    "targeted_tests": 280,
+    "backend_tests": 1337,
+    "source_inputs_identical": true,
+    "changed_requests": 29,
+    "preserved_intended_blocks": 66,
+    "recomputed_candidate_matches": true,
+    "model_requests": 0,
+    "replayed_commands": 0
+  }
+}

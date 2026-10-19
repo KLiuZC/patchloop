@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -290,3 +291,24 @@ def test_eval_does_not_start_policy_or_model_after_preflight_failure(tmp_path, m
     )
     assert not model.requests and not result.command_policy_counts
     assert result.stop_reason == "environment_failed"
+
+
+@pytest.mark.parametrize("isolated", [False, True])
+def test_bounded_metadata_and_read_execute_together_only_with_isolation(tmp_path, isolated):
+    command = "git log --oneline -5 && cat xarray/core/variable.py"
+    model = ScriptedModel([reply(call("metadata", command)), reply(content="done")])
+    runner = RecordingRunner()
+    context = replace(PolicyContext("/testbed", "/testbed"), isolated_history=isolated)
+    result = run("fix", model, runner, traj_dir=tmp_path, command_policy=CommandPolicy("enforce", context))
+    assert runner.commands == ([(command, 60)] if isolated else [])
+    assert result.command_policy_counts["blocked"] == (0 if isolated else 1)
+    assert result.command_policy_counts["execution_requests"] == (1 if isolated else 0)
+    assert records(tmp_path, result)[0]["command_policy"]["context"]["isolated_history"] == isolated
+
+
+def test_allowed_metadata_does_not_unblock_a_forbidden_tail(tmp_path):
+    model = ScriptedModel([reply(call("combined", "git log -3; printf touched > /tmp/marker; pip download xarray"))])
+    runner = RecordingRunner()
+    context = replace(PolicyContext("/testbed", "/testbed"), isolated_history=True)
+    result = run("fix", model, runner, max_turns=1, traj_dir=tmp_path, command_policy=CommandPolicy("enforce", context))
+    assert runner.commands == [] and result.command_policy_counts["blocked"] == 1
