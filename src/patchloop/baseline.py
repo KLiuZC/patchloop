@@ -19,7 +19,7 @@ def extract_diff(text: str) -> str:
     return text[start:].rstrip() + "\n" if start >= 0 else ""
 
 
-def single_shot(instance: dict, llm: LLM, runner, record_path: Path | None = None) -> tuple[str, str, object]:
+def single_shot(instance: dict, llm: LLM, runner, record_path: Path | None = None, *, on_usage=None) -> tuple[str, str, object]:
     """One model call and no tools: the model writes a diff blind, which is then applied in the sandbox.
 
     Returns (patch, note, usage); note is empty on success and otherwise says what went wrong.
@@ -27,6 +27,8 @@ def single_shot(instance: dict, llm: LLM, runner, record_path: Path | None = Non
     """
     prompt = SINGLE_SHOT_PROMPT.format(repo=instance["repo"], problem_statement=instance["problem_statement"].strip())
     resp = llm.chat_raw([{"role": "user", "content": prompt}])
+    if on_usage:
+        on_usage(resp.usage)
     choice = resp.choices[0]
     content = choice.message.content or ""
     diff = extract_diff(content)

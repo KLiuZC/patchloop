@@ -1,6 +1,7 @@
 import os
+import threading
 
-from openai import OpenAI
+from openai import DefaultHttpxClient, OpenAI
 
 PROVIDERS = {
     "glm": {
@@ -45,8 +46,25 @@ class LLM:
         self.provider = provider
         self.model = model or cfg["model"]
         self.temperature = temperature
+        self._request_state = threading.local()
+        request_state = self._request_state
+        def observe_request(request):
+            request_state.attempts = getattr(request_state, "attempts", 0) + 1
         # 429 / 5xx / connection errors are retried by the client with backoff
-        self.client = OpenAI(base_url=cfg["base_url"], api_key=api_key, max_retries=3, timeout=120.0)
+        self.client = OpenAI(base_url=cfg["base_url"], api_key=api_key, max_retries=3, timeout=120.0,
+                             http_client=DefaultHttpxClient(event_hooks={"request": [observe_request]}))
+
+    @property
+    def last_http_attempts(self):
+        return getattr(self._request_state, "attempts", None)
+
+    @property
+    def last_usage(self):
+        return getattr(self._request_state, "usage", None)
+
+    @property
+    def last_response_received(self):
+        return getattr(self._request_state, "response_received", False)
 
     def chat(self, messages: list[dict], tools: list[dict] | None = None):
         resp = self.chat_raw(messages, tools)
@@ -59,4 +77,10 @@ class LLM:
             kwargs["tools"] = tools
         if self.temperature is not None:
             kwargs["temperature"] = self.temperature
-        return self.client.chat.completions.create(model=self.model, messages=messages, **kwargs)
+        self._request_state.attempts = 0
+        self._request_state.usage = None
+        self._request_state.response_received = False
+        response = self.client.chat.completions.create(model=self.model, messages=messages, **kwargs)
+        self._request_state.usage = getattr(response, "usage", None)
+        self._request_state.response_received = True
+        return response

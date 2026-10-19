@@ -416,7 +416,7 @@ def eval_command(
         console.print(f"[red]{escape(str(e))}[/]")
         raise typer.Exit(code=2)
     _print_summary(summary, out_dir)
-    if summary.get("environment_failures"):
+    if summary.get("environment_failures") or summary.get("requires_review"):
         raise typer.Exit(code=2)
 
 
@@ -431,7 +431,7 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
             verdict = "[green]yes[/]" if r["resolved"] else "[red]no[/]"
         limit_note = "max_turns" if not r["finished"] and not r["error"] else ""
         finish_note = "finish" if r.get("stop_reason") == "finish" else ""
-        notes = [n for n in (r["error"], r.get("note", ""), limit_note, finish_note) if n]
+        notes = [n for n in (r["error"], r.get("grading_error", ""), r.get("usage_error", ""), r.get("note", ""), limit_note, finish_note) if n]
         if not r["error"] and not r["patch_lines"] and not r.get("note"):
             notes.append("no patch")
         if r["patch_applied"] is False and "did not apply" not in " ".join(notes):
@@ -447,6 +447,8 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
     console.print(table)
     if summary.get("environment_failures"):
         rate = f"incomplete: {summary['environment_failures']} environment preflight failure(s)"
+    elif summary.get("resolve_rate") is None:
+        rate = f"incomplete: {summary['judged']}/{summary.get('planned_instances', summary['instances'])} judged" if summary["judged"] else "not judged"
     else:
         rate = f"{summary['resolved']}/{summary['judged']} ({summary['resolve_rate'] * 100:.0f}%)" if summary["judged"] else "not judged"
     invocation = summary.get("invocation")
@@ -454,8 +456,10 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
         f"this invocation {invocation['wall_seconds'] / 60:.1f} min"
         if invocation else f"summed task time {summary['seconds'] / 60:.1f} min"
     )
+    cost_note = (f"estimated ¥{summary['cost_cny']:.2f}" if summary.get("cost_cny") is not None
+                 else f"total unknown; recorded estimate ¥{summary.get('known_cost_cny', 0):.3f}")
     console.print(
-        f"resolved {rate} · estimated ¥{summary['cost_cny']:.2f} · {time_note} · "
+        f"resolved {rate} · {cost_note} · {time_note} · "
         f"errors {summary['errors']} · {out_dir}/summary.json"
     )
     if summary.get("command_policy", "off") != "off":
@@ -468,7 +472,7 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
     console.print(
         "[dim]EXPERIMENTS.md: | <date> | " + escape(summary["run_id"]) + f" ({summary['instances']} 题, {summary['mode']}) | "
         f"{summary['provider']} / {summary['model']} | - | {summary['prompt_tokens'] // 1000}k / {summary['completion_tokens'] // 1000}k | "
-        f"{rate} | estimated ¥{summary['cost_cny']:.2f}, {time_note} |[/]"
+        f"{rate} | {cost_note}, {time_note} |[/]"
     )
 
 

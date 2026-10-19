@@ -48,8 +48,8 @@ def test_summarize_counts_resolved_and_cost():
     ]
     s = summarize(results, "run", "agent", llm)
     assert s["instances"] == 3 and s["judged"] == 2 and s["resolved"] == 1
-    assert s["resolve_rate"] == 0.5 and s["errors"] == 1
-    assert abs(s["cost_cny"] - 0.3) < 1e-9 and s["seconds"] == 31
+    assert s["resolve_rate"] is None and s["errors"] == 1
+    assert s["cost_cny"] is None and s["known_cost_cny"] == 0.3 and s["seconds"] == 31
 
 
 def evaluation_llm():

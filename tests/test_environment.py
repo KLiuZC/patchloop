@@ -249,12 +249,13 @@ def test_isolation_mounts_and_reduced_privileges_are_passed_to_docker(monkeypatc
         calls.append(args)
         return SimpleNamespace(returncode=0, stdout="", stderr="")
     monkeypatch.setattr("patchloop.sandbox.subprocess.run", run)
-    monkeypatch.setattr(DockerRunner, "_exec", lambda *a, **kw: None)
+    monkeypatch.setattr(DockerRunner, "_exec", lambda *a, **kw: SimpleNamespace(returncode=0))
     runner = environment.solver_runner("image")
     runner.start()
     command = calls[0]
     assert command[command.index("--network") + 1] == "none"
     assert command[command.index("--cap-drop") + 1] == "ALL"
+    assert command[command.index("--pull") + 1] == "never"
     for path in environment.HIDDEN_PATHS:
         assert f"{path}:ro,nosuid,nodev,noexec,size=1m" in command
 

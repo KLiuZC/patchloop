@@ -159,6 +159,12 @@ uv run agent repair-judge \
 
 `summary.json.invocation.wall_seconds` 是本次评测调用的墙钟耗时，包含求解与判卷，不包含此前的数据集加载；`seconds` 是各题耗时之和。Token 仅统计已返回的用量，超时请求可能存在未知账单；模型别名和镜像环境变化也会影响复现。
 
+新批量结果区分 `grading_status=passed/failed/error`；判卷异常的 `resolved` 为 null，不再用缺报告推导 false。每次判卷使用 UUID 和独立预测快照，证据保存在 `evals/results/<run-id>/official/<判卷ID>/`。有待判卷、缺失结果或环境异常时，`resolve_rate` 保持 null，并保留 `planned_instances`、`pending_instance_ids`，不缩小分母。
+
+`usage_status` 标明用量证据是否完整，`model_calls_attempted` 与已记录响应的 `turns` 分开计数；HTTP 重试也单独观测。不完整用量、未报告请求或异常时，`cost` 和批次 `cost_cny` 可为 null；`known_cost_cny` 仅为已记录 token 按项目价表的估算，不是账单或硬费用下界。CLI 输出未知费用而非 0，`requires_review=true` 时返回 2；人工中断保持退出 130，并尽量先保存已收到的结果及部分汇总。
+
+新六题的[无模型准备入口](../evals/profiles/command-policy-ab6/README.md#使用准备入口)默认只读检查。只有显式 `--execute` 才在已有镜像上执行隔离健康检查和 baseline／gold 控制实验；它不调用模型、不自动构建或拉取镜像，也不能代替未完成的 A/B 冻结和预算确认。
+
 官方结果绑定 `instance_id`、基线、补丁哈希及判卷 ID。开始前核对补丁与原任务摘要、验证报告；创建快照或判卷期间原件变化会报错。原 `validation.json`、`summary.json` 和轨迹不由重判改写，读取历史官方结果时仍需核对补丁哈希。
 
 | `official.status` | 含义 | 单题判卷 CLI 退出码 |

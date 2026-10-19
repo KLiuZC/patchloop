@@ -1,7 +1,6 @@
 import hashlib
 import json
 import platform
-import shutil
 import subprocess
 import threading
 import time
@@ -18,7 +17,8 @@ from .command_runtime import (
     swebench_command_policy, validate_command_policy,
 )
 from .llm import LLM, estimate_cost
-from .loop import cached_tokens_of, run
+from .loop import RunInterrupted, run
+from .eval_usage import normalize_usage, recover_usage
 from .prompts import TASK_TEMPLATE
 from .environment import (EnvironmentCheckError, MODULES, inspect_image, policy_metadata,
                           prepare_swebench_environment, solver_runner)
@@ -86,6 +86,21 @@ class InstanceResult:
     final_message: str = ""
     environment_status: str = "not_checked"
     command_policy_counts: dict[str, int] = field(default_factory=dict)
+    usage_status: str = "not_recorded"
+    usage_error: str = ""
+    known_cost: float | None = None
+    grading_status: str = "not_run"
+    grading_error: str = ""
+    model_calls_attempted: int | None = None
+    http_attempts: int | None = None
+    unreported_http_attempts: int = 0
+
+
+class SolveInterrupted(KeyboardInterrupt):
+    def __init__(self, result, patch):
+        super().__init__("evaluation interrupted")
+        self.result = result
+        self.patch = patch
 
 
 def solve(
@@ -107,6 +122,8 @@ def solve(
     result = InstanceResult(instance_id=iid, mode=mode)
     started = time.time()
     patch = ""
+    model_started = False
+    interruption = None
     try:
         image = inspect_image(image_name(instance))
         with solver_runner(image["id"], workdir="/testbed", platform=platform, memory=memory) as runner:
@@ -117,14 +134,20 @@ def solve(
             if mode == "agent":
                 policy = swebench_command_policy(command_policy, instance, environment_report,
                                                  getattr(runner, "workdir", "/testbed"))
-                r = run(
-                    task_text(instance), llm, runner,
-                    max_turns=max_turns, timeout=timeout, traj_dir=traj_dir, on_turn=on_turn, run_id=iid,
-                    budget_reminders=budget_reminders,
-                    explicit_finish=explicit_finish,
-                    command_policy=policy,
-                    on_policy=lambda event: count_policy_event(result.command_policy_counts, event),
-                )
+                model_started = True
+                try:
+                    r = run(
+                        task_text(instance), llm, runner,
+                        max_turns=max_turns, timeout=timeout, traj_dir=traj_dir, on_turn=on_turn, run_id=iid,
+                        budget_reminders=budget_reminders,
+                        explicit_finish=explicit_finish,
+                        command_policy=policy,
+                        capture_errors=True,
+                        on_policy=lambda event: count_policy_event(result.command_policy_counts, event),
+                    )
+                except RunInterrupted as exc:
+                    r = exc.result
+                    interruption = exc
                 patch = r.patch
                 result.turns, result.finished = r.turns, r.finished
                 result.budget_reminders_sent = r.budget_reminders_sent
@@ -132,18 +155,29 @@ def solve(
                 result.prompt_tokens, result.cached_tokens, result.completion_tokens = (
                     r.prompt_tokens, r.cached_tokens, r.completion_tokens,
                 )
+                result.error = getattr(r, "error", "")
             elif mode == "single-shot":
-                patch, note, usage = single_shot(instance, llm, runner, record_path=traj_dir / f"{iid}.single-shot.json")
+                model_started = True
+                result.model_calls_attempted = 1
+                def record_usage(usage):
+                    result.turns = 1
+                    counts = normalize_usage(usage)
+                    result.usage_status = "recorded" if counts is not None else "incomplete"
+                    for name, value in (counts or {}).items():
+                        setattr(result, name, value)
+                patch, note, usage = single_shot(instance, llm, runner, record_path=traj_dir / f"{iid}.single-shot.json", on_usage=record_usage)
                 result.turns, result.finished, result.note = 1, True, note
                 result.stop_reason = "single_shot"
                 result.patch_applied = bool(patch) if patch or note == "patch did not apply" else None
-                result.prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
-                result.cached_tokens = cached_tokens_of(usage) if usage else 0
-                result.completion_tokens = getattr(usage, "completion_tokens", 0) or 0
                 if patch:
                     (traj_dir / f"{iid}.patch").write_text(patch, encoding="utf-8")
             else:
                 raise ValueError(f"unknown mode {mode!r}")
+    except KeyboardInterrupt as exc:
+        interruption = exc
+        result.error = "Evaluation interrupted"
+        result.stop_reason = "interrupted"
+        result.finished = False
     except EnvironmentCheckError as e:
         result.environment_status = "failed"
         result.error = f"{type(e).__name__}: {e}"
@@ -157,7 +191,29 @@ def solve(
             result.stop_reason = "error"
     result.seconds = round(time.time() - started, 1)
     result.patch_lines = patch.count("\n")
-    result.cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
+    if model_started and mode == "agent":
+        usage = recover_usage(Path(traj_dir) / f"{iid}.jsonl", iid, llm.model)
+        for name, value in usage.items():
+            setattr(result, name, value)
+    elif not model_started:
+        result.model_calls_attempted = 0
+        result.usage_status = "not_started"
+        result.cost = result.known_cost = 0.0
+    else:
+        result.known_cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
+        result.http_attempts = getattr(llm, "last_http_attempts", None)
+        if result.http_attempts is not None:
+            result.unreported_http_attempts = max(0, result.http_attempts - int(result.usage_status == "recorded"))
+        if result.unreported_http_attempts:
+            result.usage_status = "incomplete"
+        result.cost = result.known_cost if result.usage_status == "recorded" and not result.error else None
+        if result.error:
+            result.usage_status = "incomplete"
+    if interruption is not None:
+        result.stop_reason = "interrupted"
+        result.finished = False
+        result.cost = None if model_started else 0.0
+        raise SolveInterrupted(result, patch) from interruption
     return result, patch
 
 
@@ -212,32 +268,42 @@ def evaluate(
         iid = instance["instance_id"]
         log(f"> {iid}")
         on_turn = _turn_logger(iid, log, explicit_finish) if workers == 1 else None
-        result, patch = solve(
-            instance, llm, mode, max_turns, timeout, traj_dir,
-            memory=memory, on_turn=on_turn, budget_reminders=budget_reminders,
-            explicit_finish=explicit_finish,
-            command_policy=command_policy,
-        )
+        interrupted = None
+        try:
+            result, patch = solve(
+                instance, llm, mode, max_turns, timeout, traj_dir,
+                memory=memory, on_turn=on_turn, budget_reminders=budget_reminders,
+                explicit_finish=explicit_finish,
+                command_policy=command_policy,
+            )
+        except SolveInterrupted as exc:
+            result, patch, interrupted = exc.result, exc.patch, exc
         with lock:
             _append_jsonl(predictions_path, {"instance_id": iid, "model_name_or_path": run_id, "model_patch": patch})
             _append_jsonl(results_path, asdict(result))
+        if interrupted is not None:
+            raise interrupted
         outcome = f"error {result.error}" if result.error else f"{result.turns} turns, patch {result.patch_lines} lines"
         log(f"< {iid}: {outcome} ({result.seconds}s)")
         return result
 
-    if workers == 1:
-        for instance in todo:
-            work(instance)
-    else:
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            list(pool.map(work, todo))
+    interruption = None
+    try:
+        if workers == 1:
+            for instance in todo:
+                work(instance)
+        else:
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                list(pool.map(work, todo))
+    except KeyboardInterrupt as exc:
+        interruption = exc
 
     results = {r["instance_id"]: InstanceResult(**r) for r in _read_jsonl(results_path)}
     ordered = [results[i["instance_id"]] for i in instances if i["instance_id"] in results]
 
     harness_run_id = None
     judgeable = [r for r in ordered if r.environment_status != "failed"]
-    if judge and judgeable:
+    if judge and judgeable and interruption is None:
         by_id = {i["instance_id"]: i for i in instances}
         missing = [r.instance_id for r in judgeable if not image_present(image_name(by_id[r.instance_id]))]
         if missing:
@@ -245,12 +311,20 @@ def evaluate(
         else:
             # with a task repo the harness rebuilds every image, whether or not it already exists
             task_repo = None
-        verdicts, harness_run_id = judge_predictions(
-            predictions_path, [r.instance_id for r in judgeable], run_id, dataset, harness_dir, task_repo, judge_workers, log,
-        )
+        try:
+            verdicts, harness_run_id = judge_predictions(
+                predictions_path, [r.instance_id for r in judgeable], run_id, dataset, harness_dir, task_repo, judge_workers, log,
+            )
+        except (OSError, ValueError, RuntimeError, KeyboardInterrupt) as exc:
+            if isinstance(exc, KeyboardInterrupt):
+                interruption = exc
+            verdicts = {row.instance_id: {"resolved": None, "patch_applied": None, "status": "error",
+                                         "error": f"{type(exc).__name__}: {exc}"} for row in judgeable}
         for r in ordered:
             if r.instance_id in verdicts:
                 r.resolved = verdicts[r.instance_id]["resolved"]
+                r.grading_status = verdicts[r.instance_id].get("status", "passed" if r.resolved else "failed")
+                r.grading_error = verdicts[r.instance_id].get("error", "")
                 if verdicts[r.instance_id]["patch_applied"] is not None:
                     r.patch_applied = verdicts[r.instance_id]["patch_applied"]
 
@@ -259,14 +333,26 @@ def evaluate(
     summary["budget_reminders"] = budget_reminders
     summary["explicit_finish"] = explicit_finish
     summary["command_policy"] = command_policy
+    summary["planned_instances"] = len(instances)
+    summary["pending_instance_ids"] = [item["instance_id"] for item in instances if item["instance_id"] not in results]
+    if not judge:
+        summary["requires_review"] = bool(summary["environment_failures"] or summary["unknown_cost_instances"] or summary["errors"])
+    if summary["pending_instance_ids"]:
+        summary["requires_review"] = True
+        summary["resolve_rate"] = None
     summary["invocation"] = {
         "started_at": started_at,
         "finished_at": datetime.now(timezone.utc).isoformat(),
         "wall_seconds": round(time.monotonic() - started, 1),
         "resumed_instances": len(done),
         "judge": judge,
+        "interrupted": interruption is not None,
     }
+    if interruption is not None:
+        summary["requires_review"] = True
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    if interruption is not None:
+        raise interruption
     return summary
 
 
@@ -318,46 +404,18 @@ def judge_predictions(
     workers: int,
     log: Callable[[str], None],
 ) -> tuple[dict[str, dict], str]:
-    """Run the official SWE-bench harness on the predictions and read back its verdicts."""
-    exe = shutil.which("swebench")
-    if not exe:
-        raise RuntimeError("swebench CLI not found on PATH (uv tool install git+https://github.com/SWE-bench/SWE-bench)")
-    harness_dir = Path(harness_dir or ".").resolve()
-    # the harness caches by run id, so a fresh id per judging pass makes sure new patches are really re-run
-    harness_run_id = f"{run_id}-{time.strftime('%m%d-%H%M%S')}"
-    cmd = [
-        exe, "eval", HARNESS_ALIASES.get(dataset, dataset),
-        "-p", str(predictions_path.resolve()),
-        "--run-id", harness_run_id,
-        "-j", str(workers),
-    ]
-    if task_repo:
-        cmd += ["--task-repo", str(Path(task_repo).resolve())]
-    for iid in instance_ids:
-        cmd += ["-i", iid]
-    log("judging with: " + " ".join(cmd))
-    subprocess.run(cmd, cwd=harness_dir)
-
-    report_dir = harness_dir / "logs" / "evaluation" / harness_run_id
-    results_file = report_dir / "results.json"
-    if not results_file.exists():
-        raise RuntimeError(f"harness produced no {results_file}")
-    overall = json.loads(results_file.read_text())
-    verdicts = {}
-    for iid in instance_ids:
-        report = report_dir / run_id / iid / "report.json"
-        if report.exists():
-            d = json.loads(report.read_text()).get(iid, {})
-            verdicts[iid] = {"resolved": bool(d.get("resolved")), "patch_applied": bool(d.get("patch_successfully_applied"))}
-        else:
-            verdicts[iid] = {"resolved": iid in overall.get("resolved_ids", []), "patch_applied": None}
-    return verdicts, harness_run_id
+    """Grade immutable predictions and retain unknown results on harness errors."""
+    from .eval_grading import grade_predictions
+    return grade_predictions(predictions_path, instance_ids, run_id, dataset, harness_dir, task_repo, workers, log)
 
 
 def summarize(results: list[InstanceResult], run_id: str, mode: str, llm: LLM) -> dict:
     judged = [r for r in results if r.resolved is not None]
     resolved = sum(1 for r in judged if r.resolved)
     environment_failures = sum(r.environment_status == "failed" for r in results)
+    grading_errors = sum(row.grading_status == "error" for row in results)
+    unknown_costs = sum(row.cost is None for row in results)
+    known_cost = sum(row.known_cost if row.known_cost is not None else row.cost or 0 for row in results)
     return {
         "run_id": run_id,
         "mode": mode,
@@ -366,15 +424,21 @@ def summarize(results: list[InstanceResult], run_id: str, mode: str, llm: LLM) -
         "instances": len(results),
         "judged": len(judged),
         "resolved": resolved,
-        "resolve_rate": round(resolved / len(judged), 3) if judged and not environment_failures else None,
+        "resolve_rate": round(resolved / len(results), 3) if judged and len(judged) == len(results) and not environment_failures and not grading_errors else None,
         "errors": sum(1 for r in results if r.error),
         "environment_failures": environment_failures,
+        "grading_errors": grading_errors,
+        "unknown_cost_instances": unknown_costs,
+        "known_cost_cny": round(known_cost, 3),
+        "model_calls_attempted": sum(row.model_calls_attempted for row in results) if all(row.model_calls_attempted is not None for row in results) else None,
+        "unreported_http_attempts": sum(row.unreported_http_attempts for row in results),
+        "requires_review": bool(environment_failures or grading_errors or unknown_costs or any(row.error for row in results) or len(judged) != len(results)),
         "command_policy_counts": {name: sum(row.command_policy_counts.get(name, 0) for row in results)
                                   for name in COUNT_FIELDS},
         "prompt_tokens": sum(r.prompt_tokens for r in results),
         "cached_tokens": sum(r.cached_tokens for r in results),
         "completion_tokens": sum(r.completion_tokens for r in results),
-        "cost_cny": round(sum(r.cost or 0 for r in results), 3),
+        "cost_cny": round(sum(row.cost for row in results), 3) if not unknown_costs else None,
         "seconds": round(sum(r.seconds for r in results), 1),
         "results": [asdict(r) for r in results],
     }

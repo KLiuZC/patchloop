@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Callable
 
 from .llm import LLM, estimate_cost
+from .eval_usage import normalize_usage
 from .command_runtime import COUNT_FIELDS, CommandPolicy, count_policy_event
 from .prompts import FINISH_REQUIRED, build_system_prompt, budget_reminder
 from .tools import FINISH_TOOL, TOOLS, bash
@@ -28,6 +29,11 @@ class RunResult:
     stop_reason: str = "max_turns"
     error: str = ""
     command_policy_counts: dict[str, int] = field(default_factory=dict)
+    model_calls_attempted: int = 0
+    http_attempts: int | None = 0
+    unreported_http_attempts: int = 0
+    missing_usage: bool = False
+    known_cost: float | None = None
 
 
 class RunInterrupted(KeyboardInterrupt):
@@ -103,22 +109,37 @@ def run(
                 messages.append(reminder)
                 traj.budget_reminder(turn, max_turns - turn + 1, reminder)
                 result.budget_reminders_sent += 1
-            msg, usage = llm.chat(messages, tools)
-            assistant = _assistant_message(msg)
-            messages.append(assistant)
-
+            result.model_calls_attempted += 1
+            usage = None
+            try:
+                msg, usage = llm.chat(messages, tools)
+            except (Exception, KeyboardInterrupt):
+                usage = getattr(llm, "last_usage", None)
+                if getattr(llm, "last_response_received", False):
+                    result.turns = turn
+                    turn_usage = _accumulate_usage(result, usage)
+                    traj.turn(turn=turn, assistant={"role": "assistant", "content": ""}, tools=[],
+                              usage=turn_usage, error="model response decoding failed",
+                              seconds=round(time.time() - started, 2))
+                raise
+            finally:
+                attempts = getattr(llm, "last_http_attempts", None)
+                if type(attempts) is int and attempts >= 0:
+                    if result.http_attempts is not None:
+                        result.http_attempts += attempts
+                    result.unreported_http_attempts += max(0, attempts - int(normalize_usage(usage) is not None))
+                else:
+                    result.http_attempts = None
             result.turns = turn
-            turn_usage = None
-            if usage:
-                cached = cached_tokens_of(usage)
-                result.prompt_tokens += usage.prompt_tokens
-                result.cached_tokens += cached
-                result.completion_tokens += usage.completion_tokens
-                turn_usage = {
-                    "prompt_tokens": usage.prompt_tokens,
-                    "cached_tokens": cached,
-                    "completion_tokens": usage.completion_tokens,
-                }
+            turn_usage = _accumulate_usage(result, usage)
+            try:
+                assistant = _assistant_message(msg)
+            except (Exception, KeyboardInterrupt):
+                traj.turn(turn=turn, assistant={"role": "assistant", "content": ""}, tools=[],
+                          usage=turn_usage, error="assistant message normalization failed",
+                          seconds=round(time.time() - started, 2))
+                raise
+            messages.append(assistant)
             tool_records = []
             calls = msg.tool_calls or []
             submission = None
@@ -211,13 +232,15 @@ def run(
             result.stop_reason = "error"
             result.error += ("; " if result.error else "") + f"patch snapshot failed: {type(exc).__name__}: {exc}"
     result.seconds = round(time.time() - run_started, 1)
-    result.cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
+    result.known_cost = estimate_cost(llm.model, result.prompt_tokens, result.cached_tokens, result.completion_tokens)
+    result.cost = result.known_cost if not result.missing_usage and not result.unreported_http_attempts and failure is None else None
     try:
         traj.close(result)
     except KeyboardInterrupt as exc:
         result.finished = False
         result.stop_reason = "interrupted"
         result.error += ("; " if result.error else "") + "trajectory finalization interrupted"
+        result.cost = None
         if capture_errors:
             raise RunInterrupted(result) from exc
         raise
@@ -226,6 +249,16 @@ def run(
     if failure is not None and not capture_errors:
         raise failure
     return result
+
+
+def _accumulate_usage(result, usage):
+    counts = normalize_usage(usage)
+    if counts is not None:
+        for name, value in counts.items():
+            setattr(result, name, getattr(result, name) + value)
+    else:
+        result.missing_usage = True
+    return counts
 
 
 def _finish_summary(arguments: str) -> str:

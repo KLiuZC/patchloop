@@ -42,7 +42,7 @@ def inspect_image(image):
 
 def solver_runner(image, workdir="/testbed", platform="linux/amd64", memory="3g"):
     return DockerRunner(image, workdir=workdir, platform=platform, memory=memory,
-                        network="none", hidden_paths=HIDDEN_PATHS)
+                        network="none", hidden_paths=HIDDEN_PATHS, local_only=True)
 
 
 def probe_environment(runner, instance, *, prepare=False):
@@ -98,7 +98,7 @@ def preflight_instance(instance, image, output, *, verify, memory="3g", platform
     report = {"instance_id": instance["instance_id"], "image": info, "policy": policy_metadata(),
               "base_commit": instance["base_commit"], "visible_command": verify, "status": "error"}
     try:
-        with DockerRunner(info["id"], platform=platform, memory=memory) as runner:
+        with DockerRunner(info["id"], platform=platform, memory=memory, local_only=True) as runner:
             report["before"] = probe_environment(runner, instance)
         with solver_runner(info["id"], platform=platform, memory=memory) as runner:
             isolated = prepare_swebench_environment(runner, instance, output / "environment.json", info)
@@ -108,6 +108,6 @@ def preflight_instance(instance, image, output, *, verify, memory="3g", platform
                                        "output": health.output}
             report["status"] = "passed" if health.exit_code == 0 and not health.timed_out else "failed"
     except Exception as exc:
-        report["error"] = f"{type(exc).__name__}: {exc}"
+        report.update(status="error", error=f"{type(exc).__name__}: {exc}")
     (output / "preflight.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     return report

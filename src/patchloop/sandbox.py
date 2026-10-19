@@ -126,6 +126,7 @@ class DockerRunner:
         mount_target: str | None = None,
         labels: dict[str, str] | None = None,
         hidden_paths: tuple[str, ...] = (),
+        local_only: bool = False,
     ):
         self.image = image
         self.workdir = workdir
@@ -136,6 +137,7 @@ class DockerRunner:
         self.memory = memory
         self.cpus = cpus
         self.network = network
+        self.local_only = local_only
         for path in hidden_paths:
             if (not path.startswith("/") or path == "/" or
                     any(part in path for part in (":", ",", "..", "\x00"))):
@@ -165,6 +167,8 @@ class DockerRunner:
         ]
         if self.platform:
             cmd += ["--platform", self.platform]
+        if self.local_only:
+            cmd += ["--pull", "never"]
         if self.hidden_paths:
             cmd += ["--cap-drop", "ALL", "--security-opt", "no-new-privileges"]
             for path in self.hidden_paths:
@@ -179,12 +183,25 @@ class DockerRunner:
             raise RuntimeError(f"docker run failed: {proc.stderr.strip()}")
         self._started = True
         # the repository may be owned by a different uid than the one running git
-        self._exec(["git", "config", "--global", "--add", "safe.directory", "*"], timeout=30)
+        try:
+            initialized = self._exec(["git", "config", "--global", "--add", "safe.directory", "*"], timeout=30)
+            if initialized.returncode != 0:
+                raise RuntimeError(f"container initialization failed: {self.name}")
+        except BaseException:
+            self.close()
+            raise
         return self
 
     def close(self) -> None:
         if self._started:
-            subprocess.run(["docker", "rm", "-f", self.name], capture_output=True)
+            removed = subprocess.run(["docker", "rm", "-f", self.name], capture_output=True, text=True)
+            if removed.returncode != 0:
+                checked = subprocess.run(["docker", "inspect", "--type", "container", self.name], capture_output=True, text=True)
+                absent = {f"{prefix}: no such {kind}: {self.name}" for prefix in ("error", "error response from daemon")
+                          for kind in ("container", "object")}
+                missing = checked.returncode == 1 and any(line.strip().lower() in absent for line in checked.stderr.splitlines())
+                if not missing:
+                    raise RuntimeError(f"container cleanup failed: {self.name}; {removed.stderr.strip()}")
             self._started = False
 
     def __enter__(self) -> "DockerRunner":

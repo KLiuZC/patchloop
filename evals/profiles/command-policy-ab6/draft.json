@@ -2,6 +2,14 @@
   "schema_version": 1,
   "status": "draft_preflight_required",
   "model_execution_authorized": false,
+  "preparation_implementation": {
+    "entrypoint": "evals/profiles/command-policy-ab6/prepare.py",
+    "default_mode": "check_only",
+    "explicit_execute": "environment health plus separate baseline/gold controls; never model solving",
+    "supported_harness_version": "5.0.2",
+    "implemented_guards": ["official evidence integrity", "partial usage recovery", "HTTP retry observation", "local images only", "container cleanup errors"],
+    "readiness_note": "Implementation and mock checks do not satisfy real candidate preflight or authorize the model campaign; readiness gates remain false until end-to-end evidence is available."
+  },
   "created_date": "2026-10-19",
   "design_base_commit": "fe239bee8f364ca9c2b3f7fda452439d353fb09d",
   "dataset": {
