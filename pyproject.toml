@@ -17,6 +17,8 @@ dependencies = [
     "pydantic>=2.13.5",
     "python-dotenv>=1.2.3",
     "rich>=15.0.0",
+    "tree-sitter==0.26.0",
+    "tree-sitter-bash==0.25.1",
     "typer>=0.27.2",
     "uvicorn>=0.54.0",
 ]

@@ -30,9 +30,9 @@ DeepSeek 基线 4/9、提醒 6/9、提醒 + finish 6/9；GLM 基线 1/3。后续
 
 2026-10-19 合并前修复：预检升级至 v2，补上被 Git 忽略的判卷材料及特殊路径漏检，见[修复记录](evals/reports/environment-isolation/README.md#v2-忽略文件漏检修复)。十遍 v1 实验原始结果与哈希保持不变；新实验需另建配置，不能继续使用旧冻结计划混跑。
 
-## 当前阶段：命令策略设计
+## 当前阶段：命令策略纯判定器
 
-已建立 `feat/command-policy` 分支，准备[策略边界与接入设计](docs/command-policy.md)及[56 条开发样例](evals/profiles/command-policy/cases.json)。当前只完成方案与数据准备，没有新增可用开关或改变 bash 执行行为。
+`feat/command-policy` 分支已实现独立的命令判定函数与不可变上下文，使用 Tree-sitter Bash 语法树区分命令与文本，[56 条开发样例](evals/profiles/command-policy/cases.json)及边界检查共 100 项测试通过。支持范围、输入限制和未知降级见[策略说明](docs/command-policy.md)。当前没有新增 CLI 开关，也未改变 bash 执行行为；下一步接入执行层与轨迹，再做模拟模型及 Docker 验收。
 
 先做命令策略，再单独评估结构化工具。首版区分允许、拦截和未知，未知命令仍执行并记录；策略不替代 Docker 隔离。按纯判定测试、执行层和轨迹测试、Docker 冒烟、离线误拦截分析的顺序推进，通过后再固定 v2 环境下的新题 A/B 计划。此阶段不启动真实模型实验。
 

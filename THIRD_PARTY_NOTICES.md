@@ -37,6 +37,8 @@ GitHub API 快照中的 Issue／PR 正文、评论、账号信息及链接保留
 
 Python 与前端依赖保留各自许可证。具体版本由 `uv.lock` 和 `frontend/package-lock.json` 记录，依赖授权以对应发行包内的许可证与声明为准；本项目许可证不覆盖安装后的全部依赖。
 
+命令判定器依赖 [tree-sitter](https://github.com/tree-sitter/py-tree-sitter) 0.26.0 和 [tree-sitter-bash](https://github.com/tree-sitter/tree-sitter-bash) 0.25.1，仅使用其语法解析接口，未复制上游实现。两者的许可声明随各自发行包提供；分发包含这些依赖的环境时须保留对应许可文件。
+
 Python 分发包通过 `license-files` 携带项目许可证、本文及上游许可证副本。前端静态资源中的 [patchloop.txt](frontend/public/licenses/patchloop.txt) 与根目录 LICENSE 一致，构建后位于 `/licenses/patchloop.txt`。
 
 分发包含第三方代码的前端构建、容器或其他组合产物时，应同时保留相关组件要求的版权、许可证和 NOTICE。`frontend/package.json` 中的 `private: true` 仅防止 npm 意外发布，不影响源码采用 MIT。

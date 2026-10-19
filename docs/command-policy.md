@@ -2,7 +2,7 @@
 
 [发展路线](../ROADMAP.md) · [执行架构](architecture.md) · [三题复验](../evals/reports/xarray3-isolation/README.md)
 
-日期：2026-10-19。分支：`feat/command-policy`。状态：**方案与样例已准备，尚未实现**。本文中的接口、开关和事件均为拟定契约，不是当前可用功能。本阶段不修改工具执行行为、不调用模型。
+日期：2026-10-19。分支：`feat/command-policy`。状态：**纯判定器已实现，尚未接入执行流程**。`PolicyContext`、`PolicyDecision` 和 `assess_command` 可独立调用；下文的 CLI 开关、执行拦截和轨迹事件仍为拟定契约。本阶段不修改工具执行行为、不调用模型。
 
 ## 目标与范围
 
@@ -28,7 +28,7 @@
 
 能可靠拆分的同一调用中，存在 `block` 则整条拒绝；否则存在 `unknown` 则记为未知，其余为允许。无法可靠解析时不猜测子命令。拒绝只针对这一条工具调用，不回滚同一模型回复中已执行的其他工具。
 
-## 规则草案
+## 判定规则与支持范围
 
 路径以容器内仓库根、当前工作目录、被测模块名、依赖目录和临时目录为上下文。不写死 xarray 题号、函数名或官方断言；xarray 仅作为样例上下文。
 
@@ -58,13 +58,36 @@
 6. `grep ... || pip download ...` 即使下载分支未必执行，也按包含禁止分支拒绝；轨迹要记录静态判定，而不是声称已经执行下载。
 7. 包含多个子命令的单条 bash 请求必须在执行任何部分前完成判定。不得先运行前半段再拦截后半段，也不自动删掉被拒绝部分后执行剩余命令。
 
-实现前先确定能满足这些要求的解析方式。首版只承诺覆盖明示的语法子集；解析器选型、超长输入限制和不支持语法的降级测试通过后再接入 enforce，不在本文假定通用 shell 解析已经解决。
+当前使用 [Tree-sitter Python bindings](https://github.com/tree-sitter/py-tree-sitter) 0.26.0 和 [Bash grammar](https://github.com/tree-sitter/tree-sitter-bash) 0.25.1，版本锁定在 `pyproject.toml` 与 `uv.lock`。解析器只生成语法树，不调用 Bash。实现不依赖关键词分割，也不使用宿主机路径解析容器路径。
+
+当前上限为 32,768 UTF-8 字节、4,096 个语法树节点及 64 层深度；超限返回 `unknown/input_limit`。语法错误、NUL 或无法编码的输入返回 `unknown/unparsed_shell`。这些是输入及遍历限制，不是硬实时保证；原有工具超时也不会限制尚未接入的纯判定器。
+
+支持简单命令、管道、重定向、`&&`／`||`／顺序语句和静态目录流转。目录可能因分支或 `cd` 失败而不确定时，相对路径返回未知；管道里的 `cd` 不改变后续父 shell 的目录。quoted heredoc 内容视为数据；未加引号的 heredoc、循环、函数、后台执行和嵌套 shell 保守返回未知。
+
+命令参数只解释已支持的选项：如 grep 的模式与文件参数、head/tail 数量参数、find 的常用查找条件、sed 的数字行范围读取。sed 程序、`find -exec`、未支持的包装及选项返回 `unknown`，不执行它们来判断行为。`unsupported_command` 区分合法但未支持的命令形式。显式未知目录中的可执行文件不因叫 `python`、`pip` 等名字就被当成系统程序；已知路径仍只是词法识别，不保证不存在符号链接、shell 配置或程序副作用。
+
+读取 `/tmp/test.patch` 与创建、清理自己的同名临时补丁分别处理：前者命中明确命名的外部材料规则，后者不因文件名触发读取规则。判定器没有文件内容或来源证明，已存在同名自建文件的读取仍可能误拦，需在接入前的离线分析中统计。
+
+## 已实现的独立接口
+
+实现位于 [command_policy.py](../src/patchloop/command_policy.py)，只提供分类结果：
+
+```python
+from patchloop.command_policy import PolicyContext, assess_command
+
+context = PolicyContext(repository_root="/testbed", cwd="/testbed", target_modules=("xarray",))
+decision = assess_command("pip download xarray", context)
+assert decision.classification == "block"
+assert decision.rule_ids == ("network_or_install",)
+```
+
+`PolicyContext` 保存不可变的容器路径配置；`PolicyDecision` 包含 `classification`、排序后的 `rule_ids` 和说明 `reason`，本身不选择执行动作。判定采用 `block > unknown > allow`；有阻断或未知原因时不把普通读取类标签混入最终规则集合。`POLICY_VERSION` 和 `PARSER_VERSION` 可供后续配置与轨迹使用，当前没有自动写入实验记录。
 
 ## 拟定接入方式
 
 当前调用链为 `loop._execute → tools.bash → runner.run`。在工具参数完成校验、兼容 `cmd/command` 之后、`runner.run` 之前做策略判定，保证两个参数名不会绕过检查。
 
-拟新增纯判定函数 `assess_command(command, context)`，返回 `classification`、`rule_ids`、`reason`；函数不得访问网络、启动子进程或修改工作区。模式映射和工具反馈由执行层完成，不把日志写入与纯分类函数耦合。现有调用方默认不提供策略，保持关闭行为。
+已实现的纯判定函数 `assess_command(command, context)` 不访问网络、启动子进程或修改工作区。下一步才接入模式映射和工具反馈，不把日志写入与纯分类函数耦合。目前 `loop`、`tools`、runner 和 CLI 均未接入策略，保持原行为。
 
 拟新增 `command_policy` 轨迹事件：模式、策略版本、turn、tool_call_id、判定、规则 ID、未知原因，以及执行层选择的 `execute/block` 动作。事件必须能与原工具调用、返回结果对应。audit 命中记录为 would-block，不计入实际拦截次数；工具执行是否成功仍看原工具返回。
 
@@ -81,7 +104,7 @@ Search within /testbed or a specific dependency directory, then implement and te
 
 ## 开发样例
 
-[cases.json](../evals/profiles/command-policy/cases.json) 包含 **56 条待实现的判定样例**：10 条从已保存轨迹提取，46 条构造对照；预期为 23 条允许、23 条拦截、10 条未知。
+[cases.json](../evals/profiles/command-policy/cases.json) 包含 **56 条判定开发样例**：10 条从已保存轨迹提取，46 条构造对照；预期为 23 条允许、23 条拦截、10 条未知。命令及来源哈希保持原样，状态更新为纯判定器已实现。
 
 - 原始命令保存 run-id、题号、turn、轨迹行号、tool_call_id 和哈希；未运行这些命令，也未改写旧轨迹。
 - 构造样例包含正常依赖读取、关键词纯文本、Python 编辑、网络获取、全盘搜索、路径归一化、动态包装和“前半条有副作用、后半条应拒绝”。
@@ -89,7 +112,9 @@ Search within /testbed or a specific dependency directory, then implement and te
 - 样例是可调整的开发集，不是不可改动的实验计划，更不是策略有效性的评测结果。
 - 原始命令只是数据，包含有副作用的写文件、下载和清理操作。数据校验与离线分类只读命令字符串，不得交给 shell 重放。
 
-实现时将这些数据接入参数化测试，再补上下面的执行层测试。当前没有分类器，不能把“JSON 校验通过”写成“56 条策略测试通过”。
+这些数据已接入 [test_command_policy.py](../tests/test_command_policy.py) 的参数化测试；共 100 项纯判定及边界测试通过。额外用例覆盖条件目录、系统命令名伪装、Git 外部仓库、引用与转义、临时补丁写入、输入上限、无 I/O 及并发确定性。验证命令：`uv run pytest -q tests/test_command_policy.py`。测试不重放轨迹命令，纯判定通过不代表执行层已经拦截。
+
+本阶段检查：判定器、工具、循环、评测、配置与 CLI 的针对性回归 171 passed；后端全量 `uv run pytest -q` 为 1182 passed。另以固定种子构造 2,000 条语法输入进行仅分类检查，未出现异常；该检查不证明语义判定全部正确。锁文件只新增两项解析依赖，既有包版本未升级；旧模型运行目录和报告未修改。没有运行真实模型或执行样例中的命令。
 
 ## 验收与对照
 
@@ -110,7 +135,7 @@ Search within /testbed or a specific dependency directory, then implement and te
 
 ## 下一步
 
-1. 实现纯判定器与参数化测试，先验证支持的 shell 结构和未知降级，不接真实模型。
+1. 已完成纯判定器与参数化测试；支持的 shell 结构与未知降级以测试和上述范围为准。
 2. 接入 off／audit／enforce 的工具执行与轨迹契约，默认关闭，通过 FakeRunner 和 Docker 冒烟。
 3. 离线核对覆盖范围、误拦截和未知命令，再决定是否进入新题模型对照。
 
