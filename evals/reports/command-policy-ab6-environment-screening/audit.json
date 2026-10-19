@@ -1,0 +1,1526 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-19",
+  "status": "static_review_only",
+  "source_commit": "7f77e6bf2e97027cc16a3d31fcc8835591cfee84",
+  "draft_path": "evals/profiles/command-policy-ab6/draft.json",
+  "draft_sha256": "2ded67b3ad26e84f70932d3150c7e198a52c0d0959801741a7cc718eea4f69a7",
+  "task_repository_commit": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "task_repository_files_match_commit": true,
+  "task_definition_read_scope": [
+    "Dockerfile",
+    "environment.yml"
+  ],
+  "hidden_fields_used_for_selection": false,
+  "candidate_replaced": false,
+  "model_requests": 0,
+  "containers_created": 0,
+  "images_built": 0,
+  "source_sha256": {
+    "src/patchloop/environment.py": "0d4c5afe94c0ab5033ccd97bc13487c0fc097157db137a736e396f01bad3dba1",
+    "src/patchloop/environment_probe.py": "982bcd4436456b0db030f9015d0e73fcadd511abd71aff7e321944e6604571dc",
+    "src/patchloop/ab_baseline.py": "4df309ba5cff2ced9faa82d9aaaab51d726fb6a1f75c288c89e03a9fdb795167"
+  },
+  "counts": {
+    "ranked_candidates": 33,
+    "python_27": 1,
+    "python_39": 32,
+    "sphinx_recipes_with_content_edit_commands": 18,
+    "requests_recipes_with_noneditable_install": 7,
+    "pytest_recipes_with_editable_install": 8
+  },
+  "interpretation": "Recipe declarations, not observed image contents or runtime acceptance. A declared edit can be a no-op; pip may resolve extra dependencies. No candidate is marked preflight-passed by this audit.",
+  "records": [
+    {
+      "instance_id": "pytest-dev__pytest-5262",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "<15 min fix",
+      "saved_rank": 1,
+      "selected_in_draft": true,
+      "base_commit": "58e6a09db49f34886ff13f3b7520dd0bcd7063cd",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "pluggy==0.11.0",
+        "setuptools==68.0.0"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/pytest-dev__pytest-5262/Dockerfile": "7fe38bf6ab3197766d79f497505deadf380ab0a7275bfe9543cd2d08582fc5a6",
+        "tasks/pytest-dev__pytest-5262/environment.yml": "403ff0f375a15f8e70a3f6d90528e07c8f185e22a8dde48bd2f0a93d22728da0"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 104,
+          "command": "python -m pip install -e ."
+        }
+      ],
+      "static_findings": [],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-10081",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "<15 min fix",
+      "saved_rank": 2,
+      "selected_in_draft": false,
+      "base_commit": "da9a2b584eb7a6c7e924b2621ed0ddaeca0a7bea",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "pluggy==0.13.1"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/pytest-dev__pytest-10081/Dockerfile": "648c7b0be4a1f2815247be1dace937b62087a5998d876d7e37aae926b0c0e372",
+        "tasks/pytest-dev__pytest-10081/environment.yml": "c29104d952af744b2dfa14f4ef752ec66cb3d30de45e081173b7a178e8a88c14"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 103,
+          "command": "python -m pip install -e ."
+        }
+      ],
+      "static_findings": [],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5809",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "<15 min fix",
+      "saved_rank": 3,
+      "selected_in_draft": false,
+      "base_commit": "8aba863a634f40560e25055d179220f0eefabe9a",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "pluggy==0.13.1"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/pytest-dev__pytest-5809/Dockerfile": "7aeb0e1963e8ba4b51f95a9bba54caf8a39d1dec59f77085e553d280e1fa367d",
+        "tasks/pytest-dev__pytest-5809/environment.yml": "c6fd0c020be47790c2838f76108acdc9925698de59e172e4ca4e00d9a6ba5a66"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 107,
+          "command": "python -m pip install -e ."
+        }
+      ],
+      "static_findings": [],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5840",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 1,
+      "selected_in_draft": true,
+      "base_commit": "73c5b7f4b11a81e971f7d1bb18072e06a87060f4",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "pluggy==0.13.1"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/pytest-dev__pytest-5840/Dockerfile": "14f337afdb5e77b5430ea4662ec87d91e53b52d9102821aec97b3aef8a354b9b",
+        "tasks/pytest-dev__pytest-5840/environment.yml": "67bd70195c2938bc2a7a66ffc6e5e55fa7b8d03ed21a84575520564cf73b8010"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 104,
+          "command": "python -m pip install -e ."
+        }
+      ],
+      "static_findings": [],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5631",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 2,
+      "selected_in_draft": false,
+      "base_commit": "cb828ebe70b4fa35cd5f9a7ee024272237eab351",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "pluggy==0.13.1"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/pytest-dev__pytest-5631/Dockerfile": "528f42c3f18f3d2cede7f2fd65d1b76b3c17c0db8ca7a14d6e0197a83c87ed56",
+        "tasks/pytest-dev__pytest-5631/environment.yml": "bbd8fa3e28e7a151d680f99118852320e2657f8e97862252db57578a58991560"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 106,
+          "command": "python -m pip install -e ."
+        }
+      ],
+      "static_findings": [],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-10051",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 3,
+      "selected_in_draft": false,
+      "base_commit": "aa55975c7d3f6c9f6d7f68accc41bb7cadf0eb9a",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "pluggy==0.13.1"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/pytest-dev__pytest-10051/Dockerfile": "084eb6b1e3e1df234eca811006ab4fceabe2590557fcef5b4cc25cdd86ececc5",
+        "tasks/pytest-dev__pytest-10051/environment.yml": "c29104d952af744b2dfa14f4ef752ec66cb3d30de45e081173b7a178e8a88c14"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 103,
+          "command": "python -m pip install -e ."
+        }
+      ],
+      "static_findings": [],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7490",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 4,
+      "selected_in_draft": false,
+      "base_commit": "7f7a36478abe7dd1fa993b115d22606aa0e35e88",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "pluggy==0.13.1"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/pytest-dev__pytest-7490/Dockerfile": "35886c1d70cb8dd66a9e101aaffb4dbcd4f618a9ad883cf716e47e230673c6f8",
+        "tasks/pytest-dev__pytest-7490/environment.yml": "c8f0270581d14fcb2bd5195b56c886992063be33dcf5231994b2755d52c16b73"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 104,
+          "command": "python -m pip install -e ."
+        }
+      ],
+      "static_findings": [],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7571",
+      "repo": "pytest-dev/pytest",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 5,
+      "selected_in_draft": false,
+      "base_commit": "422685d0bdc110547535036c1ff398b5e1c44145",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "pluggy==0.13.1"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/pytest-dev__pytest-7571/Dockerfile": "854ccd4021de8e495168f37e4f22f0fe3d77e3d54c4d1b327112644b842b9783",
+        "tasks/pytest-dev__pytest-7571/environment.yml": "c8f0270581d14fcb2bd5195b56c886992063be33dcf5231994b2755d52c16b73"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 104,
+          "command": "python -m pip install -e ."
+        }
+      ],
+      "static_findings": [],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "psf__requests-1724",
+      "repo": "psf/requests",
+      "difficulty": "<15 min fix",
+      "saved_rank": 1,
+      "selected_in_draft": true,
+      "base_commit": "1ba83c47ce7b177efe90d5f51f7760680f72eda0",
+      "declared_target_python": "2.7.18",
+      "declared_key_dependencies": [
+        "pluggy=0.13.1=py27_0",
+        "pytest=4.6.4=py27_0",
+        "python=2.7.18=h42bf7aa_3",
+        "setuptools=44.0.0=py27_0"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/psf__requests-1724/Dockerfile": "bc96bb9bd708ee226c6ad31baa3643af1cff31f756d8b05f963ed0d1fbe94340",
+        "tasks/psf__requests-1724/environment.yml": "5582c782f86d707fcb0c4fc62369dd7c108bb194971cf2aee6372f9b3ff26239"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 122,
+          "command": "python -m pip install ."
+        }
+      ],
+      "static_findings": [
+        "target_python_incompatible_with_v2_probe",
+        "noneditable_install_may_leave_external_project_copy"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "psf__requests-5414",
+      "repo": "psf/requests",
+      "difficulty": "<15 min fix",
+      "saved_rank": 2,
+      "selected_in_draft": false,
+      "base_commit": "39d0fdd9096f7dceccbc8f82e1eda7dd64717a8e",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "pluggy=1.0.0=py39h06a4308_1",
+        "pytest=7.4.4=py39h06a4308_0",
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "urllib3==1.26.20"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/psf__requests-5414/Dockerfile": "d966cfbde6bf81dcdbd2ce12834174d2b96a2fadd630abf1cf5a599c65cc87e9",
+        "tasks/psf__requests-5414/environment.yml": "7ff9c7aafd0d4bd23ebe517bb01f1b762694340e73fb5e25438714dfafe40f64"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 107,
+          "command": "python -m pip install ."
+        }
+      ],
+      "static_findings": [
+        "noneditable_install_may_leave_external_project_copy"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "psf__requests-1142",
+      "repo": "psf/requests",
+      "difficulty": "<15 min fix",
+      "saved_rank": 3,
+      "selected_in_draft": false,
+      "base_commit": "22623bd8c265b78b161542663ee980738441c307",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "pluggy=1.0.0=py39h06a4308_1",
+        "pytest=7.4.4=py39h06a4308_0",
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/psf__requests-1142/Dockerfile": "17c05323a5ba789460fde6de6563b80bcddd25080f738be45581fa4ae18f71a0",
+        "tasks/psf__requests-1142/environment.yml": "d683258cf56777fd9b48a729ba26a95ae58f48dbfbe8edcddb7ae9000bcb82b3"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 103,
+          "command": "python -m pip install ."
+        }
+      ],
+      "static_findings": [
+        "noneditable_install_may_leave_external_project_copy"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "psf__requests-1921",
+      "repo": "psf/requests",
+      "difficulty": "<15 min fix",
+      "saved_rank": 4,
+      "selected_in_draft": false,
+      "base_commit": "3c88e520da24ae6f736929a750876e7654accc3d",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "pluggy=1.0.0=py39h06a4308_1",
+        "pytest=7.4.4=py39h06a4308_0",
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/psf__requests-1921/Dockerfile": "9b80ae6ce9065761d16b7607869e02dc61f0996abd56f283592c0deebf85efcd",
+        "tasks/psf__requests-1921/environment.yml": "d683258cf56777fd9b48a729ba26a95ae58f48dbfbe8edcddb7ae9000bcb82b3"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 103,
+          "command": "python -m pip install ."
+        }
+      ],
+      "static_findings": [
+        "noneditable_install_may_leave_external_project_copy"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "psf__requests-1766",
+      "repo": "psf/requests",
+      "difficulty": "<15 min fix",
+      "saved_rank": 5,
+      "selected_in_draft": false,
+      "base_commit": "847735553aeda6e6633f2b32e14ba14ba86887a4",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "pluggy=1.0.0=py39h06a4308_1",
+        "pytest=7.4.4=py39h06a4308_0",
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/psf__requests-1766/Dockerfile": "ecac7426f4d2b0f95bdd88c3ae4483e1ba0e7bcfbbccd418282b4df12382bbfd",
+        "tasks/psf__requests-1766/environment.yml": "d683258cf56777fd9b48a729ba26a95ae58f48dbfbe8edcddb7ae9000bcb82b3"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 103,
+          "command": "python -m pip install ."
+        }
+      ],
+      "static_findings": [
+        "noneditable_install_may_leave_external_project_copy"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "psf__requests-6028",
+      "repo": "psf/requests",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 1,
+      "selected_in_draft": true,
+      "base_commit": "0192aac24123735b3eaf9b08df46429bb770c283",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "pluggy=1.0.0=py39h06a4308_1",
+        "pytest=7.4.4=py39h06a4308_0",
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "urllib3==1.26.20"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/psf__requests-6028/Dockerfile": "efbd1aa3a73cee723a18725808d8c7e4c5bf2c4085bafaed74e0bdd12dce2414",
+        "tasks/psf__requests-6028/environment.yml": "7ff9c7aafd0d4bd23ebe517bb01f1b762694340e73fb5e25438714dfafe40f64"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 107,
+          "command": "python -m pip install ."
+        }
+      ],
+      "static_findings": [
+        "noneditable_install_may_leave_external_project_copy"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "psf__requests-2931",
+      "repo": "psf/requests",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 2,
+      "selected_in_draft": false,
+      "base_commit": "5f7a3a74aab1625c2bb65f643197ee885e3da576",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "pluggy=1.0.0=py39h06a4308_1",
+        "pytest=7.4.4=py39h06a4308_0",
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/psf__requests-2931/Dockerfile": "f19a37308d4ef0360a3808bfb6b6d153406193937e4facd39e27e5e403bd994b",
+        "tasks/psf__requests-2931/environment.yml": "d683258cf56777fd9b48a729ba26a95ae58f48dbfbe8edcddb7ae9000bcb82b3"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 103,
+          "command": "python -m pip install ."
+        }
+      ],
+      "static_findings": [
+        "noneditable_install_may_leave_external_project_copy"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10449",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 1,
+      "selected_in_draft": true,
+      "base_commit": "36367765fe780f962bba861bf368a765380bbc68",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.18.1",
+        "jinja2==3.1.4",
+        "markupsafe==3.0.2",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-10449/Dockerfile": "a5665f2376fd4108b8cebd40b9daf49473c0a1479f731b664ec39797d4f89f62",
+        "tasks/sphinx-doc__sphinx-10449/environment.yml": "fd0d289167728e36143c3c4e6e96910665ad1a15f52c6ee309d65dc3bf210912"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-7440",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 2,
+      "selected_in_draft": false,
+      "base_commit": "9bb204dcabe6ba0fc422bf4a45ad0c79c680d90b",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.21.2",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-7440/Dockerfile": "64298d221e19d8f93af0694e9be6665b0951eee90d0dc4094792b811f507f9c9",
+        "tasks/sphinx-doc__sphinx-7440/environment.yml": "ffae3ee10575312e589db9975ce800ef78361dab888a2f5ec349d03e7c7d5421"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 133,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 139,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 140,
+          "command": "sed -i 's/sphinxcontrib-htmlhelp/sphinxcontrib-htmlhelp<=2.0.4/' setup.py"
+        },
+        {
+          "line": 141,
+          "command": "sed -i 's/sphinxcontrib-serializinghtml/sphinxcontrib-serializinghtml<=1.1.9/' setup.py"
+        },
+        {
+          "line": 142,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10435",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 3,
+      "selected_in_draft": false,
+      "base_commit": "f1061c012e214f16fd8790dec3c283d787e3daa8",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.18.1",
+        "jinja2==3.1.4",
+        "markupsafe==3.0.2",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-10435/Dockerfile": "3897d2b154fa3e08dd9811e89d4d70374fbfc98d6f5bac6944e9c402ae614500",
+        "tasks/sphinx-doc__sphinx-10435/environment.yml": "fd0d289167728e36143c3c4e6e96910665ad1a15f52c6ee309d65dc3bf210912"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-7889",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 4,
+      "selected_in_draft": false,
+      "base_commit": "ec9af606c6cfa515f946d74da9b51574f2f9b16f",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.21.2",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-7889/Dockerfile": "53bffdf2a5558b5824ab673367bb010409a37ccf86516fa50d221ae0a6c0d106",
+        "tasks/sphinx-doc__sphinx-7889/environment.yml": "ffae3ee10575312e589db9975ce800ef78361dab888a2f5ec349d03e7c7d5421"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 133,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 139,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 140,
+          "command": "sed -i 's/sphinxcontrib-htmlhelp/sphinxcontrib-htmlhelp<=2.0.4/' setup.py"
+        },
+        {
+          "line": 141,
+          "command": "sed -i 's/sphinxcontrib-serializinghtml/sphinxcontrib-serializinghtml<=1.1.9/' setup.py"
+        },
+        {
+          "line": 142,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-7462",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 5,
+      "selected_in_draft": false,
+      "base_commit": "b3e26a6c851133b82b50f4b68b53692076574d13",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.21.2",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-7462/Dockerfile": "32a04d3a09f53b7d0882527a25e18f56700153d80b8a03fa33e5eef6675c3e8b",
+        "tasks/sphinx-doc__sphinx-7462/environment.yml": "ffae3ee10575312e589db9975ce800ef78361dab888a2f5ec349d03e7c7d5421"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 133,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 139,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 140,
+          "command": "sed -i 's/sphinxcontrib-htmlhelp/sphinxcontrib-htmlhelp<=2.0.4/' setup.py"
+        },
+        {
+          "line": 141,
+          "command": "sed -i 's/sphinxcontrib-serializinghtml/sphinxcontrib-serializinghtml<=1.1.9/' setup.py"
+        },
+        {
+          "line": 142,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9320",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 6,
+      "selected_in_draft": false,
+      "base_commit": "e05cef574b8f23ab1b57f57e7da6dee509a4e230",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.17.1",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-9320/Dockerfile": "af8ab3442494cc3d8c6f4e51ece025c492d15d33d6dbafa1b415c105b99f510c",
+        "tasks/sphinx-doc__sphinx-9320/environment.yml": "0b8080eb9a468f5e73eacebceff33985d2cb24ef83cbbed66b62dda28f44f9bd"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 141,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9591",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 7,
+      "selected_in_draft": false,
+      "base_commit": "9ed054279aeffd5b1d0642e2d24a8800389de29f",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.17.1",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-9591/Dockerfile": "3a0088a8bf7ac65a75d5c550bc1526be7b9accb20c264f0c427e9dd608f32ddd",
+        "tasks/sphinx-doc__sphinx-9591/environment.yml": "0b8080eb9a468f5e73eacebceff33985d2cb24ef83cbbed66b62dda28f44f9bd"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 139,
+          "command": "sed -i 's/sphinxcontrib-htmlhelp>=2.0.0/sphinxcontrib-htmlhelp>=2.0.0,<=2.0.4/' setup.py"
+        },
+        {
+          "line": 140,
+          "command": "sed -i 's/sphinxcontrib-serializinghtml>=1.1.5/sphinxcontrib-serializinghtml>=1.1.5,<=1.1.9/' setup.py"
+        },
+        {
+          "line": 141,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9711",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 8,
+      "selected_in_draft": false,
+      "base_commit": "81a4fd973d4cfcb25d01a7b0be62cdb28f82406d",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.17.1",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-9711/Dockerfile": "fdc81d989215f684f41e680289e3e8de959cf5f23731577f2ab6de3c158e5198",
+        "tasks/sphinx-doc__sphinx-9711/environment.yml": "0b8080eb9a468f5e73eacebceff33985d2cb24ef83cbbed66b62dda28f44f9bd"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 139,
+          "command": "sed -i 's/sphinxcontrib-htmlhelp>=2.0.0/sphinxcontrib-htmlhelp>=2.0.0,<=2.0.4/' setup.py"
+        },
+        {
+          "line": 140,
+          "command": "sed -i 's/sphinxcontrib-serializinghtml>=1.1.5/sphinxcontrib-serializinghtml>=1.1.5,<=1.1.9/' setup.py"
+        },
+        {
+          "line": 141,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9230",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 9,
+      "selected_in_draft": false,
+      "base_commit": "567ff22716ac258b9edd2c1711d766b440ac0b11",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.17.1",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-9230/Dockerfile": "f147d77d8ef77514ee18b371506a378ab0f4b809b0e8d77de7cabdb1bcfa5134",
+        "tasks/sphinx-doc__sphinx-9230/environment.yml": "0b8080eb9a468f5e73eacebceff33985d2cb24ef83cbbed66b62dda28f44f9bd"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 141,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-7454",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 10,
+      "selected_in_draft": false,
+      "base_commit": "aca3f825f2e4a8817190f3c885a242a285aa0dba",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.21.2",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-7454/Dockerfile": "a24788ad0fd4068b5e25c907b50357265209781a8a541c4eb3f0b35c7d70fd31",
+        "tasks/sphinx-doc__sphinx-7454/environment.yml": "ffae3ee10575312e589db9975ce800ef78361dab888a2f5ec349d03e7c7d5421"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 133,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 139,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 140,
+          "command": "sed -i 's/sphinxcontrib-htmlhelp/sphinxcontrib-htmlhelp<=2.0.4/' setup.py"
+        },
+        {
+          "line": 141,
+          "command": "sed -i 's/sphinxcontrib-serializinghtml/sphinxcontrib-serializinghtml<=1.1.9/' setup.py"
+        },
+        {
+          "line": 142,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9258",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 11,
+      "selected_in_draft": false,
+      "base_commit": "06107f838c28ab6ca6bfc2cc208e15997fcb2146",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.17.1",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-9258/Dockerfile": "1bfc101061d5b07f5a66c8d9121a7d4985ceb8cc0dca8d17462f5cfa927b953d",
+        "tasks/sphinx-doc__sphinx-9258/environment.yml": "0b8080eb9a468f5e73eacebceff33985d2cb24ef83cbbed66b62dda28f44f9bd"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 141,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10323",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "<15 min fix",
+      "saved_rank": 12,
+      "selected_in_draft": false,
+      "base_commit": "31eba1a76dd485dc633cae48227b46879eda5df4",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.17.1",
+        "jinja2==3.1.4",
+        "markupsafe==3.0.2",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-10323/Dockerfile": "ae8660ab4d925b88e5fa39550c6d04d141140118edb74497245b76a5821e8a23",
+        "tasks/sphinx-doc__sphinx-10323/environment.yml": "42a48bbd1cc520379663d3033972f3d15df3a696e863ad41fbb9095a1a2a134e"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 134,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 135,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9673",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 1,
+      "selected_in_draft": true,
+      "base_commit": "5fb51fb1467dc5eea7505402c3c5d9b378d3b441",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.17.1",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-9673/Dockerfile": "54ee3f685a8bf6dd6412c3db83ca576bf8428a5078645184dc25410be7612fd1",
+        "tasks/sphinx-doc__sphinx-9673/environment.yml": "0b8080eb9a468f5e73eacebceff33985d2cb24ef83cbbed66b62dda28f44f9bd"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 139,
+          "command": "sed -i 's/sphinxcontrib-htmlhelp>=2.0.0/sphinxcontrib-htmlhelp>=2.0.0,<=2.0.4/' setup.py"
+        },
+        {
+          "line": 140,
+          "command": "sed -i 's/sphinxcontrib-serializinghtml>=1.1.5/sphinxcontrib-serializinghtml>=1.1.5,<=1.1.9/' setup.py"
+        },
+        {
+          "line": 141,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9602",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 2,
+      "selected_in_draft": false,
+      "base_commit": "6c38f68dae221e8cfc70c137974b8b88bd3baaab",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.17.1",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-9602/Dockerfile": "04d8657693ca02af2b14f230af9c7e8aa18007fccb0fbc7d41005a2f12d7881d",
+        "tasks/sphinx-doc__sphinx-9602/environment.yml": "0b8080eb9a468f5e73eacebceff33985d2cb24ef83cbbed66b62dda28f44f9bd"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 139,
+          "command": "sed -i 's/sphinxcontrib-htmlhelp>=2.0.0/sphinxcontrib-htmlhelp>=2.0.0,<=2.0.4/' setup.py"
+        },
+        {
+          "line": 140,
+          "command": "sed -i 's/sphinxcontrib-serializinghtml>=1.1.5/sphinxcontrib-serializinghtml>=1.1.5,<=1.1.9/' setup.py"
+        },
+        {
+          "line": 141,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9658",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 3,
+      "selected_in_draft": false,
+      "base_commit": "232dbe41c5250eb7d559d40438c4743483e95f15",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.17.1",
+        "jinja2==2.11.3",
+        "markupsafe==2.0.1",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-9658/Dockerfile": "b5e5e831dce53f5b9bf20ea9b306711b7e02989a93a0d99be46956b36789d0d5",
+        "tasks/sphinx-doc__sphinx-9658/environment.yml": "0b8080eb9a468f5e73eacebceff33985d2cb24ef83cbbed66b62dda28f44f9bd"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "sed -i 's/Jinja2>=2.3/Jinja2<3.0/' setup.py"
+        },
+        {
+          "line": 134,
+          "command": "sed -i 's/sphinxcontrib-applehelp/sphinxcontrib-applehelp<=1.0.7/' setup.py"
+        },
+        {
+          "line": 135,
+          "command": "sed -i 's/sphinxcontrib-devhelp/sphinxcontrib-devhelp<=1.0.5/' setup.py"
+        },
+        {
+          "line": 136,
+          "command": "sed -i 's/sphinxcontrib-qthelp/sphinxcontrib-qthelp<=1.0.6/' setup.py"
+        },
+        {
+          "line": 137,
+          "command": "sed -i 's/alabaster>=0.7,<0.8/alabaster>=0.7,<0.7.12/' setup.py"
+        },
+        {
+          "line": 138,
+          "command": "sed -i \"s/'packaging',/'packaging', 'markupsafe<=2.0.1',/\" setup.py"
+        },
+        {
+          "line": 139,
+          "command": "sed -i 's/sphinxcontrib-htmlhelp>=2.0.0/sphinxcontrib-htmlhelp>=2.0.0,<=2.0.4/' setup.py"
+        },
+        {
+          "line": 140,
+          "command": "sed -i 's/sphinxcontrib-serializinghtml>=1.1.5/sphinxcontrib-serializinghtml>=1.1.5,<=1.1.9/' setup.py"
+        },
+        {
+          "line": 141,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10614",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 4,
+      "selected_in_draft": false,
+      "base_commit": "ac2b7599d212af7d04649959ce6926c63c3133fa",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.20.1",
+        "jinja2==3.1.4",
+        "markupsafe==3.0.2",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-10614/Dockerfile": "2aac02489c844bfa6f417c6323bc30ec4009f56c6b91bfd80994c416cc6e59ee",
+        "tasks/sphinx-doc__sphinx-10614/environment.yml": "35f3b5e453ea0c4fbe521589b4896a5b83604000883b114085818016e69b3d65"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 134,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10466",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 5,
+      "selected_in_draft": false,
+      "base_commit": "cab2d93076d0cca7c53fac885f927dde3e2a5fec",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.18.1",
+        "jinja2==3.1.4",
+        "markupsafe==3.0.2",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-10466/Dockerfile": "183fff8e0558bbe272554e669e8834d803cdb17dd3f11a7a9d4639ec95ba1b97",
+        "tasks/sphinx-doc__sphinx-10466/environment.yml": "fd0d289167728e36143c3c4e6e96910665ad1a15f52c6ee309d65dc3bf210912"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10673",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty": "15 min - 1 hour",
+      "saved_rank": 6,
+      "selected_in_draft": false,
+      "base_commit": "f35d2a6cc726f97d0e859ca7a0e1729f7da8a6c8",
+      "declared_target_python": "3.9.20",
+      "declared_key_dependencies": [
+        "python=3.9.20=he870216_1",
+        "setuptools=75.1.0=py39h06a4308_0",
+        "docutils==0.19",
+        "jinja2==3.1.4",
+        "markupsafe==3.0.2",
+        "pluggy==1.5.0",
+        "pytest==8.3.3",
+        "requests==2.32.3",
+        "urllib3==2.2.3"
+      ],
+      "embedded_environment_matches": true,
+      "definition_sha256": {
+        "tasks/sphinx-doc__sphinx-10673/Dockerfile": "e93723582b539e6f606f8521fed82f938046910a571c5255956db18cd60bd4e0",
+        "tasks/sphinx-doc__sphinx-10673/environment.yml": "db60254c27cc4186babde1be7113ff88ba024490c9a4d24ac09ac7d6921c4648"
+      },
+      "install_and_edit_steps": [
+        {
+          "line": 132,
+          "command": "sed -i 's/pytest/pytest -rA/' tox.ini"
+        },
+        {
+          "line": 133,
+          "command": "python -m pip install -e .[test]"
+        }
+      ],
+      "static_findings": [
+        "recipe_declares_repository_content_edits"
+      ],
+      "runtime_preflight_this_audit": "not_run"
+    }
+  ]
+}

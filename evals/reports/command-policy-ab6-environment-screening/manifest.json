@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-19",
+  "implementation_base_commit": "7f77e6bf2e97027cc16a3d31fcc8835591cfee84",
+  "scope": "Documentation and static task-definition screening only; no runtime acceptance claimed.",
+  "artifact_sha256": {
+    "README.md": "19c9d20f9732860e99c0b0b0a591f6feb3c96a248d4737760670c7ca24e5d972",
+    "audit.json": "2dbf304ffc12246790828fa335dc527b41bb3955c3d92b0a43edbb8e61a09afe"
+  },
+  "source_sha256": {
+    "src/patchloop/environment.py": "0d4c5afe94c0ab5033ccd97bc13487c0fc097157db137a736e396f01bad3dba1",
+    "src/patchloop/environment_probe.py": "982bcd4436456b0db030f9015d0e73fcadd511abd71aff7e321944e6604571dc",
+    "src/patchloop/ab_baseline.py": "4df309ba5cff2ced9faa82d9aaaab51d726fb6a1f75c288c89e03a9fdb795167"
+  },
+  "unchanged_input_sha256": {
+    "evals/profiles/command-policy-ab6/draft.json": "2ded67b3ad26e84f70932d3150c7e198a52c0d0959801741a7cc718eea4f69a7",
+    "evals/subsets/command-policy-ab6-candidates.txt": "2a81345a227a4a0df50249096bdca2dfaad6f5aaa9a745d558eaf21a1ca8c3bb",
+    "evals/reports/command-policy-ab6-preflight/README.md": "71a8e7f547a3febb39d98c24bf10d2aa4ea648ea9ad7d14871f1e4e7f2da1af6",
+    "evals/reports/command-policy-ab6-preflight/requests-1724.json": "96f0fd7bab44e97020c433715bef63ee14953d197d47b2eae4c36f59c4e5d7b3",
+    "evals/reports/command-policy-ab6-preflight/manifest.json": "5da5f22b70d22b0910deab709d365e4a6bfa5374833af07d514eb6db64594716"
+  },
+  "test_sha256": {
+    "tests/test_ab_baseline.py": "179e99f3a9533f24ad0dcf9ed2571a57566da1df70bcbe9ec354201b6707d618",
+    "tests/test_ab_preflight.py": "20fbf518cbdc0fabf228220f0252159f6a0464d1c1aaee4ff4ce62fc025881b1",
+    "tests/test_ab_preflight_harness.py": "25f03f6edb2aad881cff2cd5b7abfdb746bab39f9b3f5dd31ad13ecaf8bc1b9f"
+  },
+  "task_repository_commit": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "task_definition_hashes": "audit.json records[].definition_sha256; paths relative to task repository",
+  "path_roots": {
+    "artifact_sha256": "this report directory",
+    "source_sha256": "repository root",
+    "unchanged_input_sha256": "repository root",
+    "test_sha256": "repository root"
+  },
+  "validation": {
+    "ranked_candidates_checked": 33,
+    "definition_files_matched_to_commit": 66,
+    "candidate_replaced": false,
+    "probe_python39_syntax_check": "passed; ast.parse feature_version=(3, 9), not a Python 3.9 runtime test",
+    "targeted_tests": 137,
+    "targeted_test_seconds": 10.96,
+    "backend_full_tests": "not rerun",
+    "frontend_tests": "not rerun",
+    "application_source_changed": false,
+    "tests_changed": false,
+    "full_preflights_this_audit": 0,
+    "official_controls_this_audit": 0,
+    "model_requests": 0,
+    "containers_created": 0,
+    "images_built": 0,
+    "independent_review": "No confirmed issues in reviewed documentation/data/source correspondence; manifest generated afterwards and checked separately.",
+    "review_limit": "Static review cannot certify runtime image contents or independently establish all historical data-access actions."
+  }
+}

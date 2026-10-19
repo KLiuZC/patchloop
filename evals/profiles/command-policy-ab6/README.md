@@ -20,11 +20,11 @@
 | 仓库 | 题号 | 数据集难度 | 镜像与预检 |
 | --- | --- | --- | --- |
 | Requests | `psf__requests-1724` | <15 min fix | 已构建；Python 2.7 阻断完整预检 |
-| Requests | `psf__requests-6028` | 15 min – 1 hour | 待准备 |
+| Requests | `psf__requests-6028` | 15 min – 1 hour | 待准备；需核对非 editable 安装副本 |
 | pytest | `pytest-dev__pytest-5262` | <15 min fix | 待准备 |
 | pytest | `pytest-dev__pytest-5840` | 15 min – 1 hour | 待准备 |
-| Sphinx | `sphinx-doc__sphinx-10449` | <15 min fix | 待准备 |
-| Sphinx | `sphinx-doc__sphinx-9673` | 15 min – 1 hour | 待准备 |
+| Sphinx | `sphinx-doc__sphinx-10449` | <15 min fix | 待准备；配方声明改写仓库文件 |
+| Sphinx | `sphinx-doc__sphinx-9673` | 15 min – 1 hour | 待准备；配方声明改写仓库文件 |
 
 从本地缓存的 500 条 SWE-bench Verified 记录中选择，未下载数据。根据项目已有记录，保守排除 93 个已出现的题号，另排除曾用于 gold 验收和故障诊断的 `psf__requests-2317`，共排除快照内 94 题。曾用于产品验收的 Flask-6146 也列为排除项，但不在该快照内。
 
@@ -121,7 +121,7 @@
 uv run python evals/profiles/command-policy-ab6/prepare.py
 ```
 
-缺图时输出 `check_only`、`ready_for_model_run=false` 并返回 2，这是未满足前提，不是模型实验失败。先在 harness 工作目录按单题、并发 1 构建第一题：
+缺图时输出 `check_only`、`ready_for_model_run=false` 并返回 2，这是未满足前提，不是模型实验失败。以下保留首题构建与检查的历史命令；首题已经确认 Python 2.7 不兼容，当前不要重复构建或执行这组命令。后续以新候选修订和新的产物目录为准。
 
 准备入口同时识别数据集标签和本地构建器的 `sweb.eval.x86_64.<instance_id>:latest` 标签，记录实际匹配名称并固定 image ID，不重新打标签或复制镜像。若已存在的候选标签指向不同 image ID，必须先显式处理冲突，不能静默挑一个。
 
@@ -131,7 +131,7 @@ caffeinate -i swebench images build ./swe-bench-tasks \
   -i psf__requests-1724 -j 1
 ```
 
-构建会下载镜像层及依赖，由人工发起，本轮开发没有执行。构建完成后回到 patchloop 项目根目录，在全新私有目录中显式执行一次无模型验收：
+构建会下载镜像层及依赖，由人工发起。首次构建后的无模型检查命令如下；该产物目录已存在，不能覆盖：
 
 ```bash
 caffeinate -i uv run python evals/profiles/command-policy-ab6/prepare.py \
@@ -153,4 +153,6 @@ caffeinate -i uv run python evals/profiles/command-policy-ab6/prepare.py \
 
 ## 下一步
 
-先决定如何处理首题的 Python 2.7 适用性问题，再继续候选准备；不要反复重建同一个镜像期待解释器版本改变。正式模型命令应在全部预检、运行保护、预算和提交检查完成后生成；本草案不提供可直接开始求解的命令。
+已完成原排序全部 33 道候选的[构建前环境筛查](../../reports/command-policy-ab6-environment-screening/README.md)，未查看隐藏答案或运行模型。第一备用 `requests-5414` 声明使用 Python 3.9.20，但 Requests 的非 editable 安装可能留下仓库外副本；18 道 Sphinx 候选均声明改写 `tox.ini`，部分另改依赖配置，不能假设仅有权限变化。静态发现不等于已执行预检失败，也不等于换题后可运行。
+
+下一步先修订 Requests 候选并逐题确认实际环境，再处理 Sphinx 构建适配与精确基线之间的兼容问题，不批量构建所有备用题。当前草案和题单保持原样，替换时须同步记录哈希与配对、保留旧版证据。正式模型命令应在全部预检、运行保护、预算和提交检查完成后生成；本草案不提供可直接开始求解的命令。

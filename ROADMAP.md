@@ -42,6 +42,8 @@ DeepSeek 基线 4/9、提醒 6/9、提醒 + finish 6/9；GLM 基线 1/3。后续
 
 首题本地构建后的标签差异、权限整理提交和镜像文件 stat 差异已补兼容处理，严格的源码与索引检查保留。`requests-1724` 的独立规范化通过，完整环境预检因 Python 2.7 与当前探针不兼容而停止；[检查记录](evals/reports/command-policy-ab6-preflight/README.md)不计为模型实验成绩。下一步先处理该环境不适用问题，再继续六题准备。
 
+后续[构建前筛查](evals/reports/command-policy-ab6-environment-screening/README.md)覆盖原排序的全部 33 道候选。第一备用 `requests-5414` 使用 Python 3.9 配方；Requests 的非 editable 安装副本、Sphinx 构建中的文件改写仍需实际核对，不能只凭解释器版本就继续全量构建。本次未换题、未改隔离规则、未运行模型。下一步先修订 Requests 候选并做实际预检，再核验 Sphinx 的构建适配；保留原草案、首题证据和固定分母。
+
 默认仍关闭策略，未知命令仍执行并记录；离线对照不能证明模型提分或省钱，策略不替代 Docker 隔离，结构化工具另做后续对照。每次功能实现后先做代码复审、修复和回归，再报告结果；分支合并是独立操作。
 
 ## 后续阶段：任务控制
