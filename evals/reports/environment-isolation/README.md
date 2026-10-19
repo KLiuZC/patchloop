@@ -4,6 +4,8 @@
 
 后续更新（2026-10-17）：三道 xarray 题已完成隔离后的十遍模型复验，见[新结果与官方证据](../xarray3-isolation/README.md)。本文的历史污染清单、敏感性分析和预检原件保持原口径。
 
+后续修复（2026-10-19）：当前策略升级为 `swebench-isolation-v2`，修复仓库内被 Git 忽略的判卷材料漏检，见[修复与回归检查](#v2-忽略文件漏检修复)。十遍复验使用的 v1 配置、结果和哈希不变。
+
 ## 历史结果的解释
 
 题目镜像的 conda 包缓存包含 `xarray-2025.4.0` 的源码和测试。以下次数指轨迹中的工具返回了该目录下的源码内容，不将列目录、无输出和读取失败计作内容暴露。
@@ -27,7 +29,7 @@ uv run python evals/audit_environment_access.py --output /tmp/environment-access
 
 ## 求解环境策略 v1
 
-`agent eval` 和 `agent repair-swebench` 在首次模型请求前执行相同预检：
+以下记录十遍复验使用的 v1 策略；当前 v2 保留这些步骤，并补充后文的忽略文件检查。`agent eval` 和 `agent repair-swebench` 在首次模型请求前执行相同预检：
 
 1. 将镜像标签解析为实际 image ID，本次求解按该 ID 启动。
 2. 以只读空 tmpfs 遮蔽 conda 缓存、root 缓存及额外用户目录 `/home`；关闭网络、移除 capabilities、禁止提权。保留 `/root/.bashrc` 中的 conda 环境配置。
@@ -74,6 +76,18 @@ uv run agent preflight-swebench \
 官方预检运行编号为 `environment-isolation-gold-4687-20261013`，使用未修改的原镜像和标准答案，仅用于检查判卷环境。原始结果见 [gold 汇总](gold-results.json) 和 [逐项判卷](gold-report.json)，不计入 Agent 成绩。
 
 相关回归测试 66 项通过，覆盖预检失败时不调用模型、保留失败报告、批次不因排除预检失败题而虚高、历史对象隔离与真实容器的负向读取。源码和产物校验值见 [manifest](manifest.json)。
+
+## v2 忽略文件漏检修复
+
+2026-10-17 合并前检查发现：仓库检查使用 `git ls-files --others --exclude-standard`，被 `.gitignore`、`.git/info/exclude` 或 `core.excludesFile` 忽略的 `gold.patch` 等文件不会出现在结果中；外部目录扫描又会跳过工作区，导致文件仍可读但预检通过。中文、引号或换行路径的 Git 转义也会影响原来的逐行识别。
+
+2026-10-19 改为 `git ls-files --others -z`，不应用忽略规则，并按 NUL 分隔路径。仍只拦截未跟踪文件中明确命名的 `test.patch`、`gold.patch`、`predictions.jsonl`、`eval.sh`；不删除这些文件，不拦截普通缓存或基线中已跟踪的同名测试夹具。这不是任意内容或任意改名材料的扫描。
+
+回归检查覆盖四种忽略条件（无忽略、`.gitignore`、仓库排除规则、全局排除规则）、四种材料文件名和普通／特殊路径，共 32 个组合；另验证缓存和已跟踪夹具不会误报。修复前其中 28 个组合失败，修复后均通过。三个真实 xarray 镜像也分别验证：隔离后的原工作区可通过预检及可见测试；注入被忽略的无实际答案内容的 `gold.patch` canary 后，预检拒绝并保存失败报告。检查不调用模型、不下载镜像。
+
+策略版本及 probe 哈希随修复更新。旧模型实验、gold 预检原件、manifest 和 `plan.json` 仍属于 v1，不更新旧哈希迁就新实现。在当前代码上使用原冻结启动器会拒绝源码变化；新实验应重新预检并建立新计划。此前三道实际镜像未发现这类被忽略的判卷文件，当前没有证据要求重跑旧十遍实验；本次回归不计为模型成绩。
+
+修复后检查：环境、评测、沙箱及配置相关测试 93 passed；后端全量 `uv run pytest -q` 为 1082 passed；前端 960 passed，lint 和构建通过，构建仅保留大文件体积警告。十遍原始数据、30 份轨迹与 165 个官方归档成员的哈希核对通过；历史源码哈希按当时记录的提交核对，不要求 v2 工作区与 v1 源码相同。文档链接和 Git 差异格式检查通过。
 
 ## 后续复验
 

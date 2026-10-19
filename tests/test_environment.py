@@ -7,7 +7,7 @@ import pytest
 
 import patchloop.environment as environment
 import patchloop.eval as evaluation
-from patchloop.environment_probe import restrict_history, scan_files
+from patchloop.environment_probe import inspect_environment, restrict_history, scan_files
 from patchloop.sandbox import CommandResult, DockerRunner
 
 
@@ -70,6 +70,59 @@ def test_scanner_checks_external_symlink_and_allows_link_to_baseline(tmp_path):
     link.unlink()
     link.symlink_to(repo / "xarray", target_is_directory=True)
     assert not scan_files([str(link.parent)], repo, ["xarray"])["findings"]
+
+
+@pytest.fixture
+def inspected_worktree(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+    git(repo, "config", "user.name", "test")
+    git(repo, "config", "user.email", "test@example.com")
+    (repo / ".gitignore").write_text("ignored/\n")
+    (repo / "gold.patch").write_text("tracked project fixture\n")
+    git(repo, "add", "-f", ".gitignore", "gold.patch")
+    git(repo, "commit", "-qm", "base")
+    base = git(repo, "rev-parse", "HEAD")
+    restrict_history(repo, base)
+    config = {"workdir": str(repo), "base_commit": base, "prepared": True,
+              "scan_roots": [str(tmp_path)], "hidden_paths": [], "modules": []}
+    assert inspect_environment(config)["status"] == "passed"
+    return repo, config
+
+
+@pytest.mark.parametrize("ignore_source", ["none", "gitignore", "info_exclude", "global_excludes"])
+@pytest.mark.parametrize("name", ["test.patch", "gold.patch", "predictions.jsonl", "eval.sh"])
+@pytest.mark.parametrize("directory", ["plain", '中文 space\n"quoted"'])
+def test_worktree_material_is_rejected_even_when_ignored(inspected_worktree, tmp_path, ignore_source, name, directory):
+    repo, config = inspected_worktree
+    parent = "ignored" if ignore_source == "gitignore" else "untracked"
+    if ignore_source == "info_exclude":
+        (repo / ".git/info/exclude").write_text("untracked/\n")
+    elif ignore_source == "global_excludes":
+        excludes = tmp_path / "global-ignore"
+        excludes.write_text("untracked/\n")
+        git(repo, "config", "core.excludesFile", str(excludes))
+    path = repo / parent / directory / name
+    path.parent.mkdir(parents=True)
+    path.write_text("evaluation material\n")
+    ignored = subprocess.run(["git", "-C", str(repo), "check-ignore", "--", str(path)], capture_output=True)
+    assert ignored.returncode == (1 if ignore_source == "none" else 0)
+    report = inspect_environment(config)
+    assert report["status"] == "failed"
+    assert report["findings"] == [{"kind": "evaluation_material", "path": str(path)}]
+    assert path.read_text() == "evaluation material\n"
+
+
+def test_ignored_cache_and_tracked_fixture_remain_allowed(inspected_worktree):
+    repo, config = inspected_worktree
+    cache = repo / "ignored/__pycache__/module.pyc"
+    cache.parent.mkdir(parents=True)
+    cache.write_bytes(b"cache")
+    report = inspect_environment(config)
+    assert report["status"] == "passed"
+    assert not report["findings"]
+    assert (repo / "gold.patch").read_text() == "tracked project fixture\n"
 
 
 def test_failed_or_broken_probe_is_saved_and_blocks_execution(tmp_path, monkeypatch):
@@ -176,6 +229,18 @@ def test_real_xarray_cache_is_hidden_while_baseline_remains_executable(
         assert runner.run_result("umount /opt/miniconda3/pkgs", timeout=10).exit_code != 0
         assert runner.run_result("git status --porcelain --untracked-files=no", timeout=10).output == ""
         assert runner.run_result(verify, timeout=60).exit_code == 0
+        runner.put("/tmp/patchloop-ignore", ".patchloop-probe/\n")
+        assert runner.run_result("git config --global core.excludesFile /tmp/patchloop-ignore", timeout=10).exit_code == 0
+        assert runner.run_result("mkdir .patchloop-probe", timeout=10).exit_code == 0
+        runner.put("/testbed/.patchloop-probe/gold.patch", "test-only canary\n")
+        assert runner.run_result("git check-ignore .patchloop-probe/gold.patch", timeout=10).exit_code == 0
+        blocked_report = tmp_path / "blocked-environment.json"
+        with pytest.raises(environment.EnvironmentCheckError, match="preflight"):
+            environment.prepare_swebench_environment(runner, instance, blocked_report, info)
+        blocked = json.loads(blocked_report.read_text())
+        assert blocked["status"] == "failed"
+        assert blocked["policy"]["version"] == "swebench-isolation-v2"
+        assert {"kind": "evaluation_material", "path": "/testbed/.patchloop-probe/gold.patch"} in blocked["checks"]["findings"]
 
 
 def test_isolation_mounts_and_reduced_privileges_are_passed_to_docker(monkeypatch):

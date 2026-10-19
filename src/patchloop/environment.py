@@ -8,7 +8,7 @@ import subprocess
 
 from .sandbox import DockerRunner
 
-POLICY_VERSION = "swebench-isolation-v1"
+POLICY_VERSION = "swebench-isolation-v2"
 HIDDEN_PATHS = ("/opt/miniconda3/pkgs", "/opt/conda/pkgs", "/root/.cache", "/root/.conda/pkgs", "/home")
 SCAN_ROOTS = ("/opt", "/usr/local/lib", "/usr/lib", "/root", "/home", "/tmp", "/var/tmp")
 MODULES = {

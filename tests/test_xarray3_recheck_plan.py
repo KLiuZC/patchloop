@@ -71,16 +71,33 @@ def test_source_drift_rejects_before_docker_or_dataset(launcher, monkeypatch, tm
         launcher.check_inputs({"input_sha256": {"source.py": "original"}}, tmp_path)
 
 
-def test_image_drift_rejects_execution(launcher, monkeypatch):
+def test_image_drift_rejects_execution(launcher, monkeypatch, tmp_path):
     import patchloop.environment as environment
     import patchloop.eval as evaluation
     plan = json.loads((PROFILE / "plan.json").read_text())
+    subset = tmp_path / plan["subset_file"]
+    subset.parent.mkdir(parents=True)
+    subset.write_text("\n".join(row["instance_id"] for row in plan["instances"]) + "\n")
+    plan["input_sha256"] = {plan["subset_file"]: launcher.sha256(subset)}
+    plan["environment_policy"] = environment.policy_metadata()
+    plan["runtime"] = {"python_version": launcher.platform.python_version(),
+                       "packages": {name: launcher.version(name) for name in plan["runtime"]["packages"]}}
     rows = [{k: row[k] for k in ("instance_id", "repo", "base_commit")} for row in plan["instances"]]
     plan["selected_instances_sha256"] = hashlib.sha256(json.dumps(rows, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     monkeypatch.setattr(evaluation, "load_instances", lambda *a: rows)
     monkeypatch.setattr(environment, "inspect_image", lambda *a: {"id": "different", "platform": "linux/amd64"})
     with pytest.raises(ValueError, match="image changed"):
-        launcher.check_inputs(plan)
+        launcher.check_inputs(plan, tmp_path)
+
+
+def test_policy_drift_rejects_before_docker_or_dataset(launcher, monkeypatch, tmp_path):
+    import patchloop.environment as environment
+    import patchloop.eval as evaluation
+    plan = {"input_sha256": {}, "environment_policy": {**environment.policy_metadata(), "version": "older-policy"}}
+    monkeypatch.setattr(environment, "inspect_image", lambda *args: pytest.fail("no Docker inspection"))
+    monkeypatch.setattr(evaluation, "load_instances", lambda *args: pytest.fail("no dataset read"))
+    with pytest.raises(ValueError, match="environment policy changed"):
+        launcher.check_inputs(plan, tmp_path)
 
 
 def test_all_planned_commands_parse_as_the_intended_conditions(launcher):

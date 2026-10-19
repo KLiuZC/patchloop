@@ -113,7 +113,7 @@ def inspect_environment(config):
             if not Path(path).is_dir() or list(Path(path).iterdir()):
                 findings.append({"kind": "cache_not_hidden", "path": path})
     # Check untracked evaluation material in the working tree too.
-    for path in git(root, "ls-files", "--others", "--exclude-standard").splitlines():
+    for path in git(root, "ls-files", "--others", "-z").split("\0"):
         if Path(path).name in {"test.patch", "gold.patch", "predictions.jsonl", "eval.sh"}:
             findings.append({"kind": "evaluation_material", "path": str(root / path)})
     imports = {}

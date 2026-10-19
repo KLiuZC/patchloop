@@ -33,6 +33,8 @@
 
 新的 SWE-bench 求解会先遮蔽包缓存、收敛 Git 历史并检查源码副本与导入位置；失败时不调用模型。批量结果中预检失败保持未判卷，完整解决率留空。先使用 `agent preflight-swebench` 完成不调用模型的环境验收，操作及已验证范围见[隔离预检说明](../evals/reports/environment-isolation/README.md#不调用模型的单题预检)。
 
+当前策略为 `swebench-isolation-v2`，仓库内明确命名的未跟踪判卷材料即使被 Git 忽略也会被检出。2026-10-13～14 的十遍复验仍按 v1 归档；更换策略须使用新配置与运行编号，不改写旧结果或冻结哈希。
+
 以下 patchloop 命令在项目根目录执行。需要配置模型凭证、启动 Docker、准备题目镜像，并安装官方 harness：
 
 ```bash
