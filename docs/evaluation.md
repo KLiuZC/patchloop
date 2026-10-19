@@ -133,6 +133,7 @@ uv run agent repair-judge \
 | --- | --- | --- |
 | `--budget-reminders` | 剩余 20、5 次模型请求时提醒，保留工具调用与结果配对 | `agent run`、`agent eval`、`agent repair` 默认关闭；`repair-swebench` 默认开启 |
 | `--explicit-finish` | 要求模型单独调用 `finish(summary)` 主动结束 | 默认关闭；批量评测仅适用于 agent 模式 |
+| `--command-policy off\|audit\|enforce` | 关闭、只记录判定、或拒绝明确命中的整条 bash 请求 | 默认 `off`；仅 `agent eval` 的 agent 模式支持启用 |
 
 任务 API 的 `execution.budget_reminders` 默认开启，与上述部分 CLI 不同，见 [API 执行配置](api.md#执行配置与路径策略)。
 
@@ -141,6 +142,8 @@ uv run agent repair-judge \
 显式结束要求非空 `summary`，且该次回复只调用 `finish`。参数错误或与其他工具同轮调用时拒绝结束，并将结果回填；纯文字回复会提示继续调用 `finish`。仍受轮数上限约束，结束声明不保证补丁正确或非空。`finish_required` 记录后续提示，`stop_reason` 区分自然结束、显式结束、预算耗尽和运行错误。
 
 `--mode single-shot` 不接受提醒和显式结束开关。更改任一实验开关时使用新的 run-id。现有实验决定保留 `finish` 为默认关闭的可选工具，后续对照优先固定仅提醒配置。
+
+命令策略的 `audit` 模式仍原样执行命令，并非离线分析；`enforce` 只阻断明确的 `block`，`unknown` 仍执行。拒绝计入原模型轮次，不自动重试；策略不代替 Docker 隔离。每次有效 bash 请求保存执行前事件，逐题及批次的 `command_policy_counts` 区分分类命中、would-block、实际拦截和交给执行器的请求数，后者不表示执行成功。策略、解析器和上下文版本写入配置与轨迹，不能混用旧 run-id。实际模型收益尚未评测，范围和验收见[命令策略说明](command-policy.md)。
 
 ## 结果读取与复算
 

@@ -30,11 +30,11 @@ DeepSeek 基线 4/9、提醒 6/9、提醒 + finish 6/9；GLM 基线 1/3。后续
 
 2026-10-19 合并前修复：预检升级至 v2，补上被 Git 忽略的判卷材料及特殊路径漏检，见[修复记录](evals/reports/environment-isolation/README.md#v2-忽略文件漏检修复)。十遍 v1 实验原始结果与哈希保持不变；新实验需另建配置，不能继续使用旧冻结计划混跑。
 
-## 当前阶段：命令策略纯判定器
+## 当前阶段：命令策略执行与记录
 
-`feat/command-policy` 分支已实现独立的命令判定函数与不可变上下文，使用 Tree-sitter Bash 语法树区分命令与文本，[56 条开发样例](evals/profiles/command-policy/cases.json)及边界检查共 100 项测试通过。支持范围、输入限制和未知降级见[策略说明](docs/command-policy.md)。当前没有新增 CLI 开关，也未改变 bash 执行行为；下一步接入执行层与轨迹，再做模拟模型及 Docker 验收。
+`feat/command-policy` 分支已实现独立判定器及执行层，`agent eval` 的 Agent 模式支持 `--command-policy off|audit|enforce`，默认关闭。策略启用时保存逐次判定、实际拦截与未知请求计数，并将版本和上下文纳入记录；拒绝反馈不增加模型预算。网页、worker 与其他 CLI 修复入口没有开放此开关。支持范围、[56 条开发样例](evals/profiles/command-policy/cases.json)及执行层验收见[策略说明](docs/command-policy.md)。
 
-先做命令策略，再单独评估结构化工具。首版区分允许、拦截和未知，未知命令仍执行并记录；策略不替代 Docker 隔离。按纯判定测试、执行层和轨迹测试、Docker 冒烟、离线误拦截分析的顺序推进，通过后再固定 v2 环境下的新题 A/B 计划。此阶段不启动真实模型实验。
+纯判定测试、执行层和轨迹测试及 Docker 冒烟已完成。下一步只读已保存轨迹，离线分析误拦截和未知命令，不执行轨迹命令；通过后再固定 v2 环境下的新题 A/B 计划。未知命令仍执行并记录，策略不替代 Docker 隔离；结构化工具另做后续对照。本阶段不启动真实模型实验。
 
 ## 后续阶段：任务控制
 

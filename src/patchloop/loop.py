@@ -1,11 +1,12 @@
 import json
 import time
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
 from .llm import LLM, estimate_cost
+from .command_runtime import COUNT_FIELDS, CommandPolicy, count_policy_event
 from .prompts import FINISH_REQUIRED, build_system_prompt, budget_reminder
 from .tools import FINISH_TOOL, TOOLS, bash
 from .trajectory import Trajectory
@@ -26,6 +27,7 @@ class RunResult:
     budget_reminders_sent: int = 0
     stop_reason: str = "max_turns"
     error: str = ""
+    command_policy_counts: dict[str, int] = field(default_factory=dict)
 
 
 class RunInterrupted(KeyboardInterrupt):
@@ -55,10 +57,16 @@ def run(
     budget_reminders: bool = False,
     explicit_finish: bool = False,
     capture_errors: bool = False,
+    command_policy: CommandPolicy | None = None,
+    on_policy: Callable[[dict], None] | None = None,
 ) -> RunResult:
     run_id = run_id or time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
     run_started = time.time()
     result = RunResult(run_id=run_id)
+    if command_policy is not None and command_policy.mode != "off":
+        if command_policy.context.cwd != (str(runner.workdir).rstrip("/") or "/"):
+            raise ValueError("command policy cwd must match the runner workdir")
+        result.command_policy_counts = dict.fromkeys(COUNT_FIELDS, 0)
     traj_dir = Path(traj_dir)
     system_prompt = build_system_prompt(runner.environment, runner.workdir, max_turns, explicit_finish)
     tools = [*TOOLS, FINISH_TOOL] if explicit_finish else TOOLS
@@ -74,6 +82,7 @@ def run(
             "budget_reminders": budget_reminders,
             "explicit_finish": explicit_finish,
             "system_prompt": system_prompt,
+            "command_policy": command_policy.metadata() if command_policy else {"mode": "off"},
         },
     )
     messages = [
@@ -113,6 +122,11 @@ def run(
             tool_records = []
             calls = msg.tool_calls or []
             submission = None
+            def record_policy(event):
+                traj.command_policy(turn=turn, **event)
+                count_policy_event(result.command_policy_counts, event)
+                if on_policy:
+                    on_policy({"turn": turn, **event})
             try:
                 for call in calls:
                     if explicit_finish and call.function.name == "finish":
@@ -126,7 +140,7 @@ def run(
                             else:
                                 output = "Submission accepted. Evaluation has not been performed by this tool."
                     else:
-                        output = _execute(call, runner, timeout)
+                        output = _execute(call, runner, timeout, command_policy=command_policy, on_policy=record_policy)
                     messages.append({"role": "tool", "tool_call_id": call.id, "content": output})
                     tool_records.append(
                         {
@@ -247,7 +261,7 @@ def _assistant_message(msg) -> dict:
     return out
 
 
-def _execute(call, runner, timeout: int) -> str:
+def _execute(call, runner, timeout: int, *, command_policy=None, on_policy=None) -> str:
     if call.function.name != "bash":
         return f"unknown tool {call.function.name!r}; only `bash` is available"
     try:
@@ -260,4 +274,11 @@ def _execute(call, runner, timeout: int) -> str:
         return f"invalid arguments ({e}); expected a JSON object with a string field 'cmd'"
     if not isinstance(cmd, str):
         return "invalid arguments: 'cmd' must be a string"
+    if command_policy is not None:
+        event = command_policy.inspect(cmd, call.id)
+        if event is not None:
+            if on_policy:
+                on_policy(event)
+            if event["action"] == "block":
+                return command_policy.rejection(event)
     return bash(cmd, runner, timeout=timeout)

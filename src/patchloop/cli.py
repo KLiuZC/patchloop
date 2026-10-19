@@ -363,6 +363,7 @@ def eval_command(
     judge_workers: int = typer.Option(1, "--judge-workers"),
     budget_reminders: bool = typer.Option(False, "--budget-reminders", help="Agent mode only: remind at 20 and 5 calls remaining."),
     explicit_finish: bool = typer.Option(False, "--explicit-finish", help="Agent mode only: require the finish tool to submit."),
+    command_policy: str = typer.Option("off", "--command-policy", help="Agent mode only: off, audit (record only), or enforce (block known violations)."),
     harness_dir: Optional[Path] = typer.Option(
         None, "--harness-dir", help="Where the harness writes logs and finds swe-bench-tasks ($SWEBENCH_WORKDIR, default ~/code/swebench-work)."
     ),
@@ -380,6 +381,11 @@ def eval_command(
         raise typer.BadParameter("requires --mode agent", param_hint="--budget-reminders")
     if explicit_finish and mode != "agent":
         raise typer.BadParameter("requires --mode agent", param_hint="--explicit-finish")
+    from .command_runtime import validate_command_policy
+    try:
+        validate_command_policy(command_policy, mode)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--command-policy") from exc
 
     harness_dir = harness_dir or Path(os.environ.get("SWEBENCH_WORKDIR", "~/code/swebench-work")).expanduser()
     task_repo = harness_dir / "swe-bench-tasks"
@@ -404,6 +410,7 @@ def eval_command(
             dataset=dataset, log=lambda line: console.print(escape(line), highlight=False),
             budget_reminders=budget_reminders,
             explicit_finish=explicit_finish,
+            command_policy=command_policy,
         )
     except ValueError as e:
         console.print(f"[red]{escape(str(e))}[/]")
@@ -451,6 +458,13 @@ def _print_summary(summary: dict, out_dir: Path) -> None:
         f"resolved {rate} · estimated ¥{summary['cost_cny']:.2f} · {time_note} · "
         f"errors {summary['errors']} · {out_dir}/summary.json"
     )
+    if summary.get("command_policy", "off") != "off":
+        counts = summary.get("command_policy_counts", {})
+        console.print(
+            f"command policy {summary['command_policy']} · checked {counts.get('checked', 0)} · "
+            f"blocked {counts.get('blocked', 0)} · would-block {counts.get('would_block', 0)} · "
+            f"unknown {counts.get('unknown', 0)}"
+        )
     console.print(
         "[dim]EXPERIMENTS.md: | <date> | " + escape(summary["run_id"]) + f" ({summary['instances']} 题, {summary['mode']}) | "
         f"{summary['provider']} / {summary['model']} | - | {summary['prompt_tokens'] // 1000}k / {summary['completion_tokens'] // 1000}k | "

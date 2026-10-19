@@ -143,3 +143,38 @@ def test_solve_passes_reminders_to_loop_and_records_count(tmp_path, monkeypatch)
                                      evaluation_llm(), "agent", 40, 180, tmp_path, budget_reminders=True, explicit_finish=True)
     assert not result.error and result.budget_reminders_sent == 1 and patch == "diff\n"
     assert result.stop_reason == "finish" and result.final_message == "Fixed issue"
+
+
+@pytest.mark.parametrize("policy", ["off", "audit", "enforce"])
+def test_eval_records_policy_and_rejects_mixed_modes(tmp_path, monkeypatch, policy):
+    seen = []
+    def solve(instance, *args, **kwargs):
+        seen.append(kwargs["command_policy"])
+        return InstanceResult(instance["instance_id"], "agent", command_policy_counts={"checked": 2, "blocked": 1}), ""
+
+    monkeypatch.setattr(evaluation, "solve", solve)
+    arguments = dict(instances=[{"instance_id": "x-1", "repo": "pydata/xarray"}], llm=evaluation_llm(),
+                     run_id="policy", out_dir=tmp_path, judge=False, command_policy=policy)
+    summary = evaluation.evaluate(**arguments)
+    assert seen == [policy] and summary["command_policy"] == policy
+    assert summary["command_policy_counts"]["blocked"] == 1
+    config = json.loads((tmp_path / "run_config.json").read_text())["config"]
+    assert config["command_policy"]["mode"] == policy
+    assert config["command_policy"]["policy_version"] == "command-policy-v1"
+    assert config["command_policy"]["parser_packages"]["tree-sitter"]
+    evaluation.evaluate(**arguments)
+    assert seen == [policy]
+    with pytest.raises(ValueError, match="new --run-id"):
+        evaluation.evaluate(**{**arguments, "command_policy": "audit" if policy != "audit" else "enforce"})
+    import patchloop.command_runtime as runtime
+    monkeypatch.setattr(runtime, "PROFILE_VERSION", "changed-profile")
+    with pytest.raises(ValueError, match="new --run-id"):
+        evaluation.evaluate(**arguments)
+
+
+@pytest.mark.parametrize("policy,mode", [("typo", "agent"), ("audit", "single-shot"), ("enforce", "single-shot")])
+def test_invalid_policy_is_rejected_before_eval_artifacts(tmp_path, policy, mode):
+    output = tmp_path / "not-created"
+    with pytest.raises(ValueError, match="command-policy"):
+        evaluation.evaluate([], evaluation_llm(), "r", output, mode=mode, command_policy=policy)
+    assert not output.exists()

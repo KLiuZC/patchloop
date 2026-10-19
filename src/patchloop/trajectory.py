@@ -25,6 +25,9 @@ class Trajectory:
     def finish_required(self, turn: int, message: dict) -> None:
         self._write({"type": "finish_required", "turn": turn, "message": message})
 
+    def command_policy(self, **record) -> None:
+        self._write({"type": "command_policy", **record})
+
     def close(self, result) -> None:
         try:
             self._write({"type": "result", **asdict(result)})

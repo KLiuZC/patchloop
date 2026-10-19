@@ -6,17 +6,21 @@ import subprocess
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from importlib.metadata import version
 from pathlib import Path
 from typing import Callable
 
 from .baseline import single_shot
+from .command_runtime import (
+    COUNT_FIELDS, command_policy_metadata, count_policy_event,
+    swebench_command_policy, validate_command_policy,
+)
 from .llm import LLM, estimate_cost
 from .loop import cached_tokens_of, run
 from .prompts import TASK_TEMPLATE
-from .environment import (EnvironmentCheckError, inspect_image, policy_metadata,
+from .environment import (EnvironmentCheckError, MODULES, inspect_image, policy_metadata,
                           prepare_swebench_environment, solver_runner)
 
 DEFAULT_DATASET = "SWE-bench/SWE-bench_Verified"
@@ -81,6 +85,7 @@ class InstanceResult:
     stop_reason: str = ""
     final_message: str = ""
     environment_status: str = "not_checked"
+    command_policy_counts: dict[str, int] = field(default_factory=dict)
 
 
 def solve(
@@ -95,7 +100,9 @@ def solve(
     on_turn: Callable | None = None,
     budget_reminders: bool = False,
     explicit_finish: bool = False,
+    command_policy: str = "off",
 ) -> tuple[InstanceResult, str]:
+    validate_command_policy(command_policy, mode)
     iid = instance["instance_id"]
     result = InstanceResult(instance_id=iid, mode=mode)
     started = time.time()
@@ -103,16 +110,20 @@ def solve(
     try:
         image = inspect_image(image_name(instance))
         with solver_runner(image["id"], workdir="/testbed", platform=platform, memory=memory) as runner:
-            prepare_swebench_environment(
+            environment_report = prepare_swebench_environment(
                 runner, instance, traj_dir.parent / "environment" / f"{iid}.json", image,
             )
             result.environment_status = "passed"
             if mode == "agent":
+                policy = swebench_command_policy(command_policy, instance, environment_report,
+                                                 getattr(runner, "workdir", "/testbed"))
                 r = run(
                     task_text(instance), llm, runner,
                     max_turns=max_turns, timeout=timeout, traj_dir=traj_dir, on_turn=on_turn, run_id=iid,
                     budget_reminders=budget_reminders,
                     explicit_finish=explicit_finish,
+                    command_policy=policy,
+                    on_policy=lambda event: count_policy_event(result.command_policy_counts, event),
                 )
                 patch = r.patch
                 result.turns, result.finished = r.turns, r.finished
@@ -168,7 +179,9 @@ def evaluate(
     log: Callable[[str], None] = print,
     budget_reminders: bool = False,
     explicit_finish: bool = False,
+    command_policy: str = "off",
 ) -> dict:
+    validate_command_policy(command_policy, mode)
     if budget_reminders and mode != "agent":
         raise ValueError("--budget-reminders requires --mode agent")
     if explicit_finish and mode != "agent":
@@ -178,6 +191,8 @@ def evaluate(
         instances, llm, dataset=dataset, mode=mode, max_turns=max_turns, timeout=timeout,
         workers=workers, memory=memory, judge_workers=judge_workers, budget_reminders=budget_reminders,
         explicit_finish=explicit_finish,
+        command_policy=command_policy_metadata(command_policy),
+        command_policy_targets={row["instance_id"]: list(MODULES.get(row.get("repo"), ())) for row in instances},
     )
     _save_run_config(out_dir, config)
     started_at = datetime.now(timezone.utc).isoformat()
@@ -201,6 +216,7 @@ def evaluate(
             instance, llm, mode, max_turns, timeout, traj_dir,
             memory=memory, on_turn=on_turn, budget_reminders=budget_reminders,
             explicit_finish=explicit_finish,
+            command_policy=command_policy,
         )
         with lock:
             _append_jsonl(predictions_path, {"instance_id": iid, "model_name_or_path": run_id, "model_patch": patch})
@@ -242,6 +258,7 @@ def evaluate(
     summary["harness_run_id"] = harness_run_id
     summary["budget_reminders"] = budget_reminders
     summary["explicit_finish"] = explicit_finish
+    summary["command_policy"] = command_policy
     summary["invocation"] = {
         "started_at": started_at,
         "finished_at": datetime.now(timezone.utc).isoformat(),
@@ -352,6 +369,8 @@ def summarize(results: list[InstanceResult], run_id: str, mode: str, llm: LLM) -
         "resolve_rate": round(resolved / len(judged), 3) if judged and not environment_failures else None,
         "errors": sum(1 for r in results if r.error),
         "environment_failures": environment_failures,
+        "command_policy_counts": {name: sum(row.command_policy_counts.get(name, 0) for row in results)
+                                  for name in COUNT_FIELDS},
         "prompt_tokens": sum(r.prompt_tokens for r in results),
         "cached_tokens": sum(r.cached_tokens for r in results),
         "completion_tokens": sum(r.completion_tokens for r in results),

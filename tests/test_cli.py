@@ -49,6 +49,46 @@ def test_cli_rejects_single_shot_agent_options_before_model_setup(monkeypatch, o
     assert "requires --mode agent" in result.output
 
 
+@pytest.mark.parametrize("policy", ["off", "audit", "enforce"])
+def test_cli_forwards_command_policy(monkeypatch, policy):
+    monkeypatch.setattr(cli, "load_dotenv", lambda: None)
+    monkeypatch.setattr(cli, "LLM", lambda *args: object())
+    monkeypatch.setattr(cli, "load_instances", lambda *args: [])
+    monkeypatch.setattr(cli, "_print_summary", lambda *args: None)
+    seen = []
+    def evaluate(*args, **kwargs):
+        seen.append(kwargs["command_policy"])
+        return {}
+    monkeypatch.setattr(cli, "evaluate", evaluate)
+    result = CliRunner().invoke(cli.app, ["eval", "-r", "test", "-i", "x-1", "--no-judge", "--command-policy", policy])
+    assert result.exit_code == 0, result.output
+    assert seen == [policy]
+
+
+def test_eval_command_policy_defaults_off():
+    from typer.main import get_command
+    command = get_command(cli.app).commands["eval"]
+    with command.make_context("eval", ["-r", "test", "-i", "x-1"]) as context:
+        assert context.params["command_policy"] == "off"
+
+
+@pytest.mark.parametrize("command", ["run", "repair", "repair-swebench", "worker"])
+def test_non_eval_commands_do_not_expose_policy(command):
+    from typer.main import get_command
+    options = get_command(cli.app).commands[command].params
+    assert not any(parameter.name == "command_policy" for parameter in options)
+
+
+@pytest.mark.parametrize("arguments", [["--command-policy", "typo"],
+    ["--command-policy", "audit", "--mode", "single-shot"],
+    ["--command-policy", "enforce", "--mode", "single-shot"]])
+def test_cli_rejects_invalid_policy_before_model_setup(monkeypatch, arguments):
+    monkeypatch.setattr(cli, "load_dotenv", lambda: None)
+    monkeypatch.setattr(cli, "LLM", lambda *args: pytest.fail("must not initialize a model"))
+    result = CliRunner().invoke(cli.app, ["eval", "-r", "test", "-i", "x-1", *arguments])
+    assert result.exit_code == 2 and "command-policy" in result.output
+
+
 def test_serve_uses_local_address_and_selected_database(monkeypatch, tmp_path):
     import uvicorn
 

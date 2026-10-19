@@ -2,7 +2,7 @@
 
 [发展路线](../ROADMAP.md) · [执行架构](architecture.md) · [三题复验](../evals/reports/xarray3-isolation/README.md)
 
-日期：2026-10-19。分支：`feat/command-policy`。状态：**纯判定器已实现，尚未接入执行流程**。`PolicyContext`、`PolicyDecision` 和 `assess_command` 可独立调用；下文的 CLI 开关、执行拦截和轨迹事件仍为拟定契约。本阶段不修改工具执行行为、不调用模型。
+日期：2026-10-19。分支：`feat/command-policy`。状态：**已接入 SWE-bench Agent 评测，默认关闭**。纯判定器、三种执行模式、轨迹事件和计数已实现；模拟模型与 Docker 冒烟已通过，尚未进行真实模型 A/B 实验。本阶段不调用真实模型。
 
 ## 目标与范围
 
@@ -16,7 +16,7 @@
 
 ## 判定与执行模式
 
-拟定评测选项为 `--command-policy off|audit|enforce`，默认 `off`。
+`agent eval` 已支持 `--command-policy off|audit|enforce`，默认 `off`。`audit` 和 `enforce` 仅适用于 `--mode agent`，非法值或与 single-shot 的组合会在创建模型客户端前被拒绝。其他 CLI 入口没有此开关。
 
 | 判定 | 含义 | off | audit | enforce |
 | --- | --- | --- | --- | --- |
@@ -24,7 +24,7 @@
 | `block` | 能静态确定包含禁止操作 | 原样执行，不做策略判定 | 原样执行，记录 `would_block` | 整条 bash 请求不执行，返回原因 |
 | `unknown` | 脚本、动态路径或语法超出判定范围 | 原样执行 | 原样执行并记录未知原因 | 原样执行并记录未知原因 |
 
-`unknown` 仍执行是明确的首版边界，不是放行证明。不能把未知命令计为“已覆盖”，也不能为了降低未知率把 Python 一律拒绝。未知率过高或复杂命令误判时，先保留 audit，不开展 enforce 效果实验。
+`unknown` 仍执行是明确的首版边界，不是放行证明。不能把未知命令计为“已覆盖”，也不能为了降低未知率把 Python 一律拒绝。分类器自身异常不是 `unknown`：它会停止当前运行，不静默回退为执行命令。未知率过高或复杂命令误判时，先保留 audit，不开展 enforce 效果实验。
 
 能可靠拆分的同一调用中，存在 `block` 则整条拒绝；否则存在 `unknown` 则记为未知，其余为允许。无法可靠解析时不猜测子命令。拒绝只针对这一条工具调用，不回滚同一模型回复中已执行的其他工具。
 
@@ -83,28 +83,46 @@ assert decision.rule_ids == ("network_or_install",)
 
 `PolicyContext` 保存不可变的容器路径配置；`PolicyDecision` 包含 `classification`、排序后的 `rule_ids` 和说明 `reason`，本身不选择执行动作。判定采用 `block > unknown > allow`；有阻断或未知原因时不把普通读取类标签混入最终规则集合。`POLICY_VERSION` 和 `PARSER_VERSION` 可供后续配置与轨迹使用，当前没有自动写入实验记录。
 
-## 拟定接入方式
+## 执行与上下文
 
 当前调用链为 `loop._execute → tools.bash → runner.run`。在工具参数完成校验、兼容 `cmd/command` 之后、`runner.run` 之前做策略判定，保证两个参数名不会绕过检查。
 
-已实现的纯判定函数 `assess_command(command, context)` 不访问网络、启动子进程或修改工作区。下一步才接入模式映射和工具反馈，不把日志写入与纯分类函数耦合。目前 `loop`、`tools`、runner 和 CLI 均未接入策略，保持原行为。
+纯判定函数 `assess_command(command, context)` 不访问网络、启动子进程或修改工作区。[command_runtime.py](../src/patchloop/command_runtime.py) 负责模式映射、反馈和版本元数据，`loop._execute` 在参数校验后调用它；底层 runner、工具定义和系统提示未改。默认关闭时不调用分类器、不产生判定事件，也不增加模型消息。
 
-拟新增 `command_policy` 轨迹事件：模式、策略版本、turn、tool_call_id、判定、规则 ID、未知原因，以及执行层选择的 `execute/block` 动作。事件必须能与原工具调用、返回结果对应。audit 命中记录为 would-block，不计入实际拦截次数；工具执行是否成功仍看原工具返回。
+SWE-bench 入口先通过 v2 环境预检，再创建每题的 `CommandPolicy`。被测模块名取自环境检查的仓库映射，依赖根目录取自容器报告中已导入包的 `site-packages`／`dist-packages` 路径；不使用宿主机 Python 路径、不查询模型凭据。没有可推导的依赖目录时保留空列表，相关未知路径仍按 `unknown` 处理。缓存、临时目录及允许的环境变量来自版本化配置。每条 runner 命令从固定 workdir 启动，单条调用内部的 `cd` 不改变下一条调用的初始上下文。
 
-示例反馈（拟定，非真实运行输出）：
+`run_config.json.config.command_policy` 保存模式、策略版本、解析器实际版本、上下文配置版本、开发样例版本和输入限制；`command_policy_targets` 保存各题被测模块。轨迹 `meta.command_policy` 另外保存实际题目上下文及 SHA-256。配置、版本或模式变化会被既有的 run-id 一致性检查拒绝，不向旧实验目录混写。
+
+每个有效 bash 请求在执行前产生 `command_policy` 事件：模式、策略版本、解析器版本、上下文哈希、turn、tool_call_id、判定、规则 ID、原因，以及执行层选择的 `execute/block` 动作。非法工具参数不参与分类，继续返回原参数错误。事件与随后保存的工具调用、返回结果对应；若执行器异常，执行前事件仍保留。audit 命中记录为 would-block，不计入实际拦截次数；工具执行是否成功仍看原工具返回。
+
+拒绝反馈示例：
 
 ```text
 Command blocked [filesystem_search]. The command was not executed.
-Search within /testbed or a specific dependency directory, then implement and test the fix.
+Work within /testbed or a specific dependency directory. Use the prepared environment and current baseline; implement and test the fix.
 ```
 
 拒绝是正常工具反馈，不将任务直接标成 API 错误；不重试原命令、不退还模型轮次、不更改工具调用 ID。多工具调用仍遵守原有轮次统计。命令长度和错误输出按原有轨迹规则处理，不在反馈中读取环境变量或凭证。
 
-策略模式、版本、配置摘要、样例版本及解析器版本需要纳入新评测配置；只改变开关的两个实验使用相同代码与 v2 镜像。原来的冻结 v1 计划继续保持原样。
+只改变开关的两个实验须使用相同代码与 v2 镜像。原来的冻结 v1 计划继续保持原样，首次接入不是重跑旧实验的授权。
+
+## 判定计数
+
+逐轮结果、逐题评测结果及批次汇总保存 `command_policy_counts`；执行入口异常时，已写出的事件计数也保留。CLI 在策略开启时展示 checked、blocked、would-block、unknown。
+
+| 字段 | 含义 |
+| --- | --- |
+| `checked` | 实际完成分类的有效 bash 请求数，不是模型轮数 |
+| `allow` / `block` / `unknown` | 三种分类各自的请求数；`block` 包含 audit 中仅记录的候选 |
+| `would_block` | audit 中命中禁止规则、但仍原样执行的请求数 |
+| `blocked` | enforce 中未交给 runner 的请求数 |
+| `execution_requests` | 策略选择交给 runner 的请求数，不代表命令成功执行 |
+
+`checked = allow + block + unknown = blocked + execution_requests`。关闭时不产生事件，单题原始计数为空，批次各项计数为零。模型一轮可以请求多个工具，因此不能把此字段与 `turns` 相加或互相替代。`finish` 不参与 bash 分类；同轮已执行命令不会因为另一条被拒绝而回滚。
 
 ## 开发样例
 
-[cases.json](../evals/profiles/command-policy/cases.json) 包含 **56 条判定开发样例**：10 条从已保存轨迹提取，46 条构造对照；预期为 23 条允许、23 条拦截、10 条未知。命令及来源哈希保持原样，状态更新为纯判定器已实现。
+[cases.json](../evals/profiles/command-policy/cases.json) 包含 **56 条判定开发样例**：10 条从已保存轨迹提取，46 条构造对照；预期为 23 条允许、23 条拦截、10 条未知。命令及来源哈希保持原样，`suite_version=1` 与执行元数据中的开发样例版本对应。
 
 - 原始命令保存 run-id、题号、turn、轨迹行号、tool_call_id 和哈希；未运行这些命令，也未改写旧轨迹。
 - 构造样例包含正常依赖读取、关键词纯文本、Python 编辑、网络获取、全盘搜索、路径归一化、动态包装和“前半条有副作用、后半条应拒绝”。
@@ -114,7 +132,13 @@ Search within /testbed or a specific dependency directory, then implement and te
 
 这些数据已接入 [test_command_policy.py](../tests/test_command_policy.py) 的参数化测试；共 100 项纯判定及边界测试通过。额外用例覆盖条件目录、系统命令名伪装、Git 外部仓库、引用与转义、临时补丁写入、输入上限、无 I/O 及并发确定性。验证命令：`uv run pytest -q tests/test_command_policy.py`。测试不重放轨迹命令，纯判定通过不代表执行层已经拦截。
 
-本阶段检查：判定器、工具、循环、评测、配置与 CLI 的针对性回归 171 passed；后端全量 `uv run pytest -q` 为 1182 passed。另以固定种子构造 2,000 条语法输入进行仅分类检查，未出现异常；该检查不证明语义判定全部正确。锁文件只新增两项解析依赖，既有包版本未升级；旧模型运行目录和报告未修改。没有运行真实模型或执行样例中的命令。
+纯判定器阶段检查（提交 `8e41b18`）：针对性回归 171 passed，后端全量为 1182 passed。另以固定种子构造 2,000 条语法输入进行仅分类检查，未出现异常；该检查不证明语义判定全部正确。锁文件只新增两项解析依赖，既有包版本未升级；旧模型运行目录和报告未修改。
+
+本次执行层验收使用 [test_command_policy_execution.py](../tests/test_command_policy_execution.py) 的模拟模型验证三种模式、参数别名、调用 ID、预算、finish、异常计数、配置隔离和上下文来源；[test_command_policy_docker.py](../tests/test_command_policy_docker.py) 使用本地已有 `patchloop-toy` 镜像，验证复合命令被整条拒绝后没有创建 marker，正常读取、Python 编辑和 pytest 仍能完成。玩具任务由 1 项失败变为 2 项通过；分别覆盖自然结束和显式 finish，不是模型修复成绩。Docker 不可用或镜像缺失时测试跳过，不自动下载。
+
+执行层集成后的全量检查为 `1244 passed`，两项真实 Docker 冒烟均实际执行、未跳过。文档链接与 Git 差异格式检查通过；十遍旧实验的配置、原始轨迹和报告归档哈希保持不变。当前尚无策略开启后的真实模型解决率或费用收益结论。
+
+可单独运行这两个执行层测试文件，或用 `uv run agent eval --help` 查看选项。`audit` 不是离线模式：一旦运行真实 `agent eval`，仍会调用模型并执行工具。本阶段没有发起这类运行，也没有重放旧轨迹中的下载或全盘搜索命令。
 
 ## 验收与对照
 
@@ -136,7 +160,7 @@ Search within /testbed or a specific dependency directory, then implement and te
 ## 下一步
 
 1. 已完成纯判定器与参数化测试；支持的 shell 结构与未知降级以测试和上述范围为准。
-2. 接入 off／audit／enforce 的工具执行与轨迹契约，默认关闭，通过 FakeRunner 和 Docker 冒烟。
-3. 离线核对覆盖范围、误拦截和未知命令，再决定是否进入新题模型对照。
+2. 已接入 off／audit／enforce 的工具执行与轨迹，默认关闭；执行器与模式行为由模拟模型和 Docker 冒烟验证。
+3. 下一步只对已保存轨迹做离线分类与人工核对，统计覆盖范围、误拦截和未知命令，再决定是否进入新题模型对照。
 
 本分支不创建 GitHub Issue、不更改发布权限、不合并旧实验成绩。每个实现阶段通过检查后提交；是否启用新策略以对照结果决定。

@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
-  "status": "classifier_implemented_not_integrated",
+  "suite_version": 1,
+  "status": "runtime_integrated_not_model_evaluated",
   "purpose": "Development cases for the proposed SWE-bench command policy; commands are data, never executed by fixture validation.",
   "policy_version": "command-policy-v1",
   "environment_policy": "swebench-isolation-v2",
