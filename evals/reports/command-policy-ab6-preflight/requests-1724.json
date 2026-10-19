@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-19",
+  "instance_id": "psf__requests-1724",
+  "status": "blocked_environment",
+  "image_id": "sha256:9072de75edccf9bcb201e2463baf5d597bb064c8ab57961cc0b83da88edcab39",
+  "platform": "linux/amd64",
+  "image_resolution": {
+    "requested": "sweb.eval.x86_64.psf__requests-1724:latest",
+    "id": "sha256:9072de75edccf9bcb201e2463baf5d597bb064c8ab57961cc0b83da88edcab39",
+    "platform": "linux/amd64",
+    "repo_digests": [
+      "sweb.eval.x86_64.psf__requests-1724@sha256:9072de75edccf9bcb201e2463baf5d597bb064c8ab57961cc0b83da88edcab39"
+    ],
+    "dataset_image": "swebench/sweb.eval.x86_64.psf_1776_requests-1724:latest",
+    "available_aliases": [
+      "sweb.eval.x86_64.psf__requests-1724:latest"
+    ]
+  },
+  "base_commit": "1ba83c47ce7b177efe90d5f51f7760680f72eda0",
+  "image_unchanged": true,
+  "target_python": "2.7.18",
+  "normalizer_python": "3.11.5",
+  "normalization": {
+    "after_head": "1ba83c47ce7b177efe90d5f51f7760680f72eda0",
+    "after_tree": "c8e845adc2051eac27d5998697d3e83e920ef2c8",
+    "base_commit": "1ba83c47ce7b177efe90d5f51f7760680f72eda0",
+    "base_tree": "c8e845adc2051eac27d5998697d3e83e920ef2c8",
+    "before_head": "d8224845ca33b50559647c212718086b9c2c9ced",
+    "mode_changes": 115,
+    "status": "passed"
+  },
+  "normalizer_sha256": "4df309ba5cff2ced9faa82d9aaaab51d726fb6a1f75c288c89e03a9fdb795167",
+  "full_preflight_status": "error",
+  "block_reason": "Python 2.7.18 cannot parse the current v2 Python 3 environment probe.",
+  "official_baseline_status": "not_run",
+  "official_gold_status": "not_run",
+  "model_requests": 0,
+  "candidate_replaced": false,
+  "evidence_path_root": "local private /tmp/patchloop-ab6-preflight; raw files not committed",
+  "evidence_sha256": {
+    "requests-1724-r1/environment/preflight.json": "df1e252517e33143c2f4d9aad28621ea98eb493f330863d1995c3457c278995f",
+    "requests-1724-r1/result.json": "f68d0fb6ae4f9c129fe04efe2c6526b4012b813dc2618941af3a76733aabaa76",
+    "requests-1724-r2/environment/preflight.json": "df1e252517e33143c2f4d9aad28621ea98eb493f330863d1995c3457c278995f",
+    "requests-1724-r2/result.json": "f68d0fb6ae4f9c129fe04efe2c6526b4012b813dc2618941af3a76733aabaa76",
+    "requests-1724-normalization-r1/result.json": "a9d522411afe7743dd10c8b6084a48fae90c0978d266354e2e202d5991ab4c71",
+    "requests-1724-normalization-r2/result.json": "7b91c773077b087defcd6d6c819e0615c9388022eb7ca9b9698095096261d8c9"
+  },
+  "test_scope": "Normalization checked independently with Python 3 in a separate disposable container; full preflight stopped before normalization because the target interpreter failed to run the environment probe."
+}

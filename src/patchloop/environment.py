@@ -88,7 +88,8 @@ def prepare_swebench_environment(runner, instance, report_path, image):
     return report
 
 
-def preflight_instance(instance, image, output, *, verify, memory="3g", platform="linux/amd64", timeout=180):
+def preflight_instance(instance, image, output, *, verify, memory="3g", platform="linux/amd64", timeout=180,
+                       normalize_build=False):
     """Audit a raw image and its isolated solver counterpart, without a model client."""
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
@@ -100,6 +101,20 @@ def preflight_instance(instance, image, output, *, verify, memory="3g", platform
     try:
         with DockerRunner(info["id"], platform=platform, memory=memory, local_only=True) as runner:
             report["before"] = probe_environment(runner, instance)
+            if normalize_build:
+                helper = Path(__file__).with_name("ab_baseline.py").read_text()
+                payload = json.dumps({"root": "/testbed", "base_commit": instance["base_commit"]})
+                normalized = runner.run_result("python3 -c " + shlex.quote(helper) + " " + shlex.quote(payload), timeout=180)
+                prefix = "PATCHLOOP_BASELINE_REPORT="
+                lines = [line[len(prefix):] for line in normalized.output.splitlines() if line.startswith(prefix)]
+                if normalized.exit_code != 0 or normalized.timed_out or len(lines) != 1:
+                    raise EnvironmentCheckError("raw baseline normalization did not return valid evidence")
+                report["baseline_normalization"] = json.loads(lines[0])
+                proof = report["baseline_normalization"]
+                if (proof.get("status") != "passed" or proof.get("after_head") != instance["base_commit"] or
+                        proof.get("after_tree") != proof.get("base_tree") or not proof.get("base_tree")):
+                    raise EnvironmentCheckError("raw image is not a content-equivalent task baseline")
+                report["baseline_normalization_sha256"] = hashlib.sha256(helper.encode()).hexdigest()
         with solver_runner(info["id"], platform=platform, memory=memory) as runner:
             isolated = prepare_swebench_environment(runner, instance, output / "environment.json", info)
             report["after"] = isolated["checks"]

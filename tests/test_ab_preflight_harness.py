@@ -40,6 +40,7 @@ def request_data():
             "FAIL_TO_PASS": '["target"]', "PASS_TO_PASS": ["regression"],
         },
         "image_id": IMAGE_ID, "platform": "linux/amd64", "memory": "3g", "cpus": 2.0, "timeout": 1800,
+        "baseline_normalization_sha256": hashlib.sha256(Path(bridge.__file__).with_name("ab_baseline.py").read_bytes()).hexdigest(),
     }
 
 
@@ -78,6 +79,11 @@ class FakeContainers:
         container = SimpleNamespace(id=container_id, name=kwargs["name"],
                                     image=SimpleNamespace(id=self.actual_image), remove=remove,
                                     attrs={"Config": {"Labels": kwargs.get("labels", {})}})
+        container.start = lambda: None
+        container.exec_run = lambda *args, **kwargs: SimpleNamespace(exit_code=0, output=(
+            "PATCHLOOP_BASELINE_REPORT=" + json.dumps({"status": "passed", "base_commit": "b" * 40,
+                "before_head": "c" * 40, "after_head": "b" * 40, "base_tree": "d" * 40, "after_tree": "d" * 40})
+        ).encode())
         self.live[container_id] = container
         if self.create_response_error:
             raise RuntimeError(SECRET)
@@ -140,8 +146,9 @@ def harness(monkeypatch):
                             "rewrite_reports": rewrite_reports, "skip_patch": skip_patch, "task_repo": task_repo})
         phase = "baseline" if skip_patch else "gold"
         assert client.containers.get is not None
-        client.containers.create(image=test_spec.image, name=client.container_name, user="root",
-                                 detach=True, command="tail -f /dev/null", cap_add=["SYS_ADMIN"])
+        container = client.containers.create(image=test_spec.image, name=client.container_name, user="root",
+                                            detach=True, command="tail -f /dev/null", cap_add=["SYS_ADMIN"])
+        container.start()
         fault = state.faults.get(phase)
         if fault == "raise":
             raise RuntimeError(SECRET)
@@ -261,6 +268,33 @@ def test_ambiguous_text_does_not_override_verified_target_results(tmp_path, requ
         assert options["nano_cpus"] == 2_000_000_000 and options["cap_drop"] == ["ALL"]
         assert options["cap_add"] == [] and options["security_opt"] == ["no-new-privileges:true"]
         assert not set(options) & {"mounts", "volumes", "privileged"}
+
+
+@pytest.mark.parametrize("fault", ["error", "wrong_base", "wrong_tree", "missing_proof"])
+def test_controls_reject_bad_normalization_before_grading(tmp_path, request_data, harness, fault):
+    original = harness.containers.create
+    def create(**kwargs):
+        container = original(**kwargs)
+        proof = {"status": "passed", "base_commit": "b" * 40, "before_head": "c" * 40,
+                 "after_head": "b" * 40, "base_tree": "d" * 40, "after_tree": "d" * 40}
+        if fault == "wrong_base":
+            proof["after_head"] = "e" * 40
+        elif fault == "wrong_tree":
+            proof["after_tree"] = "e" * 40
+        content = b"" if fault == "missing_proof" else ("PATCHLOOP_BASELINE_REPORT=" + json.dumps(proof)).encode()
+        container.exec_run = lambda *args, **options: SimpleNamespace(exit_code=1 if fault == "error" else 0, output=content)
+        return container
+    harness.containers.create = create
+    result, _, _ = invoke(tmp_path, request_data)
+    assert result["status"] == "error" and result["gold"]["status"] == "not_run"
+    assert not harness.containers.live
+
+
+def test_controls_bind_normalizer_implementation_before_docker(tmp_path, request_data, harness):
+    request_data["baseline_normalization_sha256"] = "0" * 64
+    result, _, _ = invoke(tmp_path, request_data)
+    assert result["status"] == "error" and result["error_code"] == "normalization_source_changed"
+    assert not harness.state.created_clients
 
 
 @pytest.mark.parametrize("phase,fault", [

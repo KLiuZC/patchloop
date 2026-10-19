@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
 import signal
 import traceback
 from types import SimpleNamespace
@@ -218,7 +219,37 @@ class LocalOnlyContainers:
         owner.pending.remove(pending)
         record["image_id"] = container.image.id
         require(record["image_id"] == owner.request["image_id"], "container_image_mismatch")
-        return container
+        return NormalizedContainer(container, owner, record)
+
+
+class NormalizedContainer:
+    def __init__(self, container, owner, record):
+        self.container = container
+        self.owner = owner
+        self.record = record
+
+    def __getattr__(self, name):
+        return getattr(self.container, name)
+
+    def start(self):
+        require("baseline_normalization" not in self.record, "container_already_normalized")
+        self.container.start()
+        helper = Path(__file__).with_name("ab_baseline.py")
+        source = helper.read_text()
+        require(hashlib.sha256(source.encode()).hexdigest() == self.owner.request["baseline_normalization_sha256"],
+                "normalization_source_changed")
+        payload = json.dumps({"root": "/testbed", "base_commit": self.owner.request["instance"]["base_commit"]})
+        command = "python3 -c " + shlex.quote(source) + " " + shlex.quote(payload)
+        response = self.container.exec_run(["timeout", "-s", "KILL", "180", "/bin/bash", "-lc", command],
+                                           workdir="/testbed", user="root")
+        prefix = "PATCHLOOP_BASELINE_REPORT="
+        lines = [line[len(prefix):] for line in response.output.decode("utf-8").splitlines() if line.startswith(prefix)]
+        require(response.exit_code == 0 and len(lines) == 1, "baseline_normalization_failed")
+        proof = json.loads(lines[0])
+        self.record["baseline_normalization"] = proof
+        base = self.owner.request["instance"]["base_commit"]
+        require(proof.get("status") == "passed" and proof.get("base_commit") == proof.get("after_head") == base and
+                proof.get("base_tree") and proof.get("after_tree") == proof["base_tree"], "baseline_normalization_failed")
 
 
 class LocalOnlyDockerClient:
@@ -306,7 +337,9 @@ def _run_phase(request, spec, harness, client, phase, phase_result):
         client.cleanup()
     records = [record for record in client.records if record["phase"] == phase]
     require(len(records) == 1 and records[0]["removed"], "missing_container_evidence")
+    require(records[0].get("baseline_normalization", {}).get("status") == "passed", "missing_baseline_evidence")
     phase_result.update(container_id=records[0]["container_id"], image_id=records[0]["image_id"])
+    phase_result["baseline_normalization"] = records[0]["baseline_normalization"]
     require(isinstance(returned, tuple) and len(returned) == 2 and returned[0] == spec.instance_id,
             "harness_run_incomplete")
     for filename in ("report.json", "test_output.txt", "run_instance.log", "eval.sh"):
@@ -364,6 +397,9 @@ def run_bridge(input_path, output_dir):
                 result.update(instance_id=row["instance_id"], base_commit=row["base_commit"],
                               **{name: request[name] for name in ("image_id", "platform", "memory", "cpus", "timeout")})
                 result["source_hashes"]["bridge"] = _sha256(Path(__file__))
+                result["source_hashes"]["baseline_normalizer"] = _sha256(Path(__file__).with_name("ab_baseline.py"))
+                require(result["source_hashes"]["baseline_normalizer"] == request.get("baseline_normalization_sha256"),
+                        "normalization_source_changed")
                 harness = _load_harness()
                 result["harness_version"] = SUPPORTED_VERSION
                 result["source_hashes"].update(harness.source_hashes)

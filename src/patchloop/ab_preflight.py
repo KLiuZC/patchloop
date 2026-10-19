@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 from .command_runtime import command_policy_metadata
-from .environment import inspect_image, policy_metadata, preflight_instance
+from .environment import EnvironmentCheckError, inspect_image, policy_metadata, preflight_instance
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -77,7 +77,23 @@ def task_repository_state(path, expected_commit, instance_id):
 
 
 def local_image(candidate, platform):
-    info = inspect_image(candidate["image"])
+    names = [candidate["image"]]
+    identifier = candidate.get("instance_id")
+    if identifier is not None:
+        require(re.fullmatch(r"[A-Za-z0-9_.-]+__[A-Za-z0-9_.-]+", identifier), "invalid image task ID")
+        arch = {"linux/amd64": "x86_64", "linux/arm64": "arm64"}.get(platform)
+        require(arch is not None, "unsupported image platform")
+        local = f"sweb.eval.{arch}.{identifier}:latest"
+        names.extend((local, "swebench/" + local))
+    found = []
+    for name in dict.fromkeys(names):
+        try:
+            found.append(inspect_image(name))
+        except EnvironmentCheckError:
+            continue
+    require(bool(found), "image is not available locally: " + candidate["image"])
+    require(len({image["id"] for image in found}) == 1, "conflicting local image aliases; resolve them explicitly")
+    info = {**found[0], "dataset_image": candidate["image"], "available_aliases": [image["requested"] for image in found]}
     require(info["platform"] == platform, "image platform differs from draft")
     require(re.fullmatch(r"sha256:[0-9a-f]{64}", info["id"]) is not None, "expected an immutable image ID")
     if candidate.get("image_id"):
@@ -118,22 +134,35 @@ def execute_preflight(plan, row, candidate, draft_hash, *, output, task_repo, in
     result = {"status": "error", "instance_id": row["instance_id"], "base_commit": row["base_commit"],
               "image_id": info["id"], "platform": settings["platform"], "draft_sha256": draft_hash,
               "record_sha256": digest(json.dumps(row, sort_keys=True, ensure_ascii=False).encode()),
-              "task_repository": task_state, "model_requests": 0, "error": ""}
+              "task_repository": task_state, "image_resolution": info, "model_requests": 0, "error": ""}
     try:
         public = {key: row[key] for key in ("instance_id", "repo", "base_commit")}
         environment = preflight_instance(public, info["id"], destination / "environment", verify=verify,
-                                         memory=settings["memory"], platform=settings["platform"], timeout=settings["command_timeout_seconds"])
+                                         memory=settings["memory"], platform=settings["platform"], timeout=settings["command_timeout_seconds"],
+                                         normalize_build=True)
         require(environment["status"] == "passed", "isolated environment or visible health check failed")
         require(environment["image"]["id"] == info["id"], "environment image identity mismatch")
         before = environment["before"]["git"]
-        require(before["head"] == row["base_commit"] and before["tracked_changes"] == "", "raw image is not the clean task baseline")
+        normalization = environment["baseline_normalization"]
+        require(normalization.get("status") == "passed" and normalization.get("before_head") == before["head"] and
+                normalization.get("base_commit") == row["base_commit"] and normalization.get("after_head") == row["base_commit"] and
+                normalization.get("base_tree") and normalization.get("after_tree") == normalization["base_tree"] and
+                before["tracked_changes"] == "", "raw image is not the clean task baseline")
+        result["baseline_normalization"] = normalization
+        after = environment["after"]["git"]
+        require(after.get("head") == row["base_commit"] and after.get("tree") == normalization["base_tree"] and
+                after.get("tracked_changes") == "", "isolated solver baseline differs from normalized control baseline")
         request = {"instance": row, "image_id": info["id"], "platform": settings["platform"],
-                   "memory": settings["memory"], "cpus": settings["cpus"], "timeout": 1800}
+                   "memory": settings["memory"], "cpus": settings["cpus"], "timeout": 1800,
+                   "baseline_normalization_sha256": environment["baseline_normalization_sha256"]}
         request_path = destination / "request.json"
         write_private(request_path, request)
         request_hash = digest(request_path.read_bytes())
         bridge = Path(__file__).with_name("ab_preflight_harness.py")
         result["bridge_sha256"] = digest(bridge.read_bytes())
+        normalizer = Path(__file__).with_name("ab_baseline.py")
+        result["baseline_normalization_sha256"] = digest(normalizer.read_bytes())
+        require(environment.get("baseline_normalization_sha256") == result["baseline_normalization_sha256"], "normalization implementation changed")
         controls = destination / "controls"
         allowed = {"PATH", "HOME", "TMPDIR", "LANG", "LC_ALL", "DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_CONFIG", "DOCKER_TLS_VERIFY", "DOCKER_CERT_PATH"}
         environment_vars = {key: value for key, value in os.environ.items() if key in allowed}
@@ -143,10 +172,16 @@ def execute_preflight(plan, row, candidate, draft_hash, *, output, task_repo, in
                                      cwd=destination, env=environment_vars, stdout=stream, stderr=subprocess.STDOUT)
         require(process.returncode == 0, "official control preflight failed; see private harness.log")
         require(digest(request_path.read_bytes()) == request_hash and digest(bridge.read_bytes()) == result["bridge_sha256"], "control inputs changed during validation")
+        require(digest(normalizer.read_bytes()) == result["baseline_normalization_sha256"], "normalization implementation changed")
         control = json.loads((controls / "result.json").read_text())
         require(control.get("status") == "passed" and control.get("request_sha256") == request_hash, "unverified control result")
         for key in ("instance_id", "base_commit", "image_id", "platform"):
             require(control.get(key) == result[key], "control result identity mismatch")
+        for phase in ("baseline", "gold"):
+            proof = control[phase]["baseline_normalization"]
+            require(proof.get("status") == "passed" and proof.get("after_head") == row["base_commit"] and
+                    proof.get("before_head") == normalization["before_head"] and
+                    proof.get("after_tree") == normalization["base_tree"], "control baseline differs from environment")
         require(task_repository_state(task_repo, plan["preflight_task_repository_commit"], row["instance_id"]) == task_state, "task definitions changed during validation")
         require(local_image(candidate, settings["platform"])["id"] == info["id"], "image tag changed during validation")
         result.update(status="passed", environment="passed", controls="passed", request_sha256=request_hash)

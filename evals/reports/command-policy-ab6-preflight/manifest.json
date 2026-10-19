@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-19",
+  "implementation_base_commit": "eb3d4cf119d5ca726ca4022364af1ab4e1050ea9",
+  "implementation_note": "Hashes identify the final tested working tree before commit; source and tests were stable throughout the final full regression run.",
+  "source_sha256": {
+    "src/patchloop/ab_baseline.py": "4df309ba5cff2ced9faa82d9aaaab51d726fb6a1f75c288c89e03a9fdb795167",
+    "src/patchloop/ab_preflight.py": "4700d8e57b32da123a259e68ec060ccf4182f203268f94b35109647536974fbe",
+    "src/patchloop/ab_preflight_harness.py": "5f7fd57ae7105850f30d15379ac45085e894ae918827bc1f42e3686a128567b6",
+    "src/patchloop/environment.py": "0d4c5afe94c0ab5033ccd97bc13487c0fc097157db137a736e396f01bad3dba1",
+    "src/patchloop/environment_probe.py": "982bcd4436456b0db030f9015d0e73fcadd511abd71aff7e321944e6604571dc",
+    "src/patchloop/sandbox.py": "ad73a5a70cc0e54f7f872453f3c8a3e65e1dff46f8bd1f69c2d2e6db8d7c2aea",
+    "uv.lock": "c2d279bcc5d1ba22a3750f202c0149388b717f4fc098a2f92297d3e711dd85f2"
+  },
+  "test_sha256": {
+    "tests/test_ab_baseline.py": "179e99f3a9533f24ad0dcf9ed2571a57566da1df70bcbe9ec354201b6707d618",
+    "tests/test_ab_preflight.py": "20fbf518cbdc0fabf228220f0252159f6a0464d1c1aaee4ff4ce62fc025881b1",
+    "tests/test_ab_preflight_harness.py": "25f03f6edb2aad881cff2cd5b7abfdb746bab39f9b3f5dd31ad13ecaf8bc1b9f",
+    "tests/test_environment.py": "286a74d240c5a01a95630bb7949df50ded6853f87c089850c15d076d6892208d"
+  },
+  "artifact_sha256": {
+    "README.md": "71a8e7f547a3febb39d98c24bf10d2aa4ea648ea9ad7d14871f1e4e7f2da1af6",
+    "requests-1724.json": "96f0fd7bab44e97020c433715bef63ee14953d197d47b2eae4c36f59c4e5d7b3"
+  },
+  "draft_sha256": "2ded67b3ad26e84f70932d3150c7e198a52c0d0959801741a7cc718eea4f69a7",
+  "path_roots": {
+    "source_sha256": "repository root",
+    "test_sha256": "repository root",
+    "artifact_sha256": "this report directory"
+  },
+  "validation": {
+    "normalization_tests": 50,
+    "preflight_and_bridge_tests": 87,
+    "backend_tests": 1857,
+    "backend_seconds": 444.92,
+    "source_stable_during_backend_tests": true,
+    "source_and_tests_snapshot_sha256": "fe29acb4cfaa41f8dead90aa2c25d69225c1e6983c420815457915cd9bd64eb8",
+    "feature_review": "passed; reported findings fixed and independently rechecked",
+    "real_image_normalization": "passed",
+    "full_candidate_preflight": "blocked_python27",
+    "official_baseline": "not_run",
+    "official_gold": "not_run",
+    "image_unchanged": true,
+    "model_requests": 0,
+    "historical_hashes_unchanged": 156,
+    "candidate_replaced": false,
+    "frontend_tests": "not rerun; frontend unchanged"
+  }
+}

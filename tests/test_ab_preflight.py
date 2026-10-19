@@ -56,7 +56,11 @@ def test_validation_separates_hidden_inputs_and_fails_closed(tmp_path, monkeypat
         assert "patch" not in public and "test_patch" not in public
         assert image == IMAGE
         return {"status": "failed" if fault == "environment" else "passed", "image": {"id": IMAGE},
-                "before": {"git": {"head": INSTANCE["base_commit"], "tracked_changes": " M file.py" if fault == "dirty_base" else ""}}}
+                "before": {"git": {"head": INSTANCE["base_commit"], "tracked_changes": " M file.py" if fault == "dirty_base" else ""}},
+                "after": {"git": {"head": INSTANCE["base_commit"], "tree": "tree", "tracked_changes": ""}},
+                "baseline_normalization": {"status": "passed", "before_head": INSTANCE["base_commit"],
+                    "base_commit": INSTANCE["base_commit"], "after_head": INSTANCE["base_commit"], "base_tree": "tree", "after_tree": "tree"},
+                "baseline_normalization_sha256": preparation.digest(Path(preparation.__file__).with_name("ab_baseline.py").read_bytes())}
     monkeypatch.setattr(preparation, "preflight_instance", environment)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "private-key")
     monkeypatch.setenv("GH_TOKEN", "private-github-token")
@@ -73,6 +77,9 @@ def test_validation_separates_hidden_inputs_and_fails_closed(tmp_path, monkeypat
         report = {"status": "passed", "request_sha256": hashlib.sha256(content).hexdigest(),
                   "instance_id": INSTANCE["instance_id"], "base_commit": INSTANCE["base_commit"],
                   "image_id": IMAGE, "platform": "linux/amd64"}
+        for phase in ("baseline", "gold"):
+            report[phase] = {"baseline_normalization": {"status": "passed", "before_head": INSTANCE["base_commit"],
+                              "after_head": INSTANCE["base_commit"], "after_tree": "tree"}}
         if fault == "wrong_identity":
             report["image_id"] = "other"
         if fault == "changed_request":
@@ -181,3 +188,36 @@ def test_environment_cleanup_failure_cannot_leave_a_passed_status(tmp_path, monk
     monkeypatch.setattr(environment, "prepare_swebench_environment", lambda *args: {"checks": {"status": "passed"}})
     result = environment.preflight_instance(INSTANCE, IMAGE, tmp_path / "new", verify="true")
     assert result["status"] == "error" and "cleanup" in result["error"]
+
+
+def test_local_builder_image_is_mapped_without_retagging(monkeypatch):
+    from patchloop.environment import EnvironmentCheckError
+
+    seen = []
+    def inspect(name):
+        seen.append(name)
+        if name != "sweb.eval.x86_64.psf__requests-1724:latest":
+            raise EnvironmentCheckError("missing")
+        return {"requested": name, "id": IMAGE, "platform": "linux/amd64"}
+    monkeypatch.setattr(preparation, "inspect_image", inspect)
+    row = {"instance_id": "psf__requests-1724", "image": "swebench/sweb.eval.x86_64.psf_1776_requests-1724:latest"}
+    info = preparation.local_image(row, "linux/amd64")
+    assert info["id"] == IMAGE and info["requested"].startswith("sweb.")
+    assert info["dataset_image"] == row["image"]
+    assert len(seen) == len(set(seen))
+
+
+def test_conflicting_aliases_are_rejected_not_silently_selected(monkeypatch):
+    def inspect(name):
+        return {"requested": name, "id": IMAGE if name.startswith("swebench/") else "sha256:" + "c" * 64, "platform": "linux/amd64"}
+    monkeypatch.setattr(preparation, "inspect_image", inspect)
+    row = {"instance_id": "psf__requests-1724", "image": "swebench/sweb.eval.x86_64.psf_1776_requests-1724:latest"}
+    with pytest.raises(ValueError, match="conflicting"):
+        preparation.local_image(row, "linux/amd64")
+
+
+def test_changed_pinned_image_is_not_replaced_by_an_alias(monkeypatch):
+    monkeypatch.setattr(preparation, "inspect_image", lambda name: {"requested": name, "id": IMAGE, "platform": "linux/amd64"})
+    row = {"instance_id": "psf__requests-1724", "image": "source:latest", "image_id": "sha256:" + "c" * 64}
+    with pytest.raises(ValueError, match="pinned"):
+        preparation.local_image(row, "linux/amd64")
